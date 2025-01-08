@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:  
+
+jobs:
+  build:
+    name: Build & Simulate
+    runs-on: ubuntu-latest
+    container: wpilib/roborio-cross-ubuntu:2025-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Grant execute permission
+        run: chmod +x gradlew
+      - name: Build robot code
+        run: ./gradlew build
+
+      # Runs a simulation to spot check crashes
+      - name: Run simulation to check for runtime errors
+        run: timeout 1m ./gradlew simulateJava 2>&1 | awk -v rc=0 '/The robot program quit unexpectedly/ { rc=1 } 1; END {exit rc}'
+          # 1. Run simulation with 1 minute timeout
+          # 2. Redirect stderr to stdout (just in case)
+          # 3. Use awk to check for robot crash message and set the return code based on this. (Alternative to grep that doesn't filter the simulation output)
+          # Stolen from https://github.com/AusTINCANsProgrammingTeam/2022RobotCode/blob/041e469ab0d2047a0c6d66b3d953b5adc3b3e29a/.github/workflows/main.yml#L35-L41
+    
