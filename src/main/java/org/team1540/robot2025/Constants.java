@@ -1,5 +1,6 @@
 package org.team1540.robot2025;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 
 /**
@@ -11,13 +12,13 @@ import edu.wpi.first.wpilibj.DriverStation;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    private static final Mode simMode = Mode.SIM;
-    public static final Mode currentMode = Robot.isReal() ? Mode.REAL : simMode;
+    private static final Mode kSimMode = Mode.SIM;
+    public static final Mode kCurrentMode = Robot.isReal() ? Mode.REAL : kSimMode;
 
-    private static final boolean tuningMode = true;
+    private static final boolean kTuningMode = true;
 
     public static boolean isTuningMode() {
-        return !DriverStation.isFMSAttached() && tuningMode;
+        return !DriverStation.isFMSAttached() && kTuningMode;
     }
 
     public enum Mode {
@@ -28,4 +29,12 @@ public final class Constants {
         /** Replaying from a log file. */
         REPLAY
     }
+
+    public static final double kLoopPeriodSecs = 0.02;
+
+    public static final double kRobotMassKg = Units.lbsToKilograms(147);
+    public static final double kRobotMOIKgM2 = 5.8;
+
+    public static final double kBumperLengthXMeters = Units.inchesToMeters(35.0);
+    public static final double kBumperLengthYMeters = Units.inchesToMeters(33.0);
 }
