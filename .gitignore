@@ -172,7 +172,7 @@ out/
 simgui*.json
 
 # Version file
-src/main/java/org/team1540/robot/BuildConstants.java
+**/BuildConstants.java
 
 ctre_sim/
 *.wpilog

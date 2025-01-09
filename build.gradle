@@ -10,7 +10,8 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-def ROBOT_MAIN_CLASS = "org.team1540.robot.Main"
+def ROBOT_MAIN_PACKAGE = "org.team1540.robot2025"
+def ROBOT_MAIN_CLASS = ROBOT_MAIN_PACKAGE + ".Main"
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
@@ -133,7 +134,7 @@ tasks.withType(JavaCompile) {
 project.compileJava.dependsOn(createVersionFile)
 gversion {
     srcDir = "src/main/java/"
-    classPackage = "org.team1540.robot"
+    classPackage = ROBOT_MAIN_PACKAGE + ".generated"
     className = "BuildConstants"
     dateFormat = "yyyy-MM-dd HH:mm:ss z"
     timeZone = "America/Los_Angeles"
