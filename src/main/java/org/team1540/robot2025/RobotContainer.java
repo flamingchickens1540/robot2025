@@ -8,8 +8,10 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.util.AllianceFlipUtil;
+import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
     private final RobotState robotState = RobotState.getInstance();
@@ -17,6 +19,9 @@ public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
 
     private final Drivetrain drivetrain;
+
+    private final Autos autos;
+    private final LoggedAutoChooser autoChooser = new LoggedAutoChooser("Auto Chooser");
 
     /** The container for the robot. Contains subsystems, IO devices, and commands. */
     public RobotContainer() {
@@ -35,6 +40,7 @@ public class RobotContainer {
                 // Replayed robot, disable IO implementations
                 drivetrain = Drivetrain.createDummy();
         }
+        autos = new Autos(drivetrain);
 
         configureButtonBindings();
         configureAutoRoutines();
@@ -65,7 +71,12 @@ public class RobotContainer {
                         () -> true));
     }
 
-    private void configureAutoRoutines() {}
+    private void configureAutoRoutines() {
+        if (Constants.isTuningMode()) {
+            autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
+            autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);
+        }
+    }
 
     private void configureRobotModeTriggers() {
         RobotModeTriggers.teleop()
