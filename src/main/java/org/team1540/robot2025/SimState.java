@@ -31,6 +31,8 @@ public class SimState {
         if (Constants.kCurrentMode != Constants.Mode.SIM)
             throw new IllegalStateException("SimState should only be used in simulation");
 
+        SimulatedArena.getInstance().resetFieldForAuto();
+
         var simConfig = DriveTrainSimulationConfig.Default()
                 .withRobotMass(Kilograms.of(Constants.kRobotMassKg))
                 .withCustomModuleTranslations(Drivetrain.kModuleTranslations)
