@@ -77,18 +77,18 @@ public class Drivetrain extends SubsystemBase {
         new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY),
     };
     public static final SwerveDriveKinematics kKinematics = new SwerveDriveKinematics(kModuleTranslations);
-    public static final RobotConfig kPPRobotConfig =
-            new RobotConfig(
-                    Constants.kRobotMassKg,
-                    Constants.kRobotMOIKgM2,
-                    new ModuleConfig(
-                            TunerConstants.FrontLeft.WheelRadius,
-                            kMaxLinearSpeedMPS,
-                            kWheelCOF,
-                            DCMotor.getKrakenX60Foc(1),
-                            TunerConstants.FrontLeft.DriveMotorGearRatio,
-                            TunerConstants.FrontLeft.SlipCurrent, 1),
-                    kModuleTranslations);
+    public static final RobotConfig kPPRobotConfig = new RobotConfig(
+            Constants.kRobotMassKg,
+            Constants.kRobotMOIKgM2,
+            new ModuleConfig(
+                    TunerConstants.FrontLeft.WheelRadius,
+                    kMaxLinearSpeedMPS,
+                    kWheelCOF,
+                    DCMotor.getKrakenX60Foc(1),
+                    TunerConstants.FrontLeft.DriveMotorGearRatio,
+                    TunerConstants.FrontLeft.SlipCurrent,
+                    1),
+            kModuleTranslations);
 
     private static boolean hasInstance;
     static final Lock odometryLock = new ReentrantLock();
@@ -162,7 +162,8 @@ public class Drivetrain extends SubsystemBase {
                 kPPRobotConfig,
                 AllianceFlipUtil::shouldFlip,
                 this);
-        PathPlannerLogging.setLogActivePathCallback(poseList -> RobotState.getInstance().setActiveTrajectory(poseList.toArray(new Pose2d[0])));
+        PathPlannerLogging.setLogActivePathCallback(
+                poseList -> RobotState.getInstance().setActiveTrajectory(poseList.toArray(new Pose2d[0])));
         PathPlannerLogging.setLogTargetPoseCallback(RobotState.getInstance()::setTrajectoryTarget);
 
         // Start odometry thread

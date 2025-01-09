@@ -1,9 +1,5 @@
 package org.team1540.robot2025;
 
-import choreo.trajectory.SwerveSample;
-import choreo.trajectory.Trajectory;
-import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
-import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -16,7 +12,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
-import org.team1540.robot2025.util.AllianceFlipUtil;
 
 public class RobotState {
     private static RobotState instance = null;
@@ -36,7 +31,7 @@ public class RobotState {
         new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()
     };
 
-//    private Trajectory<SwerveSample> activeTrajectory = null;
+    //    private Trajectory<SwerveSample> activeTrajectory = null;
     private Pose2d[] activeTrajectory;
 
     private final Field2d field = new Field2d();
