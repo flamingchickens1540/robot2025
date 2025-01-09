@@ -3,7 +3,14 @@ package org.team1540.robot2025.subsystems.drive;
 import static edu.wpi.first.units.Units.*;
 
 import choreo.trajectory.SwerveSample;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
@@ -70,6 +77,18 @@ public class Drivetrain extends SubsystemBase {
         new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY),
     };
     public static final SwerveDriveKinematics kKinematics = new SwerveDriveKinematics(kModuleTranslations);
+    public static final RobotConfig kPPRobotConfig =
+            new RobotConfig(
+                    Constants.kRobotMassKg,
+                    Constants.kRobotMOIKgM2,
+                    new ModuleConfig(
+                            TunerConstants.FrontLeft.WheelRadius,
+                            kMaxLinearSpeedMPS,
+                            kWheelCOF,
+                            DCMotor.getKrakenX60Foc(1),
+                            TunerConstants.FrontLeft.DriveMotorGearRatio,
+                            TunerConstants.FrontLeft.SlipCurrent, 1),
+                    kModuleTranslations);
 
     private static boolean hasInstance;
     static final Lock odometryLock = new ReentrantLock();
@@ -125,15 +144,29 @@ public class Drivetrain extends SubsystemBase {
         modules[2] = new Module(blModuleIO, Module.MountPosition.BL, TunerConstants.BackLeft);
         modules[3] = new Module(brModuleIO, Module.MountPosition.BR, TunerConstants.BackRight);
 
-        // Start odometry thread
-        OdometryThread.getInstance().start();
-
         for (int i = 0; i < 4; i++) {
             lastModulePositions[i] = modules[i].getPosition();
         }
 
         headingController.setTolerance(Math.toRadians(1.0));
         headingController.enableContinuousInput(-Math.PI, Math.PI);
+
+        AutoBuilder.configure(
+                RobotState.getInstance()::getEstimatedPose,
+                RobotState.getInstance()::resetPose,
+                RobotState.getInstance()::getRobotVelocity,
+                this::runVelocity,
+                new PPHolonomicDriveController(
+                        new PIDConstants(translationKP.get(), translationKI.get(), translationKD.get()),
+                        new PIDConstants(headingKP.get(), headingKI.get(), headingKD.get())),
+                kPPRobotConfig,
+                AllianceFlipUtil::shouldFlip,
+                this);
+        PathPlannerLogging.setLogActivePathCallback(poseList -> RobotState.getInstance().setActiveTrajectory(poseList.toArray(new Pose2d[0])));
+        PathPlannerLogging.setLogTargetPoseCallback(RobotState.getInstance()::setTrajectoryTarget);
+
+        // Start odometry thread
+        OdometryThread.getInstance().start();
     }
 
     @Override

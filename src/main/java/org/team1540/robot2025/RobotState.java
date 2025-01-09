@@ -2,6 +2,8 @@ package org.team1540.robot2025;
 
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -34,7 +36,8 @@ public class RobotState {
         new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()
     };
 
-    private Trajectory<SwerveSample> activeTrajectory = null;
+//    private Trajectory<SwerveSample> activeTrajectory = null;
+    private Pose2d[] activeTrajectory;
 
     private final Field2d field = new Field2d();
 
@@ -62,10 +65,10 @@ public class RobotState {
         robotVelocity = velocity;
     }
 
-    public void setActiveTrajectory(Trajectory<SwerveSample> trajectory) {
-        activeTrajectory = AllianceFlipUtil.shouldFlip() ? trajectory.flipped() : trajectory;
-        field.getObject("trajectory").setPoses(activeTrajectory.getPoses());
-        Logger.recordOutput("Odometry/Trajectory/ActiveTrajectory", activeTrajectory.getPoses());
+    public void setActiveTrajectory(Pose2d... poses) {
+        activeTrajectory = poses;
+        field.getObject("trajectory").setPoses(activeTrajectory);
+        Logger.recordOutput("Odometry/Trajectory/ActiveTrajectory", activeTrajectory);
     }
 
     public void clearActiveTrajectory() {
