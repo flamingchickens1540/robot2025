@@ -8,7 +8,10 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
+import com.pathplanner.lib.util.swerve.SwerveSetpoint;
+import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -66,7 +69,7 @@ public class Drivetrain extends SubsystemBase {
     public static final double kMaxAngularAccelRadPerSec2 =
             kMaxTotalModuleForces * kDrivebaseRadius / Constants.kRobotMOIKgM2;
     public static final double kMaxSteerSpeedRadPerSec =
-            DCMotor.getFalcon500(1).withReduction(TunerConstants.FrontLeft.SteerMotorGearRatio).freeSpeedRadPerSec;
+            DCMotor.getFalcon500Foc(1).withReduction(TunerConstants.FrontLeft.SteerMotorGearRatio).freeSpeedRadPerSec;
 
     public static final double kWheelCOF = 1.4;
 
@@ -90,6 +93,8 @@ public class Drivetrain extends SubsystemBase {
                     1),
             kModuleTranslations);
 
+    private static final boolean kOptimizeSetpoints = true;
+
     private static boolean hasInstance;
     static final Lock odometryLock = new ReentrantLock();
 
@@ -111,11 +116,15 @@ public class Drivetrain extends SubsystemBase {
     private SwerveModulePosition[] lastModulePositions = new SwerveModulePosition[4]; // For odometry delta filtering
     private double lastOdometryUpdateTime = 0.0;
 
-    private boolean isFFCharacterizing = false;
-    private double ffCharacterizationInput = 0.0;
-
     @AutoLogOutput(key = "Drivetrain/DesiredSpeeds")
     private ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
+
+    private SwerveSetpoint lastSetpoint;
+    private final SwerveSetpointGenerator setpointGenerator =
+            new SwerveSetpointGenerator(kPPRobotConfig, kMaxSteerSpeedRadPerSec);
+
+    private boolean isFFCharacterizing = false;
+    private double ffCharacterizationInput = 0.0;
 
     private final TrajectoryController trajectoryController = new TrajectoryController(
             translationKP.get(),
@@ -131,7 +140,7 @@ public class Drivetrain extends SubsystemBase {
             headingKD.get(),
             new TrapezoidProfile.Constraints(kMaxAngularSpeedRadPerSec, kMaxAngularAccelRadPerSec2));
 
-    private final Alert gyroDisconnected = new Alert("Gyro disconnected!", Alert.AlertType.kWarning);
+    private final Alert gyroDisconnected = new Alert("Gyro is disconnected", Alert.AlertType.kError);
 
     public Drivetrain(
             GyroIO gyroIO, ModuleIO flModuleIO, ModuleIO frModuleIO, ModuleIO blModuleIO, ModuleIO brModuleIO) {
@@ -165,6 +174,11 @@ public class Drivetrain extends SubsystemBase {
         PathPlannerLogging.setLogActivePathCallback(
                 poseList -> RobotState.getInstance().setActiveTrajectory(poseList.toArray(new Pose2d[0])));
         PathPlannerLogging.setLogTargetPoseCallback(RobotState.getInstance()::setTrajectoryTarget);
+
+        lastSetpoint = new SwerveSetpoint(
+                desiredSpeeds,
+                getModuleStates(),
+                new DriveFeedforwards(new double[4], new double[4], new double[4], new double[4], new double[4]));
 
         // Start odometry thread
         OdometryThread.getInstance().start();
@@ -237,7 +251,17 @@ public class Drivetrain extends SubsystemBase {
             if (isFFCharacterizing) {
                 for (Module module : modules) module.runCharacterization(ffCharacterizationInput);
             } else {
-                SwerveModuleState[] setpointStates = kKinematics.toSwerveModuleStates(desiredSpeeds);
+                SwerveModuleState[] setpointStates;
+                if (kOptimizeSetpoints) {
+                    SwerveSetpoint newSetpoint =
+                            setpointGenerator.generateSetpoint(lastSetpoint, desiredSpeeds, Constants.kLoopPeriodSecs);
+                    setpointStates = newSetpoint.moduleStates();
+                    lastSetpoint = newSetpoint;
+                } else {
+                    setpointStates = kKinematics.toSwerveModuleStates(
+                            ChassisSpeeds.discretize(desiredSpeeds, Constants.kLoopPeriodSecs));
+                }
+
                 for (int i = 0; i < 4; i++) {
                     modules[i].runSetpoint(setpointStates[i]);
                 }
@@ -281,7 +305,7 @@ public class Drivetrain extends SubsystemBase {
      * @param speeds Speeds in meters/sec
      */
     private void runVelocity(ChassisSpeeds speeds) {
-        desiredSpeeds = ChassisSpeeds.discretize(speeds, Constants.kLoopPeriodSecs);
+        desiredSpeeds = speeds;
     }
 
     public void followTrajectory(SwerveSample trajectorySample) {
