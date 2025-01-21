@@ -55,7 +55,16 @@ public record ModuleHW(TalonFX driveMotor, TalonFX turnMotor, CANcoder turnEncod
         turnConfig.Feedback.FeedbackSensorSource = switch (constants.FeedbackSource) {
             case RemoteCANcoder -> FeedbackSensorSourceValue.RemoteCANcoder;
             case FusedCANcoder -> FeedbackSensorSourceValue.FusedCANcoder;
-            case SyncCANcoder -> FeedbackSensorSourceValue.SyncCANcoder;};
+            case SyncCANcoder -> FeedbackSensorSourceValue.SyncCANcoder;
+            case FusedCANdiPWM1 -> FeedbackSensorSourceValue.FusedCANdiPWM1;
+            case FusedCANdiPWM2 -> FeedbackSensorSourceValue.FusedCANdiPWM2;
+            case SyncCANdiPWM1 -> FeedbackSensorSourceValue.SyncCANdiPWM1;
+            case SyncCANdiPWM2 -> FeedbackSensorSourceValue.SyncCANdiPWM2;
+            case RemoteCANdiPWM1 -> FeedbackSensorSourceValue.RemoteCANdiPWM1;
+            case RemoteCANdiPWM2 -> FeedbackSensorSourceValue.RemoteCANdiPWM2;
+            default -> throw new IllegalStateException(
+                    "Invalid turn feedback sensor source" + constants.FeedbackSource);};
+
         turnConfig.Feedback.FeedbackRemoteSensorID = constants.EncoderId;
         turnConfig.Feedback.RotorToSensorRatio = constants.SteerMotorGearRatio;
         turnConfig.Feedback.SensorToMechanismRatio = 1.0;
