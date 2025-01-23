@@ -28,4 +28,23 @@ public final class Constants {
         /** Replaying from a log file. */
         REPLAY
     }
+
+    public static class Elevator {
+        //TODO: Set these constants
+        public static final int LEADER_ID = -1;
+        public static final int FOLLOWER_ID = -1;
+
+        public static final double SUPPLY_CURRENT_LIMIT = 70.0;
+        public static final double SUPPLY_CURRENT_LOWER_LIMIT = 40.0;
+        public static final double SUPPLY_TIME_THRESHOLD = 0.5;
+
+        public static final double GEAR_RATIO = 0.0;
+        public static final double KP = 0.0;
+        public static final double KI = 0.0;
+        public static final double KD = 0.0;
+        public static final double KS = 0.0;
+        public static final double KV = 0.0;
+        public static final double KA = 0.0;
+        public static final double KG = 0.0;
+    }
 }

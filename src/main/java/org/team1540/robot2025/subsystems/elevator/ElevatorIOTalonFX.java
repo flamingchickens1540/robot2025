@@ -1,0 +1,131 @@
+package org.team1540.robot2025.subsystems.elevator;
+
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.units.measure.*;
+
+import static org.team1540.robot2025.Constants.Elevator.*;
+
+public class ElevatorIOTalonFX implements ElevatorIO {
+
+    private final MotionMagicVoltage profiledPositionControl =
+            new MotionMagicVoltage(0.0).withEnableFOC(true);
+    
+    // Leader Elevator Motor
+    private final TalonFX leader = new TalonFX(LEADER_ID);
+    private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
+    private final StatusSignal<Angle> leaderPosition = leader.getPosition();
+    private final StatusSignal<Voltage> leaderAppliedVoltage = leader.getMotorVoltage();
+    private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
+    private final StatusSignal<Temperature> leaderTempCelsius = leader.getDeviceTemp();
+
+    // Follower Elevator Motor
+    private final TalonFX follower = new TalonFX(FOLLOWER_ID);
+    private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
+    private final StatusSignal<Angle> followerPosition = follower.getPosition();
+    private final StatusSignal<Voltage> followerAppliedVoltage = follower.getMotorVoltage();
+    private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
+    private final StatusSignal<Temperature> followerTemp = follower.getDeviceTemp();
+
+
+    private final StatusSignal<Boolean> atUpperLimitSwitch = leader.getFault_ForwardHardLimit();
+    private final StatusSignal<Boolean> atLowerLimitSwitch = leader.getFault_ReverseHardLimit();
+
+    private final Follower followerControl = new Follower(LEADER_ID, true);
+
+    public ElevatorIOTalonFX() {
+        TalonFXConfiguration config = new TalonFXConfiguration();
+
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // TODO: Switch this (potentially)
+        config.Feedback.SensorToMechanismRatio = GEAR_RATIO;
+
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimit = SUPPLY_CURRENT_LIMIT;
+        config.CurrentLimits.SupplyCurrentLowerLimit = SUPPLY_CURRENT_LOWER_LIMIT;
+        config.CurrentLimits.SupplyCurrentLowerTime = SUPPLY_TIME_THRESHOLD;
+
+        config.Slot0.kP = KP;
+        config.Slot0.kI = KI;
+        config.Slot0.kD = KD;
+        config.Slot0.kS = KS;
+        config.Slot0.kV = KV;
+        config.Slot0.kA = KA;
+        config.Slot0.kG = KG;
+        config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
+
+        config.MotionMagic.MotionMagicCruiseVelocity = 1;
+        config.MotionMagic.MotionMagicAcceleration = 2;
+        
+        config.HardwareLimitSwitch.ForwardLimitEnable = true;
+        config.HardwareLimitSwitch.ReverseLimitEnable = true;
+        config.HardwareLimitSwitch.ReverseLimitAutosetPositionEnable = true;
+        config.HardwareLimitSwitch.ReverseLimitAutosetPositionValue = 0;
+
+        leader.optimizeBusUtilization();
+        follower.optimizeBusUtilization();
+        leader.getConfigurator().apply(config);
+        follower.getConfigurator().apply(config);
+        follower.setControl(followerControl);
+
+        BaseStatusSignal.setUpdateFrequencyForAll(50.0,
+                leaderPosition,
+                leaderVelocity,
+                leaderAppliedVoltage,
+                followerAppliedVoltage,
+                leaderSupplyCurrent,
+                followerSupplyCurrent,
+                leaderTempCelsius,
+                followerTemp,
+                atUpperLimitSwitch,
+                atLowerLimitSwitch);
+    }
+
+    @Override
+    public void updateInputs(ElevatorIOInputs inputs) {
+        BaseStatusSignal.refreshAll(
+                leaderPosition,
+                leaderVelocity,
+                leaderAppliedVoltage,
+                followerAppliedVoltage,
+                leaderSupplyCurrent,
+                followerSupplyCurrent,
+                leaderTempCelsius,
+                followerTemp,
+                atUpperLimitSwitch,
+                atLowerLimitSwitch
+        );
+
+        inputs.leaderCurrentAmps = leaderSupplyCurrent.getValue().magnitude();
+        inputs.leaderAppliedVolts = leaderAppliedVoltage.getValue().magnitude();
+        inputs.leaderTempCelsius = leaderTempCelsius.getValue().magnitude();
+        inputs.leaderPositionMeters = leaderPosition.getValue().magnitude();
+        inputs.leaderVelocityMPS = leaderVelocity.getValue().magnitude();
+
+        inputs.followerCurrentAmps = followerSupplyCurrent.getValue().magnitude();
+        inputs.followerAppliedVolts = followerAppliedVoltage.getValue().magnitude();
+        inputs.followerTempCelsius = followerTemp.getValue().magnitude();
+        inputs.followerPositionMeters = followerPosition.getValue().magnitude();
+        inputs.followerVelocityMPS = followerVelocity.getValue().magnitude();
+
+        inputs.atUpperLimit = atUpperLimitSwitch.getValue();
+        inputs.atLowerLimit = atLowerLimitSwitch.getValue();
+    }
+
+    public void setVoltage(double volts) {
+        leader.setVoltage(volts);
+        follower.setControl(followerControl);
+    }
+
+    public void setSetpointMeters(double setpoint) {
+        leader.setControl(profiledPositionControl.withPosition(setpoint));
+        follower.setControl(followerControl);
+    }
+}
