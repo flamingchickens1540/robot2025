@@ -1,5 +1,7 @@
 package org.team1540.robot2025.subsystems.elevator;
 
+import static org.team1540.robot2025.Constants.Elevator.*;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -11,29 +13,23 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.*;
 
-import static org.team1540.robot2025.Constants.Elevator.*;
-
 public class ElevatorIOTalonFX implements ElevatorIO {
 
-    private final MotionMagicVoltage profiledPositionControl =
-            new MotionMagicVoltage(0.0).withEnableFOC(true);
-    
+    private final MotionMagicVoltage profiledPositionControl = new MotionMagicVoltage(0.0).withEnableFOC(true);
+
     // Leader Elevator Motor
     private final TalonFX leader = new TalonFX(LEADER_ID);
     private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
     private final StatusSignal<Angle> leaderPosition = leader.getPosition();
     private final StatusSignal<Voltage> leaderAppliedVoltage = leader.getMotorVoltage();
-    private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
+    private final StatusSignal<Current> leaderCurrentAmps = leader.getSupplyCurrent();
     private final StatusSignal<Temperature> leaderTempCelsius = leader.getDeviceTemp();
 
     // Follower Elevator Motor
     private final TalonFX follower = new TalonFX(FOLLOWER_ID);
-    private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
-    private final StatusSignal<Angle> followerPosition = follower.getPosition();
     private final StatusSignal<Voltage> followerAppliedVoltage = follower.getMotorVoltage();
-    private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
-    private final StatusSignal<Temperature> followerTemp = follower.getDeviceTemp();
-
+    private final StatusSignal<Current> followerCurrentAmps = follower.getSupplyCurrent();
+    private final StatusSignal<Temperature> followerTempCelsius = follower.getDeviceTemp();
 
     private final StatusSignal<Boolean> atUpperLimitSwitch = leader.getFault_ForwardHardLimit();
     private final StatusSignal<Boolean> atLowerLimitSwitch = leader.getFault_ReverseHardLimit();
@@ -44,8 +40,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         TalonFXConfiguration config = new TalonFXConfiguration();
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // TODO: Switch this (potentially)
-        config.Feedback.SensorToMechanismRatio = GEAR_RATIO;
+        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        config.Feedback.SensorToMechanismRatio = ROTS_PER_METER;
 
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimit = SUPPLY_CURRENT_LIMIT;
@@ -63,7 +59,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
         config.MotionMagic.MotionMagicCruiseVelocity = 1;
         config.MotionMagic.MotionMagicAcceleration = 2;
-        
+
         config.HardwareLimitSwitch.ForwardLimitEnable = true;
         config.HardwareLimitSwitch.ReverseLimitEnable = true;
         config.HardwareLimitSwitch.ReverseLimitAutosetPositionEnable = true;
@@ -75,15 +71,16 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         follower.getConfigurator().apply(config);
         follower.setControl(followerControl);
 
-        BaseStatusSignal.setUpdateFrequencyForAll(50.0,
+        BaseStatusSignal.setUpdateFrequencyForAll(
+                50.0,
                 leaderPosition,
                 leaderVelocity,
                 leaderAppliedVoltage,
                 followerAppliedVoltage,
-                leaderSupplyCurrent,
-                followerSupplyCurrent,
+                leaderCurrentAmps,
+                followerCurrentAmps,
                 leaderTempCelsius,
-                followerTemp,
+                followerTempCelsius,
                 atUpperLimitSwitch,
                 atLowerLimitSwitch);
     }
@@ -95,26 +92,23 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                 leaderVelocity,
                 leaderAppliedVoltage,
                 followerAppliedVoltage,
-                leaderSupplyCurrent,
-                followerSupplyCurrent,
+                leaderCurrentAmps,
+                followerCurrentAmps,
                 leaderTempCelsius,
-                followerTemp,
+                followerTempCelsius,
                 atUpperLimitSwitch,
-                atLowerLimitSwitch
-        );
+                atLowerLimitSwitch);
 
-        inputs.leaderCurrentAmps = leaderSupplyCurrent.getValue().magnitude();
+        inputs.leaderCurrentAmps = leaderCurrentAmps.getValue().magnitude();
         inputs.leaderAppliedVolts = leaderAppliedVoltage.getValue().magnitude();
         inputs.leaderTempCelsius = leaderTempCelsius.getValue().magnitude();
-        inputs.leaderPositionMeters = leaderPosition.getValue().magnitude();
-        inputs.leaderVelocityMPS = leaderVelocity.getValue().magnitude();
 
-        inputs.followerCurrentAmps = followerSupplyCurrent.getValue().magnitude();
+        inputs.followerCurrentAmps = followerCurrentAmps.getValue().magnitude();
         inputs.followerAppliedVolts = followerAppliedVoltage.getValue().magnitude();
-        inputs.followerTempCelsius = followerTemp.getValue().magnitude();
-        inputs.followerPositionMeters = followerPosition.getValue().magnitude();
-        inputs.followerVelocityMPS = followerVelocity.getValue().magnitude();
+        inputs.followerTempCelsius = followerTempCelsius.getValue().magnitude();
 
+        inputs.positionMeters = leaderPosition.getValue().magnitude();
+        inputs.velocityMPS = leaderVelocity.getValue().magnitude();
         inputs.atUpperLimit = atUpperLimitSwitch.getValue();
         inputs.atLowerLimit = atLowerLimitSwitch.getValue();
     }
@@ -126,6 +120,12 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     public void setSetpointMeters(double setpoint) {
         leader.setControl(profiledPositionControl.withPosition(setpoint));
+        follower.setControl(followerControl);
+    }
+
+    public void setBrakeMode(boolean brakeMode) {
+        if (brakeMode) leader.setNeutralMode(NeutralModeValue.Brake);
+        else leader.setNeutralMode(NeutralModeValue.Coast);
         follower.setControl(followerControl);
     }
 }

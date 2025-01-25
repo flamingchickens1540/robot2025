@@ -30,15 +30,18 @@ public final class Constants {
     }
 
     public static class Elevator {
-        //TODO: Set these constants
+        // TODO: Set these constants
         public static final int LEADER_ID = -1;
         public static final int FOLLOWER_ID = -1;
 
         public static final double SUPPLY_CURRENT_LIMIT = 70.0;
         public static final double SUPPLY_CURRENT_LOWER_LIMIT = 40.0;
         public static final double SUPPLY_TIME_THRESHOLD = 0.5;
+        public static final double MIN_HEIGHT = 0.0;
+        public static final double MAX_HEIGHT = 0.0;
 
         public static final double GEAR_RATIO = 0.0;
+        public static final double ROTS_PER_METER = 0.0;
         public static final double KP = 0.0;
         public static final double KI = 0.0;
         public static final double KD = 0.0;
