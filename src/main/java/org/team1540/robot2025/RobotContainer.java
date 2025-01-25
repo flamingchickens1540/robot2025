@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
+import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
 import org.team1540.robot2025.util.AllianceFlipUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
@@ -19,6 +20,7 @@ public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
 
     private final Drivetrain drivetrain;
+    private final AprilTagVision aprilTagVision;
 
     private final Autos autos;
     private final LoggedAutoChooser autoChooser = new LoggedAutoChooser("Auto Chooser");
@@ -29,16 +31,19 @@ public class RobotContainer {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
+                aprilTagVision = AprilTagVision.createReal();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
+                aprilTagVision = AprilTagVision.createSim();
 
                 robotState.resetPose(new Pose2d(3.0, 3.0, Rotation2d.kZero));
                 break;
             default:
                 // Replayed robot, disable IO implementations
                 drivetrain = Drivetrain.createDummy();
+                aprilTagVision = AprilTagVision.createDummy();
         }
         autos = new Autos(drivetrain);
 
