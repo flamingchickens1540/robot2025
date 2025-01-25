@@ -5,6 +5,8 @@ import static org.team1540.robot2025.Constants.Elevator.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -97,5 +99,9 @@ public class Elevator implements Subsystem {
 
     public void holdPosition() {
         setElevatorPosition(inputs.positionMeters);
+    }
+
+    public Command setpointCommand(double positionMeters) {
+        return Commands.runOnce(() -> setElevatorPosition(positionMeters), this).until(this::isAtSetpoint);
     }
 }
