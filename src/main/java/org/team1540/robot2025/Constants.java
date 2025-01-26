@@ -38,16 +38,28 @@ public final class Constants {
         public static final double SUPPLY_CURRENT_LOWER_LIMIT = 40.0;
         public static final double SUPPLY_TIME_THRESHOLD = 0.5;
         public static final double MIN_HEIGHT = 0.0;
-        public static final double MAX_HEIGHT = 0.0;
+        public static final double MAX_HEIGHT = 2.0;
 
         public static final double GEAR_RATIO = 0.0;
         public static final double ROTS_PER_METER = 0.0;
-        public static final double KP = 0.0;
-        public static final double KI = 0.0;
+        public static final double KP = 0.5;
+        public static final double KI = 0.1;
         public static final double KD = 0.0;
         public static final double KS = 0.0;
         public static final double KV = 0.0;
         public static final double KA = 0.0;
         public static final double KG = 0.0;
+
+        public enum ElevatorState {
+            BASE(MIN_HEIGHT),
+            L1(0.5),
+            L2(1.0),
+            L3(1.4),
+            L4(1.8),
+            BARGE(2.0);
+
+            public final double elevatorHeight;
+            ElevatorState(double height) {this.elevatorHeight = height;}
+        }
     }
 }

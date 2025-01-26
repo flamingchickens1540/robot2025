@@ -101,7 +101,7 @@ public class Elevator implements Subsystem {
         setElevatorPosition(inputs.positionMeters);
     }
 
-    public Command setpointCommand(double positionMeters) {
-        return Commands.runOnce(() -> setElevatorPosition(positionMeters), this).until(this::isAtSetpoint);
+    public Command setpointCommand(ElevatorState state) {
+        return Commands.runOnce(() -> setElevatorPosition(state.elevatorHeight), this).until(this::isAtSetpoint);
     }
 }
