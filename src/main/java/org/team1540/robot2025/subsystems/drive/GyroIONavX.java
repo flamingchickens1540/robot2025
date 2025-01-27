@@ -5,9 +5,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import java.util.Queue;
 
+import static edu.wpi.first.units.Units.Kilograms;
+
 /** IO implementation for NavX. */
 public class GyroIONavX implements GyroIO {
-    private final AHRS navX = new AHRS(AHRS.NavXComType.kMXP_SPI, (int) Drivetrain.kOdometryFrequency);
+    private final AHRS navX = new AHRS(AHRS.NavXComType.kMXP_SPI, (int) Drivetrain.ODOMETRY_FREQUENCY);
     private final Queue<Double> yawPositionQueue;
     private final Queue<Double> yawTimestampQueue;
 

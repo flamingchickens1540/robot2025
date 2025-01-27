@@ -93,7 +93,7 @@ public class ClosedLoopConfig {
     }
 
     public PIDController createPIDController() {
-        return createPIDController(Constants.kLoopPeriodSecs);
+        return createPIDController(Constants.LOOP_PERIOD_SECS);
     }
 
     public ProfiledPIDController createProfiledPIDController(TrapezoidProfile.Constraints constraints) {

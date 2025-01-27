@@ -31,14 +31,13 @@ public class RobotState {
         new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()
     };
 
-    //    private Trajectory<SwerveSample> activeTrajectory = null;
     private Pose2d[] activeTrajectory;
 
     private final Field2d field = new Field2d();
 
     private RobotState() {
         poseEstimator = new SwerveDrivePoseEstimator(
-                Drivetrain.kKinematics,
+                Drivetrain.KINEMATICS,
                 lastGyroRotation,
                 lastModulePositions,
                 Pose2d.kZero,
@@ -77,7 +76,7 @@ public class RobotState {
     }
 
     public void resetPose(Pose2d newPose) {
-        if (Constants.kCurrentMode == Constants.Mode.SIM) SimState.getInstance().resetSimPose(newPose);
+        if (Constants.CURRENT_MODE == Constants.Mode.SIM) SimState.getInstance().resetSimPose(newPose);
         poseEstimator.resetPosition(lastGyroRotation, lastModulePositions, newPose);
         resetTimer.restart();
     }

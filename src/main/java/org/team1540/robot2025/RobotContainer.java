@@ -25,7 +25,7 @@ public class RobotContainer {
 
     /** The container for the robot. Contains subsystems, IO devices, and commands. */
     public RobotContainer() {
-        switch (Constants.kCurrentMode) {
+        switch (Constants.CURRENT_MODE) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
@@ -95,7 +95,7 @@ public class RobotContainer {
                         .withName("AlertManager update")
                         .ignoringDisable(true));
 
-        if (Constants.kCurrentMode == Constants.Mode.SIM) {
+        if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             CommandScheduler.getInstance()
                     .schedule(Commands.run(SimState.getInstance()::update)
                             .withName("Simulation update")

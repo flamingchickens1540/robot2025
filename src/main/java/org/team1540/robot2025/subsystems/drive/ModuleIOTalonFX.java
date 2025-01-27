@@ -104,7 +104,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         turnTemp = turn.getDeviceTemp();
 
         // Configure periodic frames
-        BaseStatusSignal.setUpdateFrequencyForAll(Drivetrain.kOdometryFrequency, drivePosition, turnPosition);
+        BaseStatusSignal.setUpdateFrequencyForAll(Drivetrain.ODOMETRY_FREQUENCY, drivePosition, turnPosition);
         BaseStatusSignal.setUpdateFrequencyForAll(
                 50.0,
                 driveVelocity,

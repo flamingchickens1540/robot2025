@@ -28,14 +28,14 @@ public class SimState {
     private final SwerveDriveSimulation driveSim;
 
     private SimState() {
-        if (Constants.kCurrentMode != Constants.Mode.SIM)
+        if (Constants.CURRENT_MODE != Constants.Mode.SIM)
             throw new IllegalStateException("SimState should only be used in simulation");
 
         SimulatedArena.getInstance().resetFieldForAuto();
 
         var simConfig = DriveTrainSimulationConfig.Default()
-                .withRobotMass(Kilograms.of(Constants.kRobotMassKg))
-                .withCustomModuleTranslations(Drivetrain.kModuleTranslations)
+                .withRobotMass(Kilograms.of(Constants.ROBOT_MASS_KG))
+                .withCustomModuleTranslations(Drivetrain.MODULE_TRANSLATIONS)
                 .withBumperSize(Meters.of(Constants.kBumperLengthXMeters), Meters.of(Constants.kBumperLengthYMeters))
                 .withGyro(() -> new GyroSimulation(0.12 / 120, 0.02))
                 .withSwerveModule(() -> new SwerveModuleSimulation(new SwerveModuleSimulationConfig(
@@ -47,7 +47,7 @@ public class SimState {
                         Volts.of(TunerConstants.FrontLeft.SteerFrictionVoltage),
                         Meters.of(TunerConstants.FrontLeft.WheelRadius),
                         KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
-                        Drivetrain.kWheelCOF)));
+                        Drivetrain.WHEEL_COF)));
         driveSim = new SwerveDriveSimulation(simConfig, Pose2d.kZero);
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
     }
