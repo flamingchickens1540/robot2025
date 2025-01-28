@@ -14,6 +14,8 @@ public final class Constants {
     private static final Mode simMode = Mode.SIM;
     public static final Mode currentMode = Robot.isReal() ? Mode.REAL : simMode;
 
+    public static final double LOOP_PERIOD_SECS = 0.02;
+
     private static final boolean tuningMode = true;
 
     public static boolean isTuningMode() {
