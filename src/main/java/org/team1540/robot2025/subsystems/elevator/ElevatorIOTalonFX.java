@@ -41,7 +41,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
         config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-        config.Feedback.SensorToMechanismRatio = ROTS_PER_METER;
+        config.Feedback.SensorToMechanismRatio = MOTOR_ROTS_PER_METER;
 
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
         config.CurrentLimits.SupplyCurrentLimit = SUPPLY_CURRENT_LIMIT;

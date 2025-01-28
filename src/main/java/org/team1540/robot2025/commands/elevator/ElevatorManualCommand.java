@@ -9,7 +9,7 @@ public class ElevatorManualCommand extends Command {
     private final Elevator elevator;
     private final double deadzone = 0.2;
 
-    public ElevatorManualCommand(Elevator elevator,  XboxController copilot) {
+    public ElevatorManualCommand(Elevator elevator, XboxController copilot) {
         this.elevator = elevator;
         this.copilot = copilot;
         addRequirements(elevator);
