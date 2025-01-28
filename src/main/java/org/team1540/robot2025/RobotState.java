@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 
@@ -49,6 +50,8 @@ public class RobotState {
         resetTimer.start();
 
         SmartDashboard.putData(field);
+
+        AutoLogOutputManager.addObject(this);
     }
 
     public SwerveDriveKinematics getKinematics() {

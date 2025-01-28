@@ -14,8 +14,6 @@ import org.team1540.robot2025.util.AllianceFlipUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
-    private final RobotState robotState = RobotState.getInstance();
-
     private final CommandXboxController driver = new CommandXboxController(0);
 
     private final Drivetrain drivetrain;
@@ -34,7 +32,7 @@ public class RobotContainer {
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
 
-                robotState.resetPose(new Pose2d(3.0, 3.0, Rotation2d.kZero));
+                RobotState.getInstance().resetPose(new Pose2d(3.0, 3.0, Rotation2d.kZero));
                 break;
             default:
                 // Replayed robot, disable IO implementations
@@ -109,6 +107,6 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return Commands.none();
+        return autoChooser.selectedCommand();
     }
 }

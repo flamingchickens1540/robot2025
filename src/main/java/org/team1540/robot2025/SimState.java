@@ -13,6 +13,8 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.generated.TunerConstants;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
@@ -36,7 +38,7 @@ public class SimState {
         var simConfig = DriveTrainSimulationConfig.Default()
                 .withRobotMass(Kilograms.of(Constants.ROBOT_MASS_KG))
                 .withCustomModuleTranslations(DrivetrainConstants.getModuleTranslations())
-                .withBumperSize(Meters.of(Constants.kBumperLengthXMeters), Meters.of(Constants.kBumperLengthYMeters))
+                .withBumperSize(Meters.of(Constants.BUMPER_LENGTH_X_METERS), Meters.of(Constants.BUMPER_LENGTH_Y_METERS))
                 .withGyro(() -> new GyroSimulation(0.12 / 120, 0.02))
                 .withSwerveModule(() -> new SwerveModuleSimulation(new SwerveModuleSimulationConfig(
                         DCMotor.getKrakenX60Foc(1),
@@ -50,10 +52,11 @@ public class SimState {
                         DrivetrainConstants.WHEEL_COF)));
         driveSim = new SwerveDriveSimulation(simConfig, Pose2d.kZero);
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
+
+        AutoLogOutputManager.addObject(this);
     }
 
     public void update() {
-        Logger.recordOutput("SimState/RobotPose", getSimulatedRobotPose());
         Logger.recordOutput(
                 "SimState/Coral",
                 SimulatedArena.getInstance().getGamePiecesByType("Coral").toArray(new Pose3d[0]));
@@ -68,6 +71,7 @@ public class SimState {
         return driveSim;
     }
 
+    @AutoLogOutput(key = "SimState/RobotPose")
     public Pose2d getSimulatedRobotPose() {
         return driveSim.getSimulatedDriveTrainPose();
     }
