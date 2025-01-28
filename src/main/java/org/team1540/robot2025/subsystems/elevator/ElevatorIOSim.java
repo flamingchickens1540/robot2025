@@ -1,6 +1,6 @@
 package org.team1540.robot2025.subsystems.elevator;
 
-import static org.team1540.robot2025.Constants.Elevator.*;
+import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 import static org.team1540.robot2025.Constants.LOOP_PERIOD_SECS;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;

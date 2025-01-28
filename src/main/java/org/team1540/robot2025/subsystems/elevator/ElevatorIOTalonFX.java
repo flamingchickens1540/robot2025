@@ -1,6 +1,6 @@
 package org.team1540.robot2025.subsystems.elevator;
 
-import static org.team1540.robot2025.Constants.Elevator.*;
+import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
