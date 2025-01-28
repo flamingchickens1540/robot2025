@@ -1,7 +1,6 @@
 package org.team1540.robot2025;
 
-import static org.team1540.robot2025.Constants.Vision.*;
-import static org.team1540.robot2025.Constants.Vision.MAX_ACCEPTED_LINEAR_SPEED_MPS;
+import static org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionConstants.*;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;

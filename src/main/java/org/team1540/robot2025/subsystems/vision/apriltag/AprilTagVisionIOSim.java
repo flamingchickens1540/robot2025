@@ -1,6 +1,6 @@
 package org.team1540.robot2025.subsystems.vision.apriltag;
 
-import static org.team1540.robot2025.Constants.Vision.*;
+import static org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionConstants.*;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import org.photonvision.simulation.PhotonCameraSim;

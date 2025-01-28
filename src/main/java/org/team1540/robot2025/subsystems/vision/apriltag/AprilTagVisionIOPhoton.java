@@ -1,6 +1,6 @@
 package org.team1540.robot2025.subsystems.vision.apriltag;
 
-import static org.team1540.robot2025.Constants.Vision.APRIL_TAG_FIELD_LAYOUT;
+import static org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionConstants.APRIL_TAG_FIELD_LAYOUT;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
