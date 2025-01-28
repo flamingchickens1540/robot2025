@@ -5,13 +5,14 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.team1540.robot2025.subsystems.drive.Drivetrain;
+import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 
 public class RobotState {
     private static RobotState instance = null;
@@ -21,6 +22,8 @@ public class RobotState {
         return instance;
     }
 
+    private final SwerveDriveKinematics kinematics =
+            new SwerveDriveKinematics(DrivetrainConstants.getModuleTranslations());
     private final SwerveDrivePoseEstimator poseEstimator;
     private ChassisSpeeds robotVelocity = new ChassisSpeeds();
 
@@ -37,7 +40,7 @@ public class RobotState {
 
     private RobotState() {
         poseEstimator = new SwerveDrivePoseEstimator(
-                Drivetrain.KINEMATICS,
+                kinematics,
                 lastGyroRotation,
                 lastModulePositions,
                 Pose2d.kZero,
@@ -46,6 +49,10 @@ public class RobotState {
         resetTimer.start();
 
         SmartDashboard.putData(field);
+    }
+
+    public SwerveDriveKinematics getKinematics() {
+        return kinematics;
     }
 
     public void addOdometryObservation(SwerveModulePosition[] modulePositions, Rotation2d gyroAngle, double timestamp) {

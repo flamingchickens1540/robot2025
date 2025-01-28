@@ -1,12 +1,10 @@
 package org.team1540.robot2025.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
+import static org.team1540.robot2025.subsystems.drive.DrivetrainConstants.*;
 
 import choreo.trajectory.SwerveSample;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -21,7 +19,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -47,54 +44,6 @@ import org.team1540.robot2025.util.*;
 import org.team1540.robot2025.util.swerve.TrajectoryController;
 
 public class Drivetrain extends SubsystemBase {
-    static final double ODOMETRY_FREQUENCY = 250.0;
-
-    public static final double DRIVEBASE_RADIUS = Math.max(
-            Math.max(
-                    Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
-                    Math.hypot(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY)),
-            Math.max(
-                    Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
-                    Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
-
-    public static final double MAX_TOTAL_MODULE_FORCES = DCMotor.getKrakenX60Foc(4)
-                    .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio)
-                    .getTorque(TunerConstants.FrontLeft.SlipCurrent)
-            / TunerConstants.FrontLeft.WheelRadius;
-
-    public static final double MAX_LINEAR_LINEAR_SPEED_MPS = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-    public static final double MAX_LINEAR_ACCELERATION = MAX_TOTAL_MODULE_FORCES / Constants.ROBOT_MASS_KG;
-
-    public static final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS;
-    public static final double MAX_ANGULAR_ACCEL_RPS2 =
-            MAX_TOTAL_MODULE_FORCES * DRIVEBASE_RADIUS / Constants.ROBOT_MOI_KGM2;
-    public static final double MAX_STEER_SPEED_RAD_PER_SEC =
-            DCMotor.getFalcon500Foc(1).withReduction(TunerConstants.FrontLeft.SteerMotorGearRatio).freeSpeedRadPerSec;
-
-    public static final double WHEEL_COF = 1.4;
-
-    public static final Translation2d[] MODULE_TRANSLATIONS = new Translation2d[] {
-        new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
-        new Translation2d(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY),
-        new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
-        new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY),
-    };
-    public static final SwerveDriveKinematics KINEMATICS = new SwerveDriveKinematics(MODULE_TRANSLATIONS);
-    public static final RobotConfig ROBOT_CONFIG = new RobotConfig(
-            Constants.ROBOT_MASS_KG,
-            Constants.ROBOT_MOI_KGM2,
-            new ModuleConfig(
-                    TunerConstants.FrontLeft.WheelRadius,
-                    MAX_LINEAR_LINEAR_SPEED_MPS,
-                    WHEEL_COF,
-                    DCMotor.getKrakenX60Foc(1),
-                    TunerConstants.FrontLeft.DriveMotorGearRatio,
-                    TunerConstants.FrontLeft.SlipCurrent,
-                    1),
-            MODULE_TRANSLATIONS);
-
-    private static final boolean OPTIMIZE_SETPOINTS = true;
-
     private static boolean hasInstance;
     static final Lock odometryLock = new ReentrantLock();
 
@@ -109,6 +58,7 @@ public class Drivetrain extends SubsystemBase {
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+    private final SwerveDriveKinematics kinematics = RobotState.getInstance().getKinematics();
 
     private Rotation2d fieldOrientationOffset = Rotation2d.kZero;
 
@@ -228,7 +178,7 @@ public class Drivetrain extends SubsystemBase {
             if (acceptMeasurement) {
                 if (gyroInputs.connected) rawGyroRotation = gyroInputs.odometryYawPositions[i];
                 else {
-                    Twist2d twist = KINEMATICS.toTwist2d(lastModulePositions, modulePositions);
+                    Twist2d twist = kinematics.toTwist2d(lastModulePositions, modulePositions);
                     rawGyroRotation = rawGyroRotation.plus(Rotation2d.fromRadians(twist.dtheta));
                 }
                 RobotState.getInstance().addOdometryObservation(modulePositions, rawGyroRotation, sampleTimestamps[i]);
@@ -241,7 +191,7 @@ public class Drivetrain extends SubsystemBase {
         Logger.recordOutput("Odometry/RejectedSamples", rejectedSamples);
 
         // Update robot velocities
-        ChassisSpeeds speeds = KINEMATICS.toChassisSpeeds(getModuleStates());
+        ChassisSpeeds speeds = kinematics.toChassisSpeeds(getModuleStates());
         speeds.omegaRadiansPerSecond =
                 gyroInputs.connected ? gyroInputs.yawVelocityRadPerSec : speeds.omegaRadiansPerSecond;
         RobotState.getInstance().addVelocityData(speeds);
@@ -258,7 +208,7 @@ public class Drivetrain extends SubsystemBase {
                     setpointStates = newSetpoint.moduleStates();
                     lastSetpoint = newSetpoint;
                 } else {
-                    setpointStates = KINEMATICS.toSwerveModuleStates(
+                    setpointStates = kinematics.toSwerveModuleStates(
                             ChassisSpeeds.discretize(desiredSpeeds, Constants.LOOP_PERIOD_SECS));
                 }
 
@@ -324,8 +274,9 @@ public class Drivetrain extends SubsystemBase {
      */
     public void stopWithX() {
         Rotation2d[] headings = new Rotation2d[4];
-        for (int i = 0; i < 4; i++) headings[i] = MODULE_TRANSLATIONS[i].getAngle();
-        KINEMATICS.resetHeadings(headings);
+        Translation2d[] modulePositions = getModuleTranslations();
+        for (int i = 0; i < 4; i++) headings[i] = modulePositions[i].getAngle();
+        kinematics.resetHeadings(headings);
         stop();
     }
 
@@ -412,7 +363,8 @@ public class Drivetrain extends SubsystemBase {
             DoubleSupplier angularVelocityFFRadsPerSec,
             BooleanSupplier fieldRelative) {
         return percentDriveCommand(
-                        () -> JoystickUtil.deadzonedJoystickTranslation(-controller.getLeftY(), -controller.getLeftX(), 0.1),
+                        () -> JoystickUtil.deadzonedJoystickTranslation(
+                                -controller.getLeftY(), -controller.getLeftX(), 0.1),
                         () -> (headingController.calculate(
                                                 RobotState.getInstance()
                                                         .getRobotRotation()

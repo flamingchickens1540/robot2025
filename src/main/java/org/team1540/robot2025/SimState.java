@@ -15,7 +15,7 @@ import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.generated.TunerConstants;
-import org.team1540.robot2025.subsystems.drive.Drivetrain;
+import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 
 public class SimState {
     private static SimState instance = null;
@@ -35,7 +35,7 @@ public class SimState {
 
         var simConfig = DriveTrainSimulationConfig.Default()
                 .withRobotMass(Kilograms.of(Constants.ROBOT_MASS_KG))
-                .withCustomModuleTranslations(Drivetrain.MODULE_TRANSLATIONS)
+                .withCustomModuleTranslations(DrivetrainConstants.getModuleTranslations())
                 .withBumperSize(Meters.of(Constants.kBumperLengthXMeters), Meters.of(Constants.kBumperLengthYMeters))
                 .withGyro(() -> new GyroSimulation(0.12 / 120, 0.02))
                 .withSwerveModule(() -> new SwerveModuleSimulation(new SwerveModuleSimulationConfig(
@@ -47,7 +47,7 @@ public class SimState {
                         Volts.of(TunerConstants.FrontLeft.SteerFrictionVoltage),
                         Meters.of(TunerConstants.FrontLeft.WheelRadius),
                         KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
-                        Drivetrain.WHEEL_COF)));
+                        DrivetrainConstants.WHEEL_COF)));
         driveSim = new SwerveDriveSimulation(simConfig, Pose2d.kZero);
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
     }
