@@ -6,6 +6,8 @@ public class ElevatorConstants {
     // TODO: Fix these constants
     public static final int LEADER_ID = -1;
     public static final int FOLLOWER_ID = -1;
+    public static final int UPPER_LIMIT_ID = -1;
+    public static final int LOWER_LIMIT_ID = -1;
     public static final double SUPPLY_CURRENT_LIMIT = 70.0;
     public static final double SUPPLY_CURRENT_LOWER_LIMIT = 40.0;
     public static final double SUPPLY_TIME_THRESHOLD = 0.5;

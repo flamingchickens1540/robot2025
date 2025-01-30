@@ -12,6 +12,7 @@ import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.*;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
 
@@ -31,10 +32,10 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     private final StatusSignal<Current> followerCurrentAmps = follower.getSupplyCurrent();
     private final StatusSignal<Temperature> followerTempCelsius = follower.getDeviceTemp();
 
-    private final StatusSignal<Boolean> atUpperLimitSwitch = leader.getFault_ForwardHardLimit();
-    private final StatusSignal<Boolean> atLowerLimitSwitch = leader.getFault_ReverseHardLimit();
 
     private final Follower followerControl = new Follower(LEADER_ID, true);
+    private final DigitalInput upperLimitSwitch = new DigitalInput(UPPER_LIMIT_ID);
+    private final DigitalInput lowerLimitSwitch = new DigitalInput(LOWER_LIMIT_ID);
 
     public ElevatorIOTalonFX() {
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -80,9 +81,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                 leaderCurrentAmps,
                 followerCurrentAmps,
                 leaderTempCelsius,
-                followerTempCelsius,
-                atUpperLimitSwitch,
-                atLowerLimitSwitch);
+                followerTempCelsius);
     }
 
     @Override
@@ -95,9 +94,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                 leaderCurrentAmps,
                 followerCurrentAmps,
                 leaderTempCelsius,
-                followerTempCelsius,
-                atUpperLimitSwitch,
-                atLowerLimitSwitch);
+                followerTempCelsius);
 
         inputs.leaderCurrentAmps = leaderCurrentAmps.getValue().magnitude();
         inputs.leaderAppliedVolts = leaderAppliedVoltage.getValue().magnitude();
@@ -109,8 +106,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
         inputs.positionMeters = leaderPosition.getValue().magnitude();
         inputs.velocityMPS = leaderVelocity.getValue().magnitude();
-        inputs.atUpperLimit = atUpperLimitSwitch.getValue();
-        inputs.atLowerLimit = atLowerLimitSwitch.getValue();
+        inputs.atUpperLimit = upperLimitSwitch.get();
+        inputs.atLowerLimit = lowerLimitSwitch.get();
     }
 
     public void setVoltage(double volts) {
