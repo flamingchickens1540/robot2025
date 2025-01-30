@@ -5,6 +5,7 @@ import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -16,6 +17,7 @@ public class Elevator implements Subsystem {
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
     private double setpointMeters;
+    private final double DEADZONE = 0.2;
 
     private static boolean hasInstance = false;
 
@@ -104,5 +106,24 @@ public class Elevator implements Subsystem {
     public Command setpointCommand(ElevatorState state) {
         return Commands.runOnce(() -> setElevatorPosition(state.elevatorHeight), this)
                 .until(this::isAtSetpoint);
+    }
+
+    public Command manualCommand(XboxController copilot) {
+        return Commands.runEnd(() -> {
+            double val = copilot.getRightY();
+            if (Math.abs(val) > DEADZONE) {
+                if (copilot.getRightY() < 0) {
+                    val += DEADZONE;
+                } else {
+                    val -= DEADZONE;
+                }
+                setVoltage(val * 15);
+            } else {
+                holdPosition();
+            }
+        },
+                this::holdPosition,
+                this
+    );
     }
 }
