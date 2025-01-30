@@ -17,6 +17,9 @@ import org.team1540.robot2025.util.math.AverageFilter;
 
 import java.util.function.DoubleSupplier;
 
+import java.util.DoubleSummaryStatistics;
+import java.util.function.DoubleSupplier;
+
 public class Elevator implements Subsystem {
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
