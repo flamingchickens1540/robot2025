@@ -4,7 +4,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Arm extends SubsystemBase {
 
-    public void Arm(){
+    // fields:
+    private final ArmIO io;
+    private final ArmIOInputsAutoLogged armInputs = new ArmIOInputsAutoLogged();
 
-    }
+
+
+    public void Arm() {}
 }
