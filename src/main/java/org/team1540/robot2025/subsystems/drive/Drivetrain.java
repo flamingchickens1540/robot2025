@@ -88,7 +88,7 @@ public class Drivetrain extends SubsystemBase {
             headingKP.get(),
             headingKI.get(),
             headingKD.get(),
-            new TrapezoidProfile.Constraints(MAX_ANGULAR_SPEED_MPS, MAX_ANGULAR_ACCEL_RPS2));
+            new TrapezoidProfile.Constraints(MAX_ANGULAR_SPEED_RAD_PER_SEC, MAX_ANGULAR_ACCEL_RAD_PER_SEC2));
 
     private final Alert gyroDisconnected = new Alert("Gyro is disconnected", Alert.AlertType.kError);
 
@@ -168,7 +168,7 @@ public class Drivetrain extends SubsystemBase {
                                 .minus(lastModulePositions[moduleIndex].angle)
                                 .getRadians()
                         / dt;
-                if (Math.abs(velocity) > MAX_LINEAR_LINEAR_SPEED_MPS * 2
+                if (Math.abs(velocity) > MAX_LINEAR_SPEED_MPS * 2
                         || Math.abs(turnVelocity) > MAX_STEER_SPEED_RAD_PER_SEC * 2) {
                     acceptMeasurement = false;
                     break;
@@ -207,6 +207,7 @@ public class Drivetrain extends SubsystemBase {
                             setpointGenerator.generateSetpoint(lastSetpoint, desiredSpeeds, Constants.LOOP_PERIOD_SECS);
                     setpointStates = newSetpoint.moduleStates();
                     lastSetpoint = newSetpoint;
+                    Logger.recordOutput("Drivetrain/SwerveStates/UnoptimizedSetpoints", kinematics.toSwerveModuleStates(desiredSpeeds));
                 } else {
                     setpointStates = kinematics.toSwerveModuleStates(
                             ChassisSpeeds.discretize(desiredSpeeds, Constants.LOOP_PERIOD_SECS));
@@ -337,9 +338,9 @@ public class Drivetrain extends SubsystemBase {
         return Commands.run(
                         () -> {
                             var speeds = new ChassisSpeeds(
-                                    linearPercent.get().getX() * MAX_LINEAR_LINEAR_SPEED_MPS,
-                                    linearPercent.get().getY() * MAX_LINEAR_LINEAR_SPEED_MPS,
-                                    omegaPercent.getAsDouble() * MAX_ANGULAR_SPEED_MPS);
+                                    linearPercent.get().getX() * MAX_LINEAR_SPEED_MPS,
+                                    linearPercent.get().getY() * MAX_LINEAR_SPEED_MPS,
+                                    omegaPercent.getAsDouble() * MAX_ANGULAR_SPEED_RAD_PER_SEC);
                             if (fieldRelative.getAsBoolean()) {
                                 speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                                         speeds, rawGyroRotation.minus(fieldOrientationOffset));
@@ -358,33 +359,22 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public Command teleopDriveWithHeadingCommand(
-            XboxController controller,
-            Supplier<Rotation2d> heading,
-            DoubleSupplier angularVelocityFFRadsPerSec,
-            BooleanSupplier fieldRelative) {
+            XboxController controller, Supplier<Rotation2d> heading, BooleanSupplier fieldRelative) {
         return percentDriveCommand(
                         () -> JoystickUtil.deadzonedJoystickTranslation(
                                 -controller.getLeftY(), -controller.getLeftX(), 0.1),
-                        () -> (headingController.calculate(
-                                                RobotState.getInstance()
-                                                        .getRobotRotation()
-                                                        .getRadians(),
-                                                new TrapezoidProfile.State(
-                                                        heading.get().getRadians(),
-                                                        angularVelocityFFRadsPerSec.getAsDouble()))
-                                        + angularVelocityFFRadsPerSec.getAsDouble())
-                                / MAX_ANGULAR_SPEED_MPS,
+                        () -> headingController.calculate(
+                                        RobotState.getInstance()
+                                                .getRobotRotation()
+                                                .getRadians(),
+                                        new TrapezoidProfile.State(heading.get().getRadians(), 0.0))
+                                / MAX_ANGULAR_SPEED_RAD_PER_SEC,
                         fieldRelative)
                 .beforeStarting(() -> headingController.reset(
                         RobotState.getInstance().getRobotRotation().getRadians(),
                         RobotState.getInstance().getRobotVelocity().omegaRadiansPerSecond))
                 .alongWith(Commands.run(() -> Logger.recordOutput("Drivetrain/HeadingGoal", heading.get())))
                 .until(() -> Math.abs(controller.getRightX()) >= 0.1);
-    }
-
-    public Command teleopDriveWithHeadingCommand(
-            XboxController controller, Supplier<Rotation2d> heading, BooleanSupplier fieldRelative) {
-        return teleopDriveWithHeadingCommand(controller, heading, () -> 0.0, fieldRelative);
     }
 
     public Command feedforwardCharacterization() {

@@ -4,7 +4,6 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.*;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -20,6 +19,7 @@ import java.util.Queue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import org.team1540.robot2025.generated.TunerConstants;
+import org.team1540.robot2025.util.PhoenixUtil;
 import org.team1540.robot2025.util.swerve.ModuleHW;
 
 /**
@@ -29,12 +29,17 @@ import org.team1540.robot2025.util.swerve.ModuleHW;
  * <p>Device configuration and other behaviors not exposed by TunerConstants can be customized here.
  */
 public class ModuleIOTalonFX implements ModuleIO {
+    private static final Executor brakeModeExecutor = Executors.newFixedThreadPool(8);
+
     private final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants;
 
     // Hardware objects
     private final TalonFX drive;
     private final TalonFX turn;
     private final CANcoder cancoder;
+
+    private final TalonFXConfiguration driveConfig;
+    private final TalonFXConfiguration turnConfig;
 
     // Drive motor control requests
     private final VoltageOut driveVoltageReq = new VoltageOut(0);
@@ -68,8 +73,6 @@ public class ModuleIOTalonFX implements ModuleIO {
     private final StatusSignal<Current> turnCurrent;
     private final StatusSignal<Temperature> turnTemp;
 
-    private final Executor brakeModeExecutor = Executors.newFixedThreadPool(4);
-
     // Connection debouncers
     private final Debouncer driveConnectedDebounce = new Debouncer(0.5);
     private final Debouncer turnConnectedDebounce = new Debouncer(0.5);
@@ -82,6 +85,9 @@ public class ModuleIOTalonFX implements ModuleIO {
         drive = hw.driveMotor();
         turn = hw.turnMotor();
         cancoder = hw.turnEncoder();
+
+        driveConfig = hw.driveConfig();
+        turnConfig = hw.turnConfig();
 
         // Create timestamp queue
         timestampQueue = OdometryThread.getInstance().makeTimestampQueue();
@@ -148,7 +154,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
         // Update odometry inputs
         inputs.odometryTimestamps =
-                timestampQueue.stream().mapToDouble(value -> value).toArray();
+                timestampQueue.stream().mapToDouble(Double::doubleValue).toArray();
         inputs.odometryDrivePositionsRads = drivePositionQueue.stream()
                 .mapToDouble(Units::rotationsToRadians)
                 .toArray();
@@ -199,23 +205,9 @@ public class ModuleIOTalonFX implements ModuleIO {
     @Override
     public void setDriveBrakeMode(boolean enabled) {
         brakeModeExecutor.execute(() -> {
-            synchronized (drive) {
-                MotorOutputConfigs config = new MotorOutputConfigs();
-                drive.getConfigurator().refresh(config);
-                config.NeutralMode = enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-                drive.getConfigurator().apply(config);
-            }
-        });
-    }
-
-    @Override
-    public void setTurnBrakeMode(boolean enabled) {
-        brakeModeExecutor.execute(() -> {
-            synchronized (turn) {
-                MotorOutputConfigs config = new MotorOutputConfigs();
-                turn.getConfigurator().refresh(config);
-                config.NeutralMode = enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-                turn.getConfigurator().apply(config);
+            synchronized (driveConfig) {
+                driveConfig.MotorOutput.NeutralMode = enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+                PhoenixUtil.tryUntilOk(5, () -> drive.getConfigurator().apply(driveConfig));
             }
         });
     }

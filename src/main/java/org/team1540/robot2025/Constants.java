@@ -33,7 +33,7 @@ public final class Constants {
     public static final double LOOP_PERIOD_SECS = 0.02;
 
     public static final double ROBOT_MASS_KG = Units.lbsToKilograms(147); // max weight :skull:
-    public static final double ROBOT_MOI_KGM2 = 5.8;
+    public static final double ROBOT_MOI_KGM2 = 7.74581;
 
     public static final double BUMPER_LENGTH_X_METERS = Units.inchesToMeters(35.0);
     public static final double BUMPER_LENGTH_Y_METERS = Units.inchesToMeters(33.0);

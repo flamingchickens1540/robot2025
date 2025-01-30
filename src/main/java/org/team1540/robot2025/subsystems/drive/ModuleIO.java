@@ -44,7 +44,4 @@ public interface ModuleIO {
 
     /** Sets the neutral mode of the drive motor */
     default void setDriveBrakeMode(boolean enabled) {}
-
-    /** Set the neutral mode of the turn motor */
-    default void setTurnBrakeMode(boolean enabled) {}
 }

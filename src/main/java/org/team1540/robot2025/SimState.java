@@ -38,7 +38,8 @@ public class SimState {
         var simConfig = DriveTrainSimulationConfig.Default()
                 .withRobotMass(Kilograms.of(Constants.ROBOT_MASS_KG))
                 .withCustomModuleTranslations(DrivetrainConstants.getModuleTranslations())
-                .withBumperSize(Meters.of(Constants.BUMPER_LENGTH_X_METERS), Meters.of(Constants.BUMPER_LENGTH_Y_METERS))
+                .withBumperSize(
+                        Meters.of(Constants.BUMPER_LENGTH_X_METERS), Meters.of(Constants.BUMPER_LENGTH_Y_METERS))
                 .withGyro(() -> new GyroSimulation(0.12 / 120, 0.02))
                 .withSwerveModule(() -> new SwerveModuleSimulation(new SwerveModuleSimulationConfig(
                         DCMotor.getKrakenX60Foc(1),

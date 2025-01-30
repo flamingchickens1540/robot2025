@@ -13,7 +13,13 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import org.team1540.robot2025.util.PhoenixUtil;
 
-public record ModuleHW(TalonFX driveMotor, TalonFX turnMotor, CANcoder turnEncoder) {
+public record ModuleHW(
+        TalonFX driveMotor,
+        TalonFX turnMotor,
+        CANcoder turnEncoder,
+        TalonFXConfiguration driveConfig,
+        TalonFXConfiguration turnConfig,
+        CANcoderConfiguration turnEncoderConfig) {
     public static ModuleHW fromModuleConstants(
             SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants,
             String canBus) {
@@ -84,6 +90,6 @@ public record ModuleHW(TalonFX driveMotor, TalonFX turnMotor, CANcoder turnEncod
 
         PhoenixUtil.tryUntilOk(5, () -> turn.getConfigurator().apply(turnConfig));
 
-        return new ModuleHW(drive, turn, turnEncoder);
+        return new ModuleHW(drive, turn, turnEncoder, driveConfig, turnConfig, turnEncoderConfig);
     }
 }

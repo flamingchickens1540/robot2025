@@ -25,7 +25,7 @@ public class JoystickUtil {
     public static Translation2d deadzonedJoystickTranslation(double rawX, double rawY, double deadzone) {
         double linearMagnitude = JoystickUtil.smartDeadzone(Math.hypot(rawX, rawY), deadzone);
         Rotation2d linearDirection = new Rotation2d(rawX, rawY);
-        return new Translation2d(linearMagnitude, linearDirection.getRadians());
+        return new Translation2d(linearMagnitude, linearDirection);
     }
 
     public static Translation2d getSquaredJoystickTranslation(double rawX, double rawY, double deadzone) {

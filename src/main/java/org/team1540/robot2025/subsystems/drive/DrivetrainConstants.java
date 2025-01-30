@@ -20,16 +20,17 @@ public class DrivetrainConstants {
                     Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
                     Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
 
-    public static final double MAX_TOTAL_MODULE_FORCES = DCMotor.getKrakenX60Foc(4)
+    public static final double MAX_TOTAL_MODULE_FORCES = 4
+            * DCMotor.getKrakenX60Foc(1)
                     .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio)
                     .getTorque(TunerConstants.FrontLeft.SlipCurrent)
             / TunerConstants.FrontLeft.WheelRadius;
 
-    public static final double MAX_LINEAR_LINEAR_SPEED_MPS = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    public static final double MAX_LINEAR_SPEED_MPS = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     public static final double MAX_LINEAR_ACCELERATION = MAX_TOTAL_MODULE_FORCES / Constants.ROBOT_MASS_KG;
 
-    public static final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS;
-    public static final double MAX_ANGULAR_ACCEL_RPS2 =
+    public static final double MAX_ANGULAR_SPEED_RAD_PER_SEC = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS;
+    public static final double MAX_ANGULAR_ACCEL_RAD_PER_SEC2 =
             MAX_TOTAL_MODULE_FORCES * DRIVEBASE_RADIUS / Constants.ROBOT_MOI_KGM2;
     public static final double MAX_STEER_SPEED_RAD_PER_SEC =
             DCMotor.getFalcon500Foc(1).withReduction(TunerConstants.FrontLeft.SteerMotorGearRatio).freeSpeedRadPerSec;
@@ -41,7 +42,7 @@ public class DrivetrainConstants {
             Constants.ROBOT_MOI_KGM2,
             new ModuleConfig(
                     TunerConstants.FrontLeft.WheelRadius,
-                    MAX_LINEAR_LINEAR_SPEED_MPS,
+                    MAX_LINEAR_SPEED_MPS,
                     WHEEL_COF,
                     DCMotor.getKrakenX60Foc(1),
                     TunerConstants.FrontLeft.DriveMotorGearRatio,

@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
-import org.team1540.robot2025.util.AllianceFlipUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
@@ -50,23 +49,6 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
-
-        driver.povUp()
-                .onTrue(drivetrain.teleopDriveWithHeadingCommand(
-                        driver.getHID(), () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kZero), () -> true));
-        driver.povLeft()
-                .onTrue(drivetrain.teleopDriveWithHeadingCommand(
-                        driver.getHID(),
-                        () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
-                        () -> true));
-        driver.povDown()
-                .onTrue(drivetrain.teleopDriveWithHeadingCommand(
-                        driver.getHID(), () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg), () -> true));
-        driver.povRight()
-                .onTrue(drivetrain.teleopDriveWithHeadingCommand(
-                        driver.getHID(),
-                        () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCW_90deg),
-                        () -> true));
     }
 
     private void configureAutoRoutines() {
@@ -84,21 +66,21 @@ public class RobotContainer {
                 .or(RobotModeTriggers.autonomous())
                 .onTrue(Commands.runOnce(() -> drivetrain.setBrakeMode(true)));
         RobotModeTriggers.disabled()
-                .whileTrue(Commands.waitSeconds(5.0).andThen(Commands.runOnce(() -> drivetrain.setBrakeMode(false))));
+                .whileTrue(Commands.waitSeconds(5.0)
+                        .andThen(Commands.runOnce(() -> drivetrain.setBrakeMode(false)))
+                        .ignoringDisable(true));
     }
 
     private void configurePeriodicCallbacks() {
-        CommandScheduler.getInstance()
-                .schedule(Commands.run(AlertManager.getInstance()::update)
-                        .withName("AlertManager update")
-                        .ignoringDisable(true));
-
+        addPeriodicCallback(AlertManager.getInstance()::update, "AlertManager update");
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
-            CommandScheduler.getInstance()
-                    .schedule(Commands.run(SimState.getInstance()::update)
-                            .withName("Simulation update")
-                            .ignoringDisable(true));
+            addPeriodicCallback(SimState.getInstance()::update, "Simulation update");
         }
+    }
+
+    private void addPeriodicCallback(Runnable callback, String name) {
+        CommandScheduler.getInstance()
+                .schedule(Commands.run(callback).withName(name).ignoringDisable(true));
     }
 
     /**
