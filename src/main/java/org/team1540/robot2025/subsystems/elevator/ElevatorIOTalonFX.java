@@ -61,13 +61,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         config.MotionMagic.MotionMagicCruiseVelocity = 1;
         config.MotionMagic.MotionMagicAcceleration = 2;
 
-        config.HardwareLimitSwitch.ForwardLimitEnable = true;
-        config.HardwareLimitSwitch.ReverseLimitEnable = true;
-        config.HardwareLimitSwitch.ReverseLimitAutosetPositionEnable = true;
-        config.HardwareLimitSwitch.ReverseLimitAutosetPositionValue = 0;
 
-        leader.optimizeBusUtilization();
-        follower.optimizeBusUtilization();
+
         leader.getConfigurator().apply(config);
         follower.getConfigurator().apply(config);
         follower.setControl(followerControl);
@@ -82,6 +77,9 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                 followerCurrentAmps,
                 leaderTempCelsius,
                 followerTempCelsius);
+
+        leader.optimizeBusUtilization();
+        follower.optimizeBusUtilization();
     }
 
     @Override
@@ -121,8 +119,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     }
 
     public void setBrakeMode(boolean brakeMode) {
-        if (brakeMode) leader.setNeutralMode(NeutralModeValue.Brake);
-        else leader.setNeutralMode(NeutralModeValue.Coast);
-        follower.setControl(followerControl);
+        leader.setNeutralMode(brakeMode ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+        follower.setNeutralMode(brakeMode ? NeutralModeValue.Brake : NeutralModeValue.Coast);
+        // follower.setControl(followerControl);
     }
 }

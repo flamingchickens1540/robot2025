@@ -13,6 +13,7 @@ public class ElevatorConstants {
     public static final double SUPPLY_TIME_THRESHOLD = 0.5;
     public static final double MIN_HEIGHT = 0.0;
     public static final double MAX_HEIGHT = 2.0;
+    public static final double POS_ERR_TOLERANCE_METERS = 0.01;
 
     public static final double GEAR_RATIO = 11.571;
     public static final double KS = 0.03178;
