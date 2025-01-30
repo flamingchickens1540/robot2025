@@ -30,10 +30,6 @@ public class Leds extends SubsystemBase {
         pattern.applyTo(buffer);
     }
 
-    public void setPattern(LEDPattern pattern, int start, int end) {
-
-    }
-
     public Command showPattern(LEDPattern pattern) {
         return Commands.runOnce(() -> this.setPatternAll(pattern));
     }
