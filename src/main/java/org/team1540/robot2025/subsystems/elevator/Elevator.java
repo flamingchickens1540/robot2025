@@ -12,10 +12,15 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
+import org.team1540.robot2025.util.MechanismVisualiser;
+import org.team1540.robot2025.util.math.AverageFilter;
+
+import java.util.function.DoubleSupplier;
 
 public class Elevator implements Subsystem {
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+    private final AverageFilter positionFilter = new AverageFilter(10);
     private double setpointMeters;
     private final double DEADZONE = 0.2;
 
@@ -54,6 +59,9 @@ public class Elevator implements Subsystem {
         Logger.processInputs("Elevator", inputs);
 
         if (RobotState.isDisabled()) stop();
+
+        MechanismVisualiser.setElevatorPosition(inputs.positionMeters);
+        positionFilter.add(inputs.positionMeters);
     }
 
     public void setElevatorPosition(double positionMeters) {
@@ -63,7 +71,7 @@ public class Elevator implements Subsystem {
     }
 
     public boolean isAtSetpoint() {
-        return MathUtil.isNear(setpointMeters, inputs.positionMeters, 0.1);
+        return MathUtil.isNear(setpointMeters, positionFilter.getAverage(), POS_ERR_TOLERANCE_METERS) || (inputs.atLowerLimit && setpointMeters <= 0);
     }
 
     public void setVoltage(double voltage) {
@@ -108,11 +116,11 @@ public class Elevator implements Subsystem {
                 .until(this::isAtSetpoint);
     }
 
-    public Command manualCommand(XboxController copilot) {
+    public Command manualCommand(DoubleSupplier input) {
         return Commands.runEnd(() -> {
-            double val = copilot.getRightY();
+            double val = input.getAsDouble();
             if (Math.abs(val) > DEADZONE) {
-                if (copilot.getRightY() < 0) {
+                if (val < 0) {
                     val += DEADZONE;
                 } else {
                     val -= DEADZONE;
