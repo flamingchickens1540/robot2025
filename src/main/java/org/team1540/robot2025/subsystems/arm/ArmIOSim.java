@@ -1,7 +1,7 @@
 package org.team1540.robot2025.subsystems.arm;
 
-import static org.team1540.robot2025.Constants.Arm.*;
 import static org.team1540.robot2025.Constants.LOOP_PERIODIC_SECS;
+import static org.team1540.robot2025.subsystems.arm.ArmConstants.*;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -12,6 +12,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 public class ArmIOSim implements ArmIO {
+
     // fields
     private final SingleJointedArmSim armSim = new SingleJointedArmSim(
             DCMotor.getKrakenX60(1),
@@ -31,7 +32,7 @@ public class ArmIOSim implements ArmIO {
     private TrapezoidProfile.State goalState;
 
     // methods
-    //TODO: constructor
+    // TODO: constructor
     public void updateInputs(ArmIOInputs inputs) {
         if (isClosedLoop) {
             armAppliedVolts = controller.calculate(armSim.getAngleRads(), inputs.rotation2d.getRadians())
