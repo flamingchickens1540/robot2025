@@ -32,6 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
@@ -207,7 +208,6 @@ public class Drivetrain extends SubsystemBase {
                             setpointGenerator.generateSetpoint(lastSetpoint, desiredSpeeds, Constants.LOOP_PERIOD_SECS);
                     setpointStates = newSetpoint.moduleStates();
                     lastSetpoint = newSetpoint;
-                    Logger.recordOutput("Drivetrain/SwerveStates/UnoptimizedSetpoints", kinematics.toSwerveModuleStates(desiredSpeeds));
                 } else {
                     setpointStates = kinematics.toSwerveModuleStates(
                             ChassisSpeeds.discretize(desiredSpeeds, Constants.LOOP_PERIOD_SECS));
@@ -406,7 +406,7 @@ public class Drivetrain extends SubsystemBase {
         if (Constants.CURRENT_MODE == Constants.Mode.REAL)
             DriverStation.reportWarning("Using simulated drivetrain on real robot", false);
 
-        var driveSim = SimState.getInstance().getDriveSim();
+        SwerveDriveSimulation driveSim = SimState.getInstance().getDriveSim();
         return new Drivetrain(
                 new GyroIOSim(driveSim.getGyroSimulation()),
                 new ModuleIOSim(TunerConstants.FrontLeft, driveSim.getModules()[0]),
