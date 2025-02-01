@@ -77,7 +77,8 @@ public class ModuleIOSim implements ModuleIO {
         inputs.drivePositionRads = moduleSim.getDriveWheelFinalPosition().in(Radians);
         inputs.driveVelocityRadPerSec = moduleSim.getDriveWheelFinalSpeed().in(RadiansPerSecond);
         inputs.driveAppliedVolts = driveAppliedVolts.in(Volts);
-        inputs.driveCurrentAmps = moduleSim.getDriveMotorStatorCurrent().in(Amps);
+        inputs.driveSupplyCurrentAmps = moduleSim.getDriveMotorSupplyCurrent().in(Amps);
+        inputs.driveStatorCurrentAmps = moduleSim.getDriveMotorStatorCurrent().in(Amps);
 
         inputs.turnConnected = true;
         inputs.turnEncoderConnected = true;
@@ -85,7 +86,8 @@ public class ModuleIOSim implements ModuleIO {
         inputs.turnPosition = inputs.turnAbsolutePosition;
         inputs.turnVelocityRadPerSec = moduleSim.getSteerAbsoluteEncoderSpeed().in(RadiansPerSecond);
         inputs.turnAppliedVolts = turnAppliedVolts.in(Volts);
-        inputs.turnCurrentAmps = moduleSim.getSteerMotorStatorCurrent().in(Amps);
+        inputs.turnSupplyCurrentAmps = moduleSim.getSteerMotorSupplyCurrent().in(Amps);
+        inputs.turnStatorCurrentAmps = moduleSim.getSteerMotorStatorCurrent().in(Amps);
 
         inputs.odometryTimestamps = SimState.getInstance().getSimulationOdometryTimestamps();
         inputs.odometryDrivePositionsRads = Arrays.stream(moduleSim.getCachedDriveWheelFinalPositions())
