@@ -29,5 +29,5 @@ public final class Constants {
         REPLAY
     }
 
-    public static final double LOOP_PERIODIC_SECS = 0.02; // TODO: is this value okay?
+    public static final double LOOP_PERIODIC_SECS = 0.02;
 }

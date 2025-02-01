@@ -1,12 +1,126 @@
 package org.team1540.robot2025.subsystems.arm;
 
+import static org.team1540.robot2025.subsystems.arm.ArmConstants.*;
+// import static org.team1540.robot2025.subsystems.arm.ArmConstants.KP;
+
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+import org.team1540.robot2025.Constants;
+import org.team1540.robot2025.util.LoggedTunableNumber;
+import org.team1540.robot2025.util.MechanismVisualizer;
 
 public class Arm extends SubsystemBase {
 
     // fields:
-    //    private final ArmIO io;
-    private final ArmIOInputsAutoLogged armInputs = new ArmIOInputsAutoLogged();
+    private final ArmIO io;
+    private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
+    private final LinearFilter positionFilter = LinearFilter.movingAverage(5); // units: rots
+    private Rotation2d setpoint = new Rotation2d();
+    private double avgPositionRots = 0;
 
-    public void Arm() {}
+    private final LoggedTunableNumber kP = new LoggedTunableNumber("Arm/kP", KP);
+    private final LoggedTunableNumber kI = new LoggedTunableNumber("Arm/kP", KI);
+    private final LoggedTunableNumber kD = new LoggedTunableNumber("Arm/kP", KD);
+    private final LoggedTunableNumber kG = new LoggedTunableNumber("Arm/kP", KG);
+
+    private static boolean hasInstance = false;
+
+    public Arm(ArmIO io) {
+        if (hasInstance) throw new IllegalStateException("Instance of arm already exists");
+        hasInstance = true;
+        this.io = io;
+    }
+
+    public static Arm createReal() {
+        if (Constants.currentMode != Constants.Mode.REAL) {
+            DriverStation.reportWarning("Using real shooter on simulated robot", false);
+        }
+        return new Arm(new ArmIOReal());
+    }
+
+    public static Arm createSim() {
+        if (Constants.currentMode == Constants.Mode.REAL) {
+            DriverStation.reportWarning("Using simulated arm on real robot", false);
+        }
+        return new Arm(new ArmIOSim());
+    }
+
+    public static Arm createDummy() {
+        if (Constants.currentMode == Constants.Mode.REAL) {
+            DriverStation.reportWarning("Using dummy arm on real robot", false);
+        }
+        return new Arm(new ArmIO() {});
+    }
+
+    public void periodic() {
+        // update + process inputs!
+        io.updateInputs(inputs);
+        Logger.processInputs("Arm", inputs);
+        MechanismVisualizer.setArmRotation(inputs.position);
+
+        if (RobotState.isDisabled()) {
+            io.setVoltage(MathUtil.clamp(0, -12, 12));
+        }
+
+        // update tunable numbers
+        if (Constants.isTuningMode()
+                && (kP.hasChanged(hashCode())
+                        || kI.hasChanged(hashCode())
+                        || kD.hasChanged(hashCode())
+                        || kG.hasChanged(hashCode()))) {
+            io.configPID(kP.get(), kI.get(), kD.get(), kG.get());
+        }
+
+        avgPositionRots = positionFilter.calculate(inputs.position.getRotations());
+    }
+
+    public void holdPivotPosition() {
+        setPosition(inputs.position);
+    }
+
+    public void setPosition(Rotation2d position) {
+        setpoint = Rotation2d.fromRotations(
+                MathUtil.clamp(position.getRotations(), MIN_ANGLE.getRotations(), MAX_ANGLE.getRotations()));
+        positionFilter.reset();
+        io.setPosition(setpoint);
+    }
+
+    public Rotation2d getPosition() {
+        return inputs.position;
+    }
+
+    public void setPivotBrakeMode(boolean isBrakeMode) {
+        io.setBrakeMode(isBrakeMode);
+    }
+
+    public boolean isPivotAtSetpoint() {
+        return MathUtil.isNear(setpoint.getRotations(), avgPositionRots, ERROR_TOLERANCE.getRotations());
+    }
+
+    public Command setPositionCommand(Supplier<Rotation2d> setpoint) {
+        return new FunctionalCommand(
+                () -> {}, () -> setPosition(setpoint.get()), (ignored) -> {}, this::isPivotAtSetpoint, this);
+    }
+
+    @AutoLogOutput(key = "Arm/Setpoint")
+    public Rotation2d getSetpoint() {
+        return setpoint;
+    }
+
+    public void zero() {
+        io.setEncoderPosition(0);
+    }
+
+    public void zeroArmToCancoder() {
+        io.setEncoderPosition(inputs.position.getRotations());
+    }
 }

@@ -32,10 +32,11 @@ public class ArmIOSim implements ArmIO {
     private TrapezoidProfile.State goalState;
 
     // methods
-    // TODO: constructor
+
+    @Override
     public void updateInputs(ArmIOInputs inputs) {
         if (isClosedLoop) {
-            armAppliedVolts = controller.calculate(armSim.getAngleRads(), inputs.rotation2d.getRadians())
+            armAppliedVolts = controller.calculate(armSim.getAngleRads(), inputs.position.getRadians())
                     + feedforward.calculate(
                             Units.rotationsToDegrees(controller.getSetpoint().position),
                             controller.getSetpoint().velocity);
@@ -44,13 +45,13 @@ public class ArmIOSim implements ArmIO {
         armSim.setInputVoltage(armAppliedVolts);
         armSim.update(LOOP_PERIODIC_SECS);
 
-        // TODO: should I rename rotation2d to call it position rotation 2d
-        inputs.rotation2d = Rotation2d.fromRadians(armSim.getAngleRads());
+        inputs.position = Rotation2d.fromRadians(armSim.getAngleRads());
         inputs.appliedVolts = armAppliedVolts;
         inputs.currentAmps = armSim.getCurrentDrawAmps();
         inputs.velocityRPM = armSim.getVelocityRadPerSec() * 60 / (2 * Math.PI); // converting to rpm;
     }
 
+    @Override
     public void setPosition(Rotation2d position) {
         controller.reset(
                 Units.radiansToRotations(armSim.getAngleRads()),
@@ -59,10 +60,12 @@ public class ArmIOSim implements ArmIO {
         goalState = new TrapezoidProfile.State(position.getRotations(), 0);
     }
 
-    public void configPID(double kP, double kI, double kD) {
+    @Override
+    public void configPID(double kP, double kI, double kD, double kG) {
         controller.setPID(kP, kI, kD);
     }
 
+    @Override
     public void setVoltage(double volts) {
         isClosedLoop = false;
         armAppliedVolts = volts;

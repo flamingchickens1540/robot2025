@@ -11,7 +11,6 @@ public class ArmConstants {
     public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(30);
     public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(330);
     public static final Rotation2d STARTING_ANGLE = MIN_ANGLE;
-    public static final double MEASUREMENT_STANDARD_DEVIATIONS = 0; // TODO:
 
     // PID loop constants
     // TODO: what numbers are reasonable?
@@ -33,6 +32,8 @@ public class ArmConstants {
     public static final int MOTOR_ID = 0;
     public static final double CANCODER_TO_PIVOT_RATIO = 1;
     public static final double MOTOR_TO_CANCODER = 1;
+    public static final double CANCODER_OFFSET_ROTS = 20; // TODO: get offset
+    public static final double DISCONTINUITY_POINT = 1; // makes the range 0-1
 
     public static final double CRUISE_VELOCITY_RPS = 1;
     public static final double MAX_ACCEL_RPS = 2;
@@ -41,4 +42,6 @@ public class ArmConstants {
     public static final double CURRENT_LIMIT = 10;
     public static final double CURRENT_LOWER_LIMIT = 0.1;
     public static final double TIME_LOWER_LIMIT = 15;
+
+    public static final Rotation2d ERROR_TOLERANCE = Rotation2d.fromDegrees(0.7);
 }
