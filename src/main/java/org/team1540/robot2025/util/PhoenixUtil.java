@@ -6,12 +6,16 @@ import java.util.function.Supplier;
 
 public class PhoenixUtil {
     /** Attempts to run the command until no error is produced. */
-    public static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
+    public static StatusCode tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
+        StatusCode error = StatusCode.OK;
         for (int i = 0; i < maxAttempts; i++) {
-            var error = command.get();
-            if (error.isOK()) return;
+            error = command.get();
+            if (error.isOK()) return error;
         }
         DriverStation.reportWarning(
-                "Failed to run a command on a CTRE device after " + maxAttempts + " attempts.", true);
+                "Failed to run a command on a CTRE device after " + maxAttempts + " attempts:\n" + "\t"
+                        + error.getDescription(),
+                true);
+        return error;
     }
 }

@@ -11,6 +11,7 @@ import org.team1540.robot2025.generated.TunerConstants;
 
 public class DrivetrainConstants {
     public static final double ODOMETRY_FREQUENCY = 250.0;
+    public static final String CAN_BUS = TunerConstants.kCANBus.getName();
 
     public static final double DRIVEBASE_RADIUS = Math.max(
             Math.max(
@@ -50,7 +51,7 @@ public class DrivetrainConstants {
                     1),
             getModuleTranslations());
 
-    public static final boolean OPTIMIZE_SETPOINTS = true;
+    public static final boolean OPTIMIZE_SETPOINTS = false;
 
     public static Translation2d[] getModuleTranslations() {
         return new Translation2d[] {

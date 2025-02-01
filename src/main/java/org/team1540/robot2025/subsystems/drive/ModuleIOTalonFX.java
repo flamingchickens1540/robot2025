@@ -18,9 +18,8 @@ import edu.wpi.first.units.measure.*;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import org.team1540.robot2025.generated.TunerConstants;
 import org.team1540.robot2025.util.PhoenixUtil;
-import org.team1540.robot2025.util.swerve.ModuleHW;
+import org.team1540.robot2025.util.swerve.ModuleHWConfigs;
 
 /**
  * Module IO implementation for Talon FX drive motor controller, Talon FX turn motor controller, and
@@ -40,6 +39,11 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     private final TalonFXConfiguration driveConfig;
     private final TalonFXConfiguration turnConfig;
+    private final CANcoderConfiguration cancoderConfig;
+
+    private StatusCode lastDriveConfigStatus;
+    private StatusCode lastTurnConfigStatus;
+    private StatusCode lastCancoderConfigStatus;
 
     // Drive motor control requests
     private final VoltageOut driveVoltageReq = new VoltageOut(0);
@@ -81,13 +85,21 @@ public class ModuleIOTalonFX implements ModuleIO {
     public ModuleIOTalonFX(
             SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> constants) {
         this.constants = constants;
-        ModuleHW hw = ModuleHW.fromModuleConstants(constants, TunerConstants.kCANBus.getName());
-        drive = hw.driveMotor();
-        turn = hw.turnMotor();
-        cancoder = hw.turnEncoder();
+        ModuleHWConfigs hw = ModuleHWConfigs.fromModuleConstants(constants);
+        drive = new TalonFX(constants.DriveMotorId, DrivetrainConstants.CAN_BUS);
+        turn = new TalonFX(constants.SteerMotorId, DrivetrainConstants.CAN_BUS);
+        cancoder = new CANcoder(constants.EncoderId, DrivetrainConstants.CAN_BUS);
 
         driveConfig = hw.driveConfig();
         turnConfig = hw.turnConfig();
+        cancoderConfig = hw.turnEncoderConfig();
+
+        lastDriveConfigStatus =
+                PhoenixUtil.tryUntilOk(5, () -> drive.getConfigurator().apply(driveConfig));
+        lastTurnConfigStatus =
+                PhoenixUtil.tryUntilOk(5, () -> turn.getConfigurator().apply(turnConfig));
+        lastCancoderConfigStatus =
+                PhoenixUtil.tryUntilOk(5, () -> cancoder.getConfigurator().apply(cancoderConfig));
 
         // Create timestamp queue
         timestampQueue = OdometryThread.getInstance().makeTimestampQueue();
@@ -122,7 +134,7 @@ public class ModuleIOTalonFX implements ModuleIO {
                 turnAppliedVolts,
                 turnCurrent,
                 turnTemp);
-        ParentDevice.optimizeBusUtilizationForAll(drive, turn);
+        ParentDevice.optimizeBusUtilizationForAll(drive, turn, cancoder);
     }
 
     @Override
@@ -204,10 +216,31 @@ public class ModuleIOTalonFX implements ModuleIO {
 
     @Override
     public void setDriveBrakeMode(boolean enabled) {
+        if ((driveConfig.MotorOutput.NeutralMode == NeutralModeValue.Brake) == enabled
+                && lastDriveConfigStatus.isOK()) {
+            return;
+        }
+
         brakeModeExecutor.execute(() -> {
             synchronized (driveConfig) {
                 driveConfig.MotorOutput.NeutralMode = enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast;
-                PhoenixUtil.tryUntilOk(5, () -> drive.getConfigurator().apply(driveConfig));
+                lastDriveConfigStatus =
+                        PhoenixUtil.tryUntilOk(5, () -> drive.getConfigurator().apply(driveConfig.MotorOutput, 0.25));
+            }
+        });
+    }
+
+    @Override
+    public void setTurnBrakeMode(boolean enabled) {
+        if ((turnConfig.MotorOutput.NeutralMode == NeutralModeValue.Brake) == enabled && lastTurnConfigStatus.isOK()) {
+            return;
+        }
+
+        brakeModeExecutor.execute(() -> {
+            synchronized (turnConfig) {
+                turnConfig.MotorOutput.NeutralMode = enabled ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+                lastTurnConfigStatus =
+                        PhoenixUtil.tryUntilOk(5, () -> turn.getConfigurator().apply(turnConfig.MotorOutput, 0.25));
             }
         });
     }
