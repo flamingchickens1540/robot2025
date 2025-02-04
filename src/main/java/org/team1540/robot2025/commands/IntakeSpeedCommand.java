@@ -15,6 +15,6 @@ public class IntakeSpeedCommand extends Command {
 
     @Override
     public void initialize() {
-        intake.setSpeed(speed);
+        intake.setSpinSpeed(speed);
     }
 }

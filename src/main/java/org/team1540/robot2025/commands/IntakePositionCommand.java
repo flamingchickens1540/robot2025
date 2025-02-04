@@ -16,6 +16,6 @@ public class IntakePositionCommand extends Command {
 
     @Override
     public void initialize() {
-        intake.setPosition(rotations);
+        intake.setPivot(rotations);
     }
 }

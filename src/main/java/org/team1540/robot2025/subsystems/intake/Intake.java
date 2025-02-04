@@ -34,11 +34,15 @@ public class Intake extends SubsystemBase {
         Logger.processInputs("Coral Intake", inputs);
     }
 
-    public void setSpeed(double speed) {
-        io.setSpeed(speed);
+    public void setSpinSpeed(double speed) {
+        io.setRollerSpeed(speed);
     }
 
-    public void setPosition(Rotation2d rotations) {
-        io.setPosition(rotations);
+    public void setFunnelSpeed(double speed) {
+        io.setNEOSpeed(speed);
+    }
+
+    public void setPivot(Rotation2d rotations) {
+        io.setPivot(rotations);
     }
 }

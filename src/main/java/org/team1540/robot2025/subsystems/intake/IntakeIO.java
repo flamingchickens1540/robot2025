@@ -8,22 +8,24 @@ public interface IntakeIO {
     @AutoLog
     class CoralIntakeInputs {
 
-        public double topMotorPosition = 0;
-        public double topMotorVelocityRPS = 0;
-        public double topMotorAppliedVolts = 0;
-        public double topCurrentAmps = 0;
+        public double spinMotorPosition = 0;
+        public double spinMotorVelocityRPS = 0;
+        public double spinMotorAppliedVolts = 0;
+        public double spinCurrentAmps = 0;
 
-        public double bottomMotorPosition = 0;
-        public double bottomMotorVelocityRPS = 0;
-        public double bottomMotorAppliedVolts = 0;
-        public double bottomCurrentAmps = 0;
+        public double pivotMotorPosition = 0;
+        public double pivotMotorVelocityRPS = 0;
+        public double pivotMotorAppliedVolts = 0;
+        public double pivotCurrentAmps = 0;
 
         public double neoMotorAppliedOutput = 0;
     }
 
-    default void setSpeed(double speed) {}
+    default void setRollerSpeed(double speed) {}
 
-    default void setPosition(Rotation2d rotations) {}
+    default void setNEOSpeed(double speed) {}
+
+    default void setPivot(Rotation2d rotations) {}
 
     default void updateInputs(CoralIntakeInputs inputs) {}
 }
