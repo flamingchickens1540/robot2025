@@ -13,12 +13,12 @@ import java.util.function.DoubleConsumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
-import org.team1540.robot2025.subsystems.drive.Drivetrain;
+import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 import org.team1540.robot2025.util.math.PolynomialRegression;
 
 public class CharacterizationCommands {
-    private static final double kStartDelaySecs = 1.0;
+    private static final double START_DELAY_SECS = 1.0;
 
     private static final LoggedTunableNumber ffRampVoltsPerSec =
             new LoggedTunableNumber("Characterization/Feedforward/RampVoltsPerSec", 0.1);
@@ -34,7 +34,7 @@ public class CharacterizationCommands {
                     velocitySamples.clear();
                     voltageSamples.clear();
                 }),
-                Commands.run(() -> voltageConsumer.accept(0.0)).withTimeout(kStartDelaySecs),
+                Commands.run(() -> voltageConsumer.accept(0.0)).withTimeout(START_DELAY_SECS),
                 Commands.runOnce(timer::restart),
                 Commands.run(() -> {
                             double voltage = timer.get() * ffRampVoltsPerSec.get();
@@ -91,7 +91,7 @@ public class CharacterizationCommands {
                                     omegaConsumer.accept(omega);
                                 })),
                         Commands.sequence(
-                                Commands.waitSeconds(kStartDelaySecs),
+                                Commands.waitSeconds(START_DELAY_SECS),
                                 Commands.runOnce(() -> {
                                     state.startPositions = wheelPositionsRadsSupplier.get();
                                     state.lastYawRads = gyroYawRadsSupplier.getAsDouble();
@@ -110,7 +110,8 @@ public class CharacterizationCommands {
                         wheelDelta += Math.abs(positions[i] - state.startPositions[i]);
                     }
                     wheelDelta /= 4.0;
-                    double effectiveRadius = (state.accumGyroYawRads * Drivetrain.kDrivebaseRadius) / wheelDelta;
+                    double effectiveRadius =
+                            (state.accumGyroYawRads * DrivetrainConstants.DRIVEBASE_RADIUS) / wheelDelta;
                     effectiveRadius = Units.metersToInches(effectiveRadius);
 
                     System.out.println("********** Wheel Radius Characterization Results **********");

@@ -22,12 +22,10 @@ public class JoystickUtil {
         return Math.copySign(deadzonedInput * deadzonedInput, deadzonedInput);
     }
 
-    public static Translation2d getJoystickTranslation(double rawX, double rawY, double deadzone) {
+    public static Translation2d deadzonedJoystickTranslation(double rawX, double rawY, double deadzone) {
         double linearMagnitude = JoystickUtil.smartDeadzone(Math.hypot(rawX, rawY), deadzone);
         Rotation2d linearDirection = new Rotation2d(rawX, rawY);
-        return new Pose2d(Translation2d.kZero, linearDirection)
-                .transformBy(new Transform2d(linearMagnitude, 0.0, Rotation2d.kZero))
-                .getTranslation();
+        return new Translation2d(linearMagnitude, linearDirection);
     }
 
     public static Translation2d getSquaredJoystickTranslation(double rawX, double rawY, double deadzone) {

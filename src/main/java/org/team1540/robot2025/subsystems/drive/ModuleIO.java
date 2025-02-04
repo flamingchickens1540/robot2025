@@ -10,7 +10,8 @@ public interface ModuleIO {
         public double drivePositionRads = 0.0;
         public double driveVelocityRadPerSec = 0.0;
         public double driveAppliedVolts = 0.0;
-        public double driveCurrentAmps = 0.0;
+        public double driveSupplyCurrentAmps = 0.0;
+        public double driveStatorCurrentAmps = 0.0;
         public double driveTempCelsius = 0.0;
 
         public boolean turnConnected = false;
@@ -19,7 +20,8 @@ public interface ModuleIO {
         public Rotation2d turnPosition = Rotation2d.kZero;
         public double turnVelocityRadPerSec = 0.0;
         public double turnAppliedVolts = 0.0;
-        public double turnCurrentAmps = 0.0;
+        public double turnSupplyCurrentAmps = 0.0;
+        public double turnStatorCurrentAmps = 0.0;
         public double turnTempCelsius = 0.0;
 
         public double[] odometryTimestamps = new double[] {};
@@ -45,6 +47,6 @@ public interface ModuleIO {
     /** Sets the neutral mode of the drive motor */
     default void setDriveBrakeMode(boolean enabled) {}
 
-    /** Set the neutral mode of the turn motor */
+    /** Sets the neutral mode of the turn motor */
     default void setTurnBrakeMode(boolean enabled) {}
 }

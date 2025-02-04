@@ -44,9 +44,10 @@ public class Module {
         this.constants = constants;
         driveDisconnectedAlert =
                 new Alert("Disconnected drive motor on " + mountPosition + " module.", AlertType.kError);
-        turnDisconnectedAlert = new Alert("Disconnected turn motor on " + mountPosition + " module.", AlertType.kError);
+        turnDisconnectedAlert =
+                new Alert("Disconnected steer motor on " + mountPosition + " module.", AlertType.kError);
         turnEncoderDisconnectedAlert =
-                new Alert("Disconnected turn encoder on " + mountPosition + " module.", AlertType.kError);
+                new Alert("Disconnected steer encoder on " + mountPosition + " module.", AlertType.kWarning);
     }
 
     public void periodic() {
@@ -139,6 +140,5 @@ public class Module {
     /** Sets the neutral mode of all motors. */
     public void setBrakeMode(boolean enabled) {
         io.setDriveBrakeMode(enabled);
-        io.setTurnBrakeMode(enabled);
     }
 }
