@@ -62,13 +62,6 @@ public class RobotContainer {
         RobotModeTriggers.teleop()
                 .and(DriverStation::isFMSAttached)
                 .onTrue(Commands.runOnce(drivetrain::zeroFieldOrientation));
-        RobotModeTriggers.teleop()
-                .or(RobotModeTriggers.autonomous())
-                .onTrue(Commands.runOnce(() -> drivetrain.setBrakeMode(true)));
-        RobotModeTriggers.disabled()
-                .whileTrue(Commands.waitSeconds(5.0)
-                        .andThen(Commands.runOnce(() -> drivetrain.setBrakeMode(false)))
-                        .ignoringDisable(true));
     }
 
     private void configurePeriodicCallbacks() {
