@@ -4,10 +4,12 @@ import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.ConnectedMotorValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -23,15 +25,20 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     private final StatusSignal<AngularVelocity> leaderVelocity = leader.getVelocity();
     private final StatusSignal<Angle> leaderPosition = leader.getPosition();
     private final StatusSignal<Voltage> leaderAppliedVoltage = leader.getMotorVoltage();
-    private final StatusSignal<Current> leaderCurrentAmps = leader.getSupplyCurrent();
-    private final StatusSignal<Temperature> leaderTempCelsius = leader.getDeviceTemp();
+    private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
+    private final StatusSignal<Temperature> leaderTemp = leader.getDeviceTemp();
+    private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
+    private final StatusSignal<ConnectedMotorValue> leaderConnection = leader.getConnectedMotor();
 
     // Follower Elevator Motor
     private final TalonFX follower = new TalonFX(FOLLOWER_ID);
     private final StatusSignal<Voltage> followerAppliedVoltage = follower.getMotorVoltage();
-    private final StatusSignal<Current> followerCurrentAmps = follower.getSupplyCurrent();
-    private final StatusSignal<Temperature> followerTempCelsius = follower.getDeviceTemp();
-
+    private final StatusSignal<Current> followerSupplyCurrent = follower.getSupplyCurrent();
+    private final StatusSignal<Temperature> followerTemp = follower.getDeviceTemp();
+    private final StatusSignal<Angle> followerPosition = follower.getPosition();
+    private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
+    private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
+    private final StatusSignal<ConnectedMotorValue> followerConnection = follower.getConnectedMotor();
 
     private final Follower followerControl = new Follower(LEADER_ID, true);
     private final DigitalInput upperLimitSwitch = new DigitalInput(UPPER_LIMIT_ID);
@@ -45,9 +52,9 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         config.Feedback.SensorToMechanismRatio = MOTOR_ROTS_PER_METER;
 
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
-        config.CurrentLimits.SupplyCurrentLimit = SUPPLY_CURRENT_LIMIT;
-        config.CurrentLimits.SupplyCurrentLowerLimit = SUPPLY_CURRENT_LOWER_LIMIT;
-        config.CurrentLimits.SupplyCurrentLowerTime = SUPPLY_TIME_THRESHOLD;
+        config.CurrentLimits.SupplyCurrentLimit = 70.0;
+        config.CurrentLimits.SupplyCurrentLowerLimit = 40.0;
+        config.CurrentLimits.SupplyCurrentLowerTime = 0.5;
 
         config.Slot0.kP = KP;
         config.Slot0.kI = KI;
@@ -73,10 +80,14 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                 leaderVelocity,
                 leaderAppliedVoltage,
                 followerAppliedVoltage,
-                leaderCurrentAmps,
-                followerCurrentAmps,
-                leaderTempCelsius,
-                followerTempCelsius);
+                leaderSupplyCurrent,
+                followerSupplyCurrent,
+                leaderStatorCurrent,
+                followerStatorCurrent,
+                leaderConnection,
+                followerConnection,
+                leaderTemp,
+                followerTemp);
 
         leader.optimizeBusUtilization();
         follower.optimizeBusUtilization();
@@ -89,21 +100,20 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                 leaderVelocity,
                 leaderAppliedVoltage,
                 followerAppliedVoltage,
-                leaderCurrentAmps,
-                followerCurrentAmps,
-                leaderTempCelsius,
-                followerTempCelsius);
+                leaderSupplyCurrent,
+                followerSupplyCurrent,
+                leaderConnection,
+                followerConnection,
+                leaderTemp,
+                followerTemp);
 
-        inputs.leaderCurrentAmps = leaderCurrentAmps.getValue().magnitude();
-        inputs.leaderAppliedVolts = leaderAppliedVoltage.getValue().magnitude();
-        inputs.leaderTempCelsius = leaderTempCelsius.getValue().magnitude();
-
-        inputs.followerCurrentAmps = followerCurrentAmps.getValue().magnitude();
-        inputs.followerAppliedVolts = followerAppliedVoltage.getValue().magnitude();
-        inputs.followerTempCelsius = followerTempCelsius.getValue().magnitude();
-
-        inputs.positionMeters = leaderPosition.getValue().magnitude();
-        inputs.velocityMPS = leaderVelocity.getValue().magnitude();
+        inputs.supplyCurrentAmps = new double[]{leaderSupplyCurrent.getValueAsDouble(), followerSupplyCurrent.getValueAsDouble()};
+        inputs.appliedVolts = new double[]{leaderAppliedVoltage.getValueAsDouble(), followerAppliedVoltage.getValueAsDouble()};
+        inputs.tempCelsius = new double[]{leaderTemp.getValueAsDouble(), followerTemp.getValueAsDouble()};
+        inputs.statorCurrentAmps = new double[]{leaderStatorCurrent.getValueAsDouble(), followerStatorCurrent.getValueAsDouble()};
+        inputs.connection = new double[]{leaderConnection.getValueAsDouble(), followerConnection.getValueAsDouble()};
+        inputs.positionMeters = new double[]{leaderPosition.getValueAsDouble(), followerPosition.getValueAsDouble()};
+        inputs.velocityMPS = new double[]{leaderVelocity.getValueAsDouble(), followerVelocity.getValueAsDouble()};
         inputs.atUpperLimit = upperLimitSwitch.get();
         inputs.atLowerLimit = lowerLimitSwitch.get();
     }
@@ -113,8 +123,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         follower.setControl(followerControl);
     }
 
-    public void setSetpointMeters(double setpoint) {
-        leader.setControl(profiledPositionControl.withPosition(setpoint));
+    public void setSetpoint(double setpointMeters) {
+        leader.setControl(profiledPositionControl.withPosition(setpointMeters));
         follower.setControl(followerControl);
     }
 
@@ -122,5 +132,25 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         leader.setNeutralMode(brakeMode ? NeutralModeValue.Brake : NeutralModeValue.Coast);
         follower.setNeutralMode(brakeMode ? NeutralModeValue.Brake : NeutralModeValue.Coast);
         // follower.setControl(followerControl);
+    }
+
+    public void configPID(double kP, double kI, double kD) {
+        Slot0Configs configs = new Slot0Configs();
+        leader.getConfigurator().refresh(configs);
+        configs.kP = kP;
+        configs.kI = kI;
+        configs.kD = kD;
+        leader.getConfigurator().apply(configs);
+        follower.setControl(followerControl);
+    }
+
+    public void configFF(double kS, double kV, double kA) {
+        Slot0Configs configs = new Slot0Configs();
+        leader.getConfigurator().refresh(configs);
+        configs.kS = kS;
+        configs.kV = kV;
+        configs.kA = kA;
+        leader.getConfigurator().apply(configs);
+        follower.setControl(followerControl);
     }
 }

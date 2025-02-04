@@ -7,16 +7,14 @@ public interface ElevatorIO {
     @AutoLog
     class ElevatorIOInputs {
 
-        public double leaderCurrentAmps = 0.0;
-        public double leaderAppliedVolts = 0.0;
-        public double leaderTempCelsius = 0.0;
+        public double[] supplyCurrentAmps = new double[2];
+        public double[] statorCurrentAmps = new double[2];
+        public double[] appliedVolts = new double[2];
+        public double[] tempCelsius = new double[2];
+        public double[] positionMeters = new double[2];
+        public double[] velocityMPS = new double[2];
+        public double[] connection;
 
-        public double followerCurrentAmps = 0.0;
-        public double followerAppliedVolts = 0.0;
-        public double followerTempCelsius = 0.0;
-
-        public double positionMeters = 0.0;
-        public double velocityMPS = 0.0;
         public boolean atUpperLimit = false;
         public boolean atLowerLimit = false;
     }
@@ -25,7 +23,11 @@ public interface ElevatorIO {
 
     default void setVoltage(double volts) {}
 
-    default void setSetpointMeters(double setpoint) {}
+    default void setSetpoint(double setpointMeters) {}
 
     default void setBrakeMode(boolean brakeMode) {}
+
+    default void configPID(double kP, double kI, double kD) {}
+
+    default void configFF(double kS, double kV, double kA) {}
 }
