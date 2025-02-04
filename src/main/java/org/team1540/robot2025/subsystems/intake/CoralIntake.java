@@ -6,27 +6,27 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
 
-public class Intake extends SubsystemBase {
+public class CoralIntake extends SubsystemBase {
 
     private final IntakeIO io;
     private final CoralIntakeInputsAutoLogged inputs = new CoralIntakeInputsAutoLogged();
 
-    public Intake(IntakeIO io) {
+    public CoralIntake(IntakeIO io) {
         this.io = io;
     }
 
-    public static Intake createReal() {
+    public static CoralIntake createReal() {
         if (Constants.currentMode != Constants.Mode.REAL) {
             DriverStation.reportWarning("Using real indexer on simulated robot", false);
         }
-        return new Intake(new IntakeIOReal());
+        return new CoralIntake(new IntakeIOReal());
     }
 
-    public static Intake createDummy() {
+    public static CoralIntake createDummy() {
         if (Constants.currentMode == Constants.Mode.REAL) {
             DriverStation.reportWarning("Using dummy indexer on real robot", false);
         }
-        return new Intake(new IntakeIO() {});
+        return new CoralIntake(new IntakeIO() {});
     }
 
     public void periodic() {
