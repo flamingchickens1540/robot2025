@@ -4,13 +4,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 
 public class ArmConstants {
     public static final double GEAR_RATIO = 28;
-    public static final double ARM_MOMENT_OF_INERTIA = 0; // TODO:
+    public static final double ARM_MOMENT_OF_INERTIA_KGM2 = 0; // TODO:
     public static final double ARM_LENGTH_METERS = 0.411; // TODO: check please
 
-    // arm straight down is 0, min angle is 30
-    public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(30);
-    public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(330);
-    public static final Rotation2d STARTING_ANGLE = MIN_ANGLE;
+    // arm parallel to floor is 0, min angle is 30
+    public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(-60);
+    public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(240);
 
     // PID loop constants
     // TODO: what numbers are reasonable?
@@ -19,7 +18,7 @@ public class ArmConstants {
     public static final double KD = 1;
 
     // TODO: what values are reasonable?
-    public static final double MAX_VELOCITY = 30;
+    public static final double MAX_VELOCITY_RPS = 30;
     public static final double MAX_ACCELERATION = 3;
 
     // TODO: get reasonable values
@@ -32,14 +31,14 @@ public class ArmConstants {
     public static final int MOTOR_ID = 0;
     public static final double CANCODER_TO_PIVOT_RATIO = 1;
     public static final double MOTOR_TO_CANCODER = 1;
-    public static final double CANCODER_OFFSET_ROTS = 20; // TODO: get offset
+    public static final double CANCODER_OFFSET_ROTS = 0.2; // TODO: get offset
     public static final double DISCONTINUITY_POINT = 1; // makes the range 0-1
 
-    public static final double CRUISE_VELOCITY_RPS = 1;
-    public static final double MAX_ACCEL_RPS = 2;
+    public static final double CRUISE_VELOCITY_RPS = 3;
+    public static final double MAX_ACCEL_RPS2 = 15;
     public static final double JERK_RPS = 2000; // TODO: uhhh random numbers yay!
 
-    public static final double CURRENT_LIMIT = 10;
+    public static final double CURRENT_LIMIT = 50;
     public static final double CURRENT_LOWER_LIMIT = 0.1;
     public static final double TIME_LOWER_LIMIT = 15;
 

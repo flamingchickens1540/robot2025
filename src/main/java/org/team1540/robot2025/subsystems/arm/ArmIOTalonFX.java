@@ -15,32 +15,32 @@ import com.ctre.phoenix6.signals.*;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 
-public class ArmIOReal implements ArmIO {
+public class ArmIOTalonFX implements ArmIO {
     private final TalonFX motor = new TalonFX(MOTOR_ID);
     private final CANcoder cancoder = new CANcoder(CANCODER_ID);
 
-    private final StatusSignal<Angle> position = motor.getPosition();
+    private final StatusSignal<Angle> motorPosition = motor.getPosition();
+    private final StatusSignal<Angle> cancoderPosition = cancoder.getPosition();
     private final StatusSignal<AngularVelocity> velocity = motor.getVelocity();
     private final StatusSignal<Voltage> appliedVoltage = motor.getMotorVoltage();
-    private final StatusSignal<Current> current = motor.getSupplyCurrent();
+    private final StatusSignal<Current> statorCurrentAmps = motor.getStatorCurrent();
+    private final StatusSignal<Current> supplyCurrentAmps = motor.getSupplyCurrent();
     private final StatusSignal<Temperature> temp = motor.getDeviceTemp();
-    private final StatusSignal<ForwardLimitValue> forwardLimit = motor.getForwardLimit();
-    private final StatusSignal<ReverseLimitValue> reverseLimit = motor.getReverseLimit();
-
     private final MotionMagicVoltage positionCtrlReq = new MotionMagicVoltage(0).withSlot(0);
     private final VoltageOut voltageCtrlReq = new VoltageOut(0);
 
-    // constructor
-    public ArmIOReal() {
-        TalonFXConfiguration motorConfig = new TalonFXConfiguration();
+    private final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
-        motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    // constructor
+    public ArmIOTalonFX() {
+
+        motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // TODO: triple check inverted
 
         motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
         motorConfig.Feedback.FeedbackRemoteSensorID = CANCODER_ID;
         motorConfig.Feedback.SensorToMechanismRatio = CANCODER_TO_PIVOT_RATIO * MOTOR_TO_CANCODER;
-        motorConfig.Feedback.RotorToSensorRatio = 1;
+        motorConfig.Feedback.RotorToSensorRatio = MOTOR_TO_CANCODER;
 
         motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = MAX_ANGLE.getRotations();
@@ -63,7 +63,7 @@ public class ArmIOReal implements ArmIO {
          */
 
         motorConfig.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY_RPS;
-        motorConfig.MotionMagic.MotionMagicAcceleration = MAX_ACCEL_RPS;
+        motorConfig.MotionMagic.MotionMagicAcceleration = MAX_ACCEL_RPS2;
         motorConfig.MotionMagic.MotionMagicJerk = JERK_RPS;
 
         motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -78,33 +78,37 @@ public class ArmIOReal implements ArmIO {
 
         cancoder.getConfigurator().apply(cancoderConfig);
         motor.getConfigurator().apply(motorConfig);
-        motor.setPosition(position.getValueAsDouble() * MOTOR_TO_CANCODER);
+        motor.setPosition(motorPosition.getValueAsDouble() * MOTOR_TO_CANCODER);
         BaseStatusSignal.setUpdateFrequencyForAll(
-                50, position, velocity, appliedVoltage, current, temp, forwardLimit, reverseLimit);
+                50,
+                motorPosition,
+                cancoderPosition,
+                velocity,
+                appliedVoltage,
+                supplyCurrentAmps,
+                statorCurrentAmps,
+                temp);
 
         motor.optimizeBusUtilization();
         cancoder.optimizeBusUtilization();
-        motor.setPosition(
-                Rotation2d.fromRotations(position.getValueAsDouble() / CANCODER_TO_PIVOT_RATIO /* *CHAIN_FACTOR? */)
-                        .plus(Rotation2d.fromRotations(CANCODER_OFFSET_ROTS))
-                        .getRotations());
     }
 
     @Override
     public void updateInputs(ArmIOInputs inputs) {
-        BaseStatusSignal.refreshAll(position, velocity, appliedVoltage, current, temp, forwardLimit, reverseLimit);
-        inputs.isAtForwardLimit = forwardLimit.getValue() == ForwardLimitValue.ClosedToGround;
-        inputs.isAtReverseLimit = reverseLimit.getValue() == ReverseLimitValue.ClosedToGround;
-        inputs.position = Rotation2d.fromRotations(position.getValueAsDouble());
+        BaseStatusSignal.refreshAll(
+                motorPosition, cancoderPosition, velocity, appliedVoltage, supplyCurrentAmps, statorCurrentAmps, temp);
+        // TODO: SOFT LIMITS! YAY
+        inputs.position = Rotation2d.fromRotations(motorPosition.getValueAsDouble());
         inputs.velocityRPM = velocity.getValueAsDouble() * 60; // converting from rps to rpm
         inputs.appliedVolts = appliedVoltage.getValueAsDouble();
-        inputs.currentAmps = current.getValueAsDouble();
+        inputs.supplyCurrentAmps = supplyCurrentAmps.getValueAsDouble();
+        inputs.statorCurrentAmps = statorCurrentAmps.getValueAsDouble();
         inputs.tempCelsius = temp.getValueAsDouble();
     }
 
     @Override
-    public void setPosition(Rotation2d position) {
-        motor.setControl(positionCtrlReq.withPosition(position.getRotations()));
+    public void setMotorPosition(Rotation2d motorPosition) {
+        motor.setControl(positionCtrlReq.withPosition(motorPosition.getRotations()));
     }
 
     @Override
@@ -118,17 +122,20 @@ public class ArmIOReal implements ArmIO {
     }
 
     @Override
-    public void configPID(double kP, double kI, double kD, double kG) {
-        Slot0Configs pidConfigs = new Slot0Configs();
+    public void configPID(double kP, double kI, double kD) {
+        Slot0Configs pidConfigs = motorConfig.Slot0;
         pidConfigs.kP = kP;
         pidConfigs.kI = kI;
         pidConfigs.kD = kD;
-        pidConfigs.kG = kG;
         motor.getConfigurator().apply(pidConfigs);
     }
 
     @Override
-    public void setEncoderPosition(double rots) {
-        motor.setPosition(rots);
+    public void configFeedForwardTerms(double kG, double kS, double kV) {
+        Slot0Configs pidConfigs = motorConfig.Slot0;
+        pidConfigs.kG = kG;
+        pidConfigs.kS = kS;
+        pidConfigs.kV = kV;
+        motor.getConfigurator().apply(pidConfigs);
     }
 }

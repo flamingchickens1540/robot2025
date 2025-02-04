@@ -28,9 +28,11 @@ public class Arm extends SubsystemBase {
     private double avgPositionRots = 0;
 
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Arm/kP", KP);
-    private final LoggedTunableNumber kI = new LoggedTunableNumber("Arm/kP", KI);
-    private final LoggedTunableNumber kD = new LoggedTunableNumber("Arm/kP", KD);
-    private final LoggedTunableNumber kG = new LoggedTunableNumber("Arm/kP", KG);
+    private final LoggedTunableNumber kI = new LoggedTunableNumber("Arm/kI", KI);
+    private final LoggedTunableNumber kD = new LoggedTunableNumber("Arm/kD", KD);
+    private final LoggedTunableNumber kG = new LoggedTunableNumber("Arm/kG", KG);
+    private final LoggedTunableNumber kS = new LoggedTunableNumber("Arm/kS", KS);
+    private final LoggedTunableNumber kV = new LoggedTunableNumber("Arm/kV", KV);
 
     private static boolean hasInstance = false;
 
@@ -44,7 +46,7 @@ public class Arm extends SubsystemBase {
         if (Constants.currentMode != Constants.Mode.REAL) {
             DriverStation.reportWarning("Using real shooter on simulated robot", false);
         }
-        return new Arm(new ArmIOReal());
+        return new Arm(new ArmIOTalonFX());
     }
 
     public static Arm createSim() {
@@ -68,7 +70,7 @@ public class Arm extends SubsystemBase {
         MechanismVisualizer.setArmRotation(inputs.position);
 
         if (RobotState.isDisabled()) {
-            io.setVoltage(MathUtil.clamp(0, -12, 12));
+            io.setVoltage(0);
         }
 
         // update tunable numbers
@@ -76,14 +78,17 @@ public class Arm extends SubsystemBase {
                 && (kP.hasChanged(hashCode())
                         || kI.hasChanged(hashCode())
                         || kD.hasChanged(hashCode())
-                        || kG.hasChanged(hashCode()))) {
-            io.configPID(kP.get(), kI.get(), kD.get(), kG.get());
+                        || kG.hasChanged(hashCode())
+                        || kS.hasChanged(hashCode())
+                        || kV.hasChanged(hashCode()))) {
+            io.configPID(kP.get(), kI.get(), kD.get());
+            io.configFeedForwardTerms(kG.get(), kS.get(), kV.get());
         }
 
         avgPositionRots = positionFilter.calculate(inputs.position.getRotations());
     }
 
-    public void holdPivotPosition() {
+    public void holdPosition() {
         setPosition(inputs.position);
     }
 
@@ -91,36 +96,28 @@ public class Arm extends SubsystemBase {
         setpoint = Rotation2d.fromRotations(
                 MathUtil.clamp(position.getRotations(), MIN_ANGLE.getRotations(), MAX_ANGLE.getRotations()));
         positionFilter.reset();
-        io.setPosition(setpoint);
+        io.setMotorPosition(setpoint);
     }
 
     public Rotation2d getPosition() {
         return inputs.position;
     }
 
-    public void setPivotBrakeMode(boolean isBrakeMode) {
+    public void setBrakeMode(boolean isBrakeMode) {
         io.setBrakeMode(isBrakeMode);
     }
 
-    public boolean isPivotAtSetpoint() {
+    public boolean isAtSetpoint() {
         return MathUtil.isNear(setpoint.getRotations(), avgPositionRots, ERROR_TOLERANCE.getRotations());
     }
 
     public Command setPositionCommand(Supplier<Rotation2d> setpoint) {
         return new FunctionalCommand(
-                () -> {}, () -> setPosition(setpoint.get()), (ignored) -> {}, this::isPivotAtSetpoint, this);
+                () -> {}, () -> setPosition(setpoint.get()), (ignored) -> {}, this::isAtSetpoint, this);
     }
 
     @AutoLogOutput(key = "Arm/Setpoint")
     public Rotation2d getSetpoint() {
         return setpoint;
-    }
-
-    public void zero() {
-        io.setEncoderPosition(0);
-    }
-
-    public void zeroArmToCancoder() {
-        io.setEncoderPosition(inputs.position.getRotations());
     }
 }
