@@ -8,5 +8,5 @@ for file in ./vendordeps/*.json; do
     continue
   fi
   echo "------$file------"
-  ./gradlew vendordep --url "$(jq .jsonUrl "$file" | tr -d '"')"
+  ./gradlew vendordep --url "$url"
 done
