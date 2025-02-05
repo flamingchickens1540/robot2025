@@ -1,8 +1,13 @@
 package org.team1540.robot2025.subsystems.intake;
 
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,29 +27,35 @@ public class IntakeIOReal implements IntakeIO {
 
     public IntakeIOReal() {
 
-        var talonFXConfigs = new TalonFXConfiguration();
-        var slot0configs = talonFXConfigs.Slot0;
+        TalonFXConfiguration spinTalonFXConfigs = new TalonFXConfiguration();
+        TalonFXConfiguration pivotTalonFXConfigs = new TalonFXConfiguration();
 
-        slot0configs.kS = IntakeConstants.GRABBER_KS;
-        slot0configs.kV = IntakeConstants.GRABBER_KV;
-        slot0configs.kA = IntakeConstants.GRABBER_KA;
-        slot0configs.kP = IntakeConstants.GRABBER_KP;
-        slot0configs.kI = IntakeConstants.GRABBER_KI;
-        slot0configs.kD = IntakeConstants.GRABBER_KD;
+        spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimitEnable(true);
+        spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimit(IntakeConstants.SPIN_FALCON_CURRENT_LIMIT);
+        spinTalonFXConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        spinTalonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        var motionMagicConfigs = talonFXConfigs.MotionMagic;
+        pivotTalonFXConfigs.CurrentLimits.withStatorCurrentLimitEnable(true);
+        pivotTalonFXConfigs.CurrentLimits.withStatorCurrentLimit(IntakeConstants.PIVOT_FALCON_CURRENT_LIMIT);
+        spinTalonFXConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-        motionMagicConfigs.MotionMagicCruiseVelocity = IntakeConstants.GRABBER_CRUISE_VELOCITY;
-        motionMagicConfigs.MotionMagicAcceleration = IntakeConstants.GRABBER_ACCELERATION;
+        Slot0Configs spinConfigs = pivotTalonFXConfigs.Slot0;
+        Slot1Configs pivotConfigs = pivotTalonFXConfigs.Slot1;
 
-        pivotFalcon.getConfigurator().apply(slot0configs);
-        spinFalcon.getConfigurator().apply(slot0configs);
+        pivotConfigs.kS = IntakeConstants.INTAKE_KS;
+        pivotConfigs.kV = IntakeConstants.INTAKE_KV;
+        pivotConfigs.kA = IntakeConstants.INTAKE_KA;
+        pivotConfigs.kP = IntakeConstants.INTAKE_KP;
+        pivotConfigs.kI = IntakeConstants.INTAKE_KI;
+        pivotConfigs.kD = IntakeConstants.INTAKE_KD;
 
-//        positionFalcon.
+        MotionMagicConfigs motionMagicConfigs = pivotTalonFXConfigs.MotionMagic;
 
-        //        topFalcon.setInverted(false);
-        //        bottomFalcon.setInverted(true);
-        //        neo.setInverted(false);
+        motionMagicConfigs.MotionMagicCruiseVelocity = IntakeConstants.INTAKE_CRUISE_VELOCITY;
+        motionMagicConfigs.MotionMagicAcceleration = IntakeConstants.INTAKE_ACCELERATION;
+
+        spinFalcon.getConfigurator().apply(spinConfigs);
+        pivotFalcon.getConfigurator().apply(pivotConfigs);
 
         pivotFalcon.setPosition(0);
     }
