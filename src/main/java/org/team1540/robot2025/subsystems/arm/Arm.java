@@ -31,7 +31,7 @@ public class Arm extends SubsystemBase {
     private final LoggedTunableNumber kI = new LoggedTunableNumber("Arm/kI", KI);
     private final LoggedTunableNumber kD = new LoggedTunableNumber("Arm/kD", KD);
     private final LoggedTunableNumber kG = new LoggedTunableNumber("Arm/kG", KG);
-    private final LoggedTunableNumber kS = new LoggedTunableNumber("Arm/kS", KS);
+    private final LoggedTunableNumber kS = new LoggedTunableNumber("Arm/kSF", KS);
     private final LoggedTunableNumber kV = new LoggedTunableNumber("Arm/kV", KV);
 
     private static boolean hasInstance = false;
@@ -43,21 +43,21 @@ public class Arm extends SubsystemBase {
     }
 
     public static Arm createReal() {
-        if (Constants.currentMode != Constants.Mode.REAL) {
+        if (Constants.CURRENT_MODE != Constants.Mode.REAL) {
             DriverStation.reportWarning("Using real shooter on simulated robot", false);
         }
         return new Arm(new ArmIOTalonFX());
     }
 
     public static Arm createSim() {
-        if (Constants.currentMode == Constants.Mode.REAL) {
+        if (Constants.CURRENT_MODE == Constants.Mode.REAL) {
             DriverStation.reportWarning("Using simulated arm on real robot", false);
         }
         return new Arm(new ArmIOSim());
     }
 
     public static Arm createDummy() {
-        if (Constants.currentMode == Constants.Mode.REAL) {
+        if (Constants.CURRENT_MODE == Constants.Mode.REAL) {
             DriverStation.reportWarning("Using dummy arm on real robot", false);
         }
         return new Arm(new ArmIO() {});

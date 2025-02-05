@@ -1,6 +1,6 @@
 package org.team1540.robot2025.subsystems.arm;
 
-import static org.team1540.robot2025.Constants.LOOP_PERIODIC_SECS;
+import static org.team1540.robot2025.Constants.LOOP_PERIOD_SECS;
 import static org.team1540.robot2025.subsystems.arm.ArmConstants.*;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -44,7 +44,7 @@ public class ArmIOSim implements ArmIO {
         }
 
         armSim.setInputVoltage(armAppliedVolts);
-        armSim.update(LOOP_PERIODIC_SECS);
+        armSim.update(LOOP_PERIOD_SECS);
 
         inputs.position = Rotation2d.fromRadians(armSim.getAngleRads());
         inputs.appliedVolts = armAppliedVolts;
