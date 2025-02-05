@@ -21,7 +21,6 @@ public class ElevatorConstants {
     public static final double KD = 1;
     public static final double KG = 0;
 
-
     public static final double CRUISE_VELOCITY_MPS = 1.2;
     public static final double MAXIMUM_ACCELERATION_MPS2 = 50;
     public static final double JERK_MPS3 = 200;

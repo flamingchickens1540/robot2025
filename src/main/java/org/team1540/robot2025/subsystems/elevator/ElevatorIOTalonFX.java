@@ -68,8 +68,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         config.MotionMagic.MotionMagicCruiseVelocity = 1;
         config.MotionMagic.MotionMagicAcceleration = 2;
 
-
-
         leader.getConfigurator().apply(config);
         follower.getConfigurator().apply(config);
         follower.setControl(followerControl);
@@ -107,13 +105,16 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                 leaderTemp,
                 followerTemp);
 
-        inputs.supplyCurrentAmps = new double[]{leaderSupplyCurrent.getValueAsDouble(), followerSupplyCurrent.getValueAsDouble()};
-        inputs.appliedVolts = new double[]{leaderAppliedVoltage.getValueAsDouble(), followerAppliedVoltage.getValueAsDouble()};
-        inputs.tempCelsius = new double[]{leaderTemp.getValueAsDouble(), followerTemp.getValueAsDouble()};
-        inputs.statorCurrentAmps = new double[]{leaderStatorCurrent.getValueAsDouble(), followerStatorCurrent.getValueAsDouble()};
-        inputs.connection = new double[]{leaderConnection.getValueAsDouble(), followerConnection.getValueAsDouble()};
-        inputs.positionMeters = new double[]{leaderPosition.getValueAsDouble(), followerPosition.getValueAsDouble()};
-        inputs.velocityMPS = new double[]{leaderVelocity.getValueAsDouble(), followerVelocity.getValueAsDouble()};
+        inputs.supplyCurrentAmps =
+                new double[] {leaderSupplyCurrent.getValueAsDouble(), followerSupplyCurrent.getValueAsDouble()};
+        inputs.appliedVolts =
+                new double[] {leaderAppliedVoltage.getValueAsDouble(), followerAppliedVoltage.getValueAsDouble()};
+        inputs.tempCelsius = new double[] {leaderTemp.getValueAsDouble(), followerTemp.getValueAsDouble()};
+        inputs.statorCurrentAmps =
+                new double[] {leaderStatorCurrent.getValueAsDouble(), followerStatorCurrent.getValueAsDouble()};
+        inputs.connection = new double[] {leaderConnection.getValueAsDouble(), followerConnection.getValueAsDouble()};
+        inputs.positionMeters = new double[] {leaderPosition.getValueAsDouble(), followerPosition.getValueAsDouble()};
+        inputs.velocityMPS = new double[] {leaderVelocity.getValueAsDouble(), followerVelocity.getValueAsDouble()};
         inputs.atUpperLimit = upperLimitSwitch.get();
         inputs.atLowerLimit = lowerLimitSwitch.get();
     }

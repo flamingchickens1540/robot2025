@@ -1,7 +1,6 @@
 package org.team1540.robot2025.util;
 
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import org.littletonrobotics.junction.Logger;
 

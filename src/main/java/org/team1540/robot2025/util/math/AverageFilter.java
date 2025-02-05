@@ -29,4 +29,3 @@ public class AverageFilter {
         return sum / (double) items.size();
     }
 }
-

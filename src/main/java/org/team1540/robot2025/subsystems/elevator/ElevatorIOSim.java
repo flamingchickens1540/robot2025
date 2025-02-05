@@ -1,7 +1,7 @@
 package org.team1540.robot2025.subsystems.elevator;
 
-import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 import static org.team1540.robot2025.Constants.LOOP_PERIOD_SECS;
+import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -35,10 +35,10 @@ public class ElevatorIOSim implements ElevatorIO {
         elevatorSim.setInputVoltage(appliedVolts);
         elevatorSim.update(LOOP_PERIOD_SECS);
 
-        inputs.positionMeters = new double[]{elevatorSim.getPositionMeters()};
-        inputs.velocityMPS = new double[]{elevatorSim.getVelocityMetersPerSecond()};
-        inputs.appliedVolts = new double[]{appliedVolts};
-        inputs.supplyCurrentAmps = new double[]{elevatorSim.getCurrentDrawAmps()};
+        inputs.positionMeters = new double[] {elevatorSim.getPositionMeters()};
+        inputs.velocityMPS = new double[] {elevatorSim.getVelocityMetersPerSecond()};
+        inputs.appliedVolts = new double[] {appliedVolts};
+        inputs.supplyCurrentAmps = new double[] {elevatorSim.getCurrentDrawAmps()};
         inputs.atUpperLimit = elevatorSim.hasHitUpperLimit();
         inputs.atLowerLimit = elevatorSim.hasHitLowerLimit();
     }
