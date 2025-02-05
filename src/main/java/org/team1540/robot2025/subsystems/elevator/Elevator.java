@@ -30,7 +30,7 @@ public class Elevator implements Subsystem {
     private final LoggedTunableNumber kD = new LoggedTunableNumber("Elevator/kD", KD);
     private final LoggedTunableNumber kS = new LoggedTunableNumber("Elevator/kS", KS);
     private final LoggedTunableNumber kV = new LoggedTunableNumber("Elevator/kV", KV);
-    private final LoggedTunableNumber kA = new LoggedTunableNumber("Elevator/kA", KA);
+    private final LoggedTunableNumber kG = new LoggedTunableNumber("Elevator/kG", KG);
 
     private Elevator(ElevatorIO elevatorIO) {
         if (hasInstance) throw new IllegalStateException("Instance of elevator already exists");
@@ -48,8 +48,8 @@ public class Elevator implements Subsystem {
         if (kP.hasChanged(hashCode()) || kI.hasChanged(hashCode()) || kD.hasChanged(hashCode())) {
             io.configPID(kP.get(), kI.get(), kD.get());
         }
-        if (kS.hasChanged(hashCode()) || kV.hasChanged(hashCode()) || kA.hasChanged(hashCode())) {
-            io.configFF(kS.get(), kV.get(), kA.get());
+        if (kS.hasChanged(hashCode()) || kV.hasChanged(hashCode()) || kG.hasChanged(hashCode())) {
+            io.configFF(kS.get(), kV.get(), kG.get());
         }
 
         MechanismVisualiser.setElevatorPosition(inputs.positionMeters[0]);
