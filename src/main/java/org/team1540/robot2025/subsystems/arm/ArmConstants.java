@@ -4,7 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 
 public class ArmConstants {
     public static final double GEAR_RATIO = 28;
-    public static final double ARM_MOMENT_OF_INERTIA_KGM2 = 0; // TODO:
+    public static final double ARM_MOMENT_OF_INERTIA_KGM2 = 0.5;
     public static final double ARM_LENGTH_METERS = 0.411; // TODO: check please
 
     // arm parallel to floor is 0, min angle is 30
@@ -37,10 +37,6 @@ public class ArmConstants {
     public static final double CRUISE_VELOCITY_RPS = 3;
     public static final double MAX_ACCEL_RPS2 = 15;
     public static final double JERK_RPS = 2000; // TODO: uhhh random numbers yay!
-
-    public static final double CURRENT_LIMIT = 50;
-    public static final double CURRENT_LOWER_LIMIT = 0.1;
-    public static final double TIME_LOWER_LIMIT = 15;
 
     public static final Rotation2d ERROR_TOLERANCE = Rotation2d.fromDegrees(0.7);
 }

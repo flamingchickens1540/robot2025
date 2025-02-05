@@ -35,7 +35,7 @@ public class ArmIOTalonFX implements ArmIO {
     public ArmIOTalonFX() {
 
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive; // TODO: triple check inverted
+        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
         motorConfig.Feedback.FeedbackRemoteSensorID = CANCODER_ID;
@@ -67,9 +67,14 @@ public class ArmIOTalonFX implements ArmIO {
         motorConfig.MotionMagic.MotionMagicJerk = JERK_RPS;
 
         motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        motorConfig.CurrentLimits.SupplyCurrentLimit = CURRENT_LIMIT;
-        motorConfig.CurrentLimits.SupplyCurrentLowerLimit = CURRENT_LOWER_LIMIT;
-        motorConfig.CurrentLimits.SupplyCurrentLowerTime = TIME_LOWER_LIMIT;
+        motorConfig.CurrentLimits.SupplyCurrentLimit = 50;
+        motorConfig.CurrentLimits.SupplyCurrentLowerLimit = 0.1;
+        motorConfig.CurrentLimits.SupplyCurrentLowerTime = 15;
+
+        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = MAX_ANGLE.getRotations();
+        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = MIN_ANGLE.getRotations();
+        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
         CANcoderConfiguration cancoderConfig = new CANcoderConfiguration();
         cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
@@ -78,7 +83,6 @@ public class ArmIOTalonFX implements ArmIO {
 
         cancoder.getConfigurator().apply(cancoderConfig);
         motor.getConfigurator().apply(motorConfig);
-        motor.setPosition(motorPosition.getValueAsDouble() * MOTOR_TO_CANCODER);
         BaseStatusSignal.setUpdateFrequencyForAll(
                 50,
                 motorPosition,
