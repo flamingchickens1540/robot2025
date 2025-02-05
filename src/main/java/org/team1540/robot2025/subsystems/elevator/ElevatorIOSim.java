@@ -22,7 +22,7 @@ public class ElevatorIOSim implements ElevatorIO {
     private double appliedVolts = 0.0;
     private final ProfiledPIDController controller = new ProfiledPIDController(
             KP, KI, KD, new TrapezoidProfile.Constraints(CRUISE_VELOCITY_MPS, MAXIMUM_ACCELERATION_MPS2));
-    private final ElevatorFeedforward feedforward = new ElevatorFeedforward(KS, KG, KV);
+    private ElevatorFeedforward feedforward = new ElevatorFeedforward(KS, KG, KV);
     private boolean isClosedLoop;
     private TrapezoidProfile.State setpoint;
 
@@ -53,5 +53,15 @@ public class ElevatorIOSim implements ElevatorIO {
     public void setVoltage(double volts) {
         isClosedLoop = false;
         appliedVolts = volts;
+    }
+
+    @Override
+    public void configFF(double kS, double kV, double kG) {
+        feedforward = new ElevatorFeedforward(kS, kV, kG);
+    }
+
+    @Override
+    public void configPID(double kP, double kI, double kD) {
+        controller.setPID(kP, kI, kD);
     }
 }

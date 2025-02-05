@@ -3,6 +3,7 @@ package org.team1540.robot2025.subsystems.elevator;
 import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -13,6 +14,7 @@ import com.ctre.phoenix6.signals.ConnectedMotorValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 
@@ -28,7 +30,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     private final StatusSignal<Current> leaderSupplyCurrent = leader.getSupplyCurrent();
     private final StatusSignal<Temperature> leaderTemp = leader.getDeviceTemp();
     private final StatusSignal<Current> leaderStatorCurrent = leader.getStatorCurrent();
-    private final StatusSignal<ConnectedMotorValue> leaderConnection = leader.getConnectedMotor();
 
     // Follower Elevator Motor
     private final TalonFX follower = new TalonFX(FOLLOWER_ID);
@@ -38,11 +39,13 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     private final StatusSignal<Angle> followerPosition = follower.getPosition();
     private final StatusSignal<AngularVelocity> followerVelocity = follower.getVelocity();
     private final StatusSignal<Current> followerStatorCurrent = follower.getStatorCurrent();
-    private final StatusSignal<ConnectedMotorValue> followerConnection = follower.getConnectedMotor();
 
     private final Follower followerControl = new Follower(LEADER_ID, true);
     private final DigitalInput upperLimitSwitch = new DigitalInput(UPPER_LIMIT_ID);
     private final DigitalInput lowerLimitSwitch = new DigitalInput(LOWER_LIMIT_ID);
+
+    private final Debouncer leaderDebouncer = new Debouncer(0.5);
+    private final Debouncer followerDebouncer = new Debouncer(0.5);
 
     public ElevatorIOTalonFX() {
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -75,15 +78,15 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         BaseStatusSignal.setUpdateFrequencyForAll(
                 50.0,
                 leaderPosition,
+                followerPosition,
                 leaderVelocity,
+                followerVelocity,
                 leaderAppliedVoltage,
                 followerAppliedVoltage,
                 leaderSupplyCurrent,
                 followerSupplyCurrent,
                 leaderStatorCurrent,
                 followerStatorCurrent,
-                leaderConnection,
-                followerConnection,
                 leaderTemp,
                 followerTemp);
 
@@ -93,18 +96,23 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
     @Override
     public void updateInputs(ElevatorIOInputs inputs) {
-        BaseStatusSignal.refreshAll(
+        StatusCode leaderStatus = BaseStatusSignal.refreshAll(
                 leaderPosition,
                 leaderVelocity,
                 leaderAppliedVoltage,
-                followerAppliedVoltage,
                 leaderSupplyCurrent,
+                leaderStatorCurrent,
+                leaderTemp
+                );
+        StatusCode followerStatus = BaseStatusSignal.refreshAll(
+                followerPosition,
+                followerVelocity,
+                followerAppliedVoltage,
                 followerSupplyCurrent,
-                leaderConnection,
-                followerConnection,
-                leaderTemp,
-                followerTemp);
-
+                followerStatorCurrent,
+                followerTemp
+        );
+        inputs.connection = new boolean[]{leaderDebouncer.calculate(leaderStatus.isOK()), followerDebouncer.calculate(leaderStatus.isOK())};
         inputs.supplyCurrentAmps =
                 new double[] {leaderSupplyCurrent.getValueAsDouble(), followerSupplyCurrent.getValueAsDouble()};
         inputs.appliedVolts =
@@ -112,7 +120,6 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         inputs.tempCelsius = new double[] {leaderTemp.getValueAsDouble(), followerTemp.getValueAsDouble()};
         inputs.statorCurrentAmps =
                 new double[] {leaderStatorCurrent.getValueAsDouble(), followerStatorCurrent.getValueAsDouble()};
-        inputs.connection = new double[] {leaderConnection.getValueAsDouble(), followerConnection.getValueAsDouble()};
         inputs.positionMeters = new double[] {leaderPosition.getValueAsDouble(), followerPosition.getValueAsDouble()};
         inputs.velocityMPS = new double[] {leaderVelocity.getValueAsDouble(), followerVelocity.getValueAsDouble()};
         inputs.atUpperLimit = upperLimitSwitch.get();
@@ -145,12 +152,12 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         follower.setControl(followerControl);
     }
 
-    public void configFF(double kS, double kV, double kA) {
+    public void configFF(double kS, double kV, double kG) {
         Slot0Configs configs = new Slot0Configs();
         leader.getConfigurator().refresh(configs);
         configs.kS = kS;
         configs.kV = kV;
-        configs.kA = kA;
+        configs.kG = kG;
         leader.getConfigurator().apply(configs);
         follower.setControl(followerControl);
     }
