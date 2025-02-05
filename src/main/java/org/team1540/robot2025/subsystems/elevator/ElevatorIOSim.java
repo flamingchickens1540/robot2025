@@ -57,7 +57,7 @@ public class ElevatorIOSim implements ElevatorIO {
 
     @Override
     public void configFF(double kS, double kV, double kG) {
-        feedforward = new ElevatorFeedforward(kS, kV, kG);
+        feedforward = new ElevatorFeedforward(kS, kG, kV);
     }
 
     @Override
