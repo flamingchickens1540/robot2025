@@ -20,5 +20,4 @@ public class IntakeConstants {
 
     public static final int INTAKE_CRUISE_VELOCITY = 80;
     public static final int INTAKE_ACCELERATION = 160;
-
 }

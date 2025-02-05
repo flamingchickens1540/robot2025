@@ -14,14 +14,14 @@ public class CoralIntakeCommands extends Command {
     }
 
     public Command commandSetPivot(Rotation2d rotations) {
-        return Commands.runOnce(()->coralIntake.setPivot(rotations));
+        return Commands.runOnce(() -> coralIntake.setPivot(rotations));
     }
 
     public Command commandSetSpinSpeed(double speed) {
-        return Commands.run(()->coralIntake.setSpinSpeed(speed));
+        return Commands.run(() -> coralIntake.setSpinSpeed(speed));
     }
 
     public Command commandSetFunnelSpeed(double speed) {
-        return Commands.run(()->coralIntake.setFunnelSpeed(speed));
+        return Commands.run(() -> coralIntake.setFunnelSpeed(speed));
     }
 }
