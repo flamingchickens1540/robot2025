@@ -18,12 +18,16 @@ public interface IntakeIO {
         public double pivotMotorAppliedVolts = 0;
         public double pivotCurrentAmps = 0;
 
-        public double neoMotorAppliedOutput = 0;
+        public double funnelMotorPosition = 0;
+        public double funnelMotorVelocityRPS = 0;
+        public double funnelMotorAppliedVolts = 0;
+        public double funnelCurrentAmps = 0;
+        public double funnelOutputVoltage = 0;
     }
 
     default void setRollerSpeed(double speed) {}
 
-    default void setNEOSpeed(double speed) {}
+    default void setFunnelSpeed(double speed) {}
 
     default void setPivot(Rotation2d rotations) {}
 

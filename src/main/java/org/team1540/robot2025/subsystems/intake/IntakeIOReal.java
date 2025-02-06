@@ -23,7 +23,7 @@ public class IntakeIOReal implements IntakeIO {
     private final MotionMagicVoltage motorRequest = new MotionMagicVoltage(0).withSlot(0);
 
     // clockwise to intake, counter-clockwise to spit out
-    private final SparkMax neo = new SparkMax(IntakeConstants.NEO_ID, SparkLowLevel.MotorType.kBrushless);
+    private final SparkMax funnelNeo = new SparkMax(IntakeConstants.NEO_ID, SparkLowLevel.MotorType.kBrushless);
 
     public IntakeIOReal() {
 
@@ -71,8 +71,8 @@ public class IntakeIOReal implements IntakeIO {
     }
 
     @Override
-    public void setNEOSpeed(double speed) {
-        neo.set(speed);
+    public void setFunnelSpeed(double speed) {
+        funnelNeo.set(speed);
     }
 
     @Override
@@ -81,11 +81,17 @@ public class IntakeIOReal implements IntakeIO {
         inputs.spinMotorPosition = spinFalcon.getPosition().getValueAsDouble();
         inputs.spinMotorVelocityRPS = spinFalcon.getVelocity().getValueAsDouble();
         inputs.spinMotorAppliedVolts = spinFalcon.getMotorVoltage().getValueAsDouble();
+        inputs.spinCurrentAmps = spinFalcon.getStatorCurrent().getValueAsDouble();
 
         inputs.pivotMotorPosition = pivotFalcon.getPosition().getValueAsDouble();
         inputs.pivotMotorVelocityRPS = pivotFalcon.getVelocity().getValueAsDouble();
         inputs.pivotMotorAppliedVolts = pivotFalcon.getMotorVoltage().getValueAsDouble();
+        inputs.pivotCurrentAmps = pivotFalcon.getStatorCurrent().getValueAsDouble();
 
-        inputs.neoMotorAppliedOutput = neo.getAppliedOutput();
+        inputs.funnelMotorPosition = funnelNeo.getEncoder().getPosition();
+        inputs.funnelMotorVelocityRPS = funnelNeo.getEncoder().getVelocity();
+        inputs.funnelCurrentAmps = funnelNeo.getOutputCurrent();
+        inputs.funnelOutputVoltage = (funnelNeo.getAppliedOutput() * funnelNeo.getBusVoltage());
+
     }
 }
