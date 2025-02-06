@@ -25,9 +25,9 @@ public interface IntakeIO {
         public double funnelOutputVoltage = 0;
     }
 
-    default void setRollerSpeed(double speed) {}
+    default void setRollerVoltage(double speed) {}
 
-    default void setFunnelSpeed(double speed) {}
+    default void setFunnelVoltage(double speed) {}
 
     default void setPivot(Rotation2d rotations) {}
 

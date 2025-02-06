@@ -37,11 +37,11 @@ public class CoralIntake extends SubsystemBase {
     }
 
     public void setSpinSpeed(double speed) {
-        io.setRollerSpeed(speed);
+        io.setRollerVoltage(speed);
     }
 
     public void setFunnelSpeed(double speed) {
-        io.setFunnelSpeed(speed);
+        io.setFunnelVoltage(speed);
     }
 
     public void setPivot(Rotation2d rotations) {

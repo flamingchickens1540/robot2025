@@ -1,7 +1,6 @@
 package org.team1540.robot2025.subsystems.intake;
 
 import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -24,7 +23,7 @@ public class IntakeIOReal implements IntakeIO {
     // controls position of intake
     private final TalonFX pivotFalcon = new TalonFX(IntakeConstants.PIVOT_FALCON_ID);
 
-    private final MotionMagicVoltage motorRequest = new MotionMagicVoltage(0).withSlot(0);
+    private final MotionMagicVoltage pivotPositionRequest = new MotionMagicVoltage(0).withSlot(0);
 
     // clockwise to intake, counter-clockwise to spit out
     private final SparkMax funnelNeo = new SparkMax(IntakeConstants.NEO_ID, SparkLowLevel.MotorType.kBrushless);
@@ -86,17 +85,17 @@ public class IntakeIOReal implements IntakeIO {
 
     @Override
     public void setPivot(Rotation2d rotations) {
-        pivotFalcon.setControl(motorRequest.withPosition(rotations.getRotations()));
+        pivotFalcon.setControl(pivotPositionRequest.withPosition(rotations.getRotations()));
     }
 
     @Override
-    public void setRollerSpeed(double speed) {
-        spinFalcon.set(speed);
+    public void setRollerVoltage(double voltage) {
+        spinFalcon.setVoltage(voltage);
     }
 
     @Override
-    public void setFunnelSpeed(double speed) {
-        funnelNeo.set(speed);
+    public void setFunnelVoltage(double voltage) {
+        funnelNeo.setVoltage(voltage);
     }
 
     @Override
