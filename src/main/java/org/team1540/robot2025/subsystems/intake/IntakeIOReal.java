@@ -31,16 +31,17 @@ public class IntakeIOReal implements IntakeIO {
         TalonFXConfiguration pivotTalonFXConfigs = new TalonFXConfiguration();
 
         spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimitEnable(true);
-        spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimit(IntakeConstants.SPIN_FALCON_CURRENT_LIMIT);
+        spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimit(120);
         spinTalonFXConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         spinTalonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
         pivotTalonFXConfigs.CurrentLimits.withStatorCurrentLimitEnable(true);
-        pivotTalonFXConfigs.CurrentLimits.withStatorCurrentLimit(IntakeConstants.PIVOT_FALCON_CURRENT_LIMIT);
-        spinTalonFXConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        pivotTalonFXConfigs.CurrentLimits.withStatorCurrentLimit(120);
+        pivotTalonFXConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        pivotTalonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-        Slot0Configs spinConfigs = pivotTalonFXConfigs.Slot0;
-        Slot1Configs pivotConfigs = pivotTalonFXConfigs.Slot1;
+        Slot0Configs spinConfigs = spinTalonFXConfigs.Slot0;
+        Slot0Configs pivotConfigs = pivotTalonFXConfigs.Slot0;
 
         pivotConfigs.kS = IntakeConstants.INTAKE_KS;
         pivotConfigs.kV = IntakeConstants.INTAKE_KV;

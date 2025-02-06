@@ -8,9 +8,6 @@ public class IntakeConstants {
     public static final int PIVOT_FALCON_ID = 1;
     public static final int NEO_ID = 2;
 
-    public static final double SPIN_FALCON_CURRENT_LIMIT = 10;
-    public static final double PIVOT_FALCON_CURRENT_LIMIT = 10;
-
     public static final double INTAKE_KS = 0.25;
     public static final double INTAKE_KV = 0.12;
     public static final double INTAKE_KA = 0.01;
