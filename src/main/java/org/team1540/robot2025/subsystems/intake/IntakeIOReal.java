@@ -80,7 +80,8 @@ public class IntakeIOReal implements IntakeIO {
         funnelNEOConfig.inverted(false);
         funnelNEOConfig.idleMode(SparkBaseConfig.IdleMode.kCoast);
 
-        funnelNeo.configure(funnelNEOConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+        funnelNeo.configure(
+                funnelNEOConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
     }
 
     @Override
@@ -117,6 +118,5 @@ public class IntakeIOReal implements IntakeIO {
         inputs.funnelMotorVelocityRPS = funnelNeo.getEncoder().getVelocity();
         inputs.funnelCurrentAmps = funnelNeo.getOutputCurrent();
         inputs.funnelOutputVoltage = (funnelNeo.getAppliedOutput() * funnelNeo.getBusVoltage());
-
     }
 }
