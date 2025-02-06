@@ -2,6 +2,8 @@ package org.team1540.robot2025.subsystems.intake;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
@@ -44,5 +46,17 @@ public class CoralIntake extends SubsystemBase {
 
     public void setPivot(Rotation2d rotations) {
         io.setPivot(rotations);
+    }
+
+    public Command commandSetPivot(Rotation2d rotations) {
+        return Commands.runOnce(() -> setPivot(rotations));
+    }
+
+    public Command commandSetSpinSpeed(double speed) {
+        return Commands.run(() -> setSpinSpeed(speed));
+    }
+
+    public Command commandSetFunnelSpeed(double speed) {
+        return Commands.run(() -> setFunnelSpeed(speed));
     }
 }
