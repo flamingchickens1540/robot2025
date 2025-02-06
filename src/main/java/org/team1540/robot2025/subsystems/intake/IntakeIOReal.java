@@ -1,6 +1,7 @@
 package org.team1540.robot2025.subsystems.intake;
 
 import com.ctre.phoenix6.StatusCode;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -8,6 +9,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
@@ -28,10 +30,6 @@ public class IntakeIOReal implements IntakeIO {
     // clockwise to intake, counter-clockwise to spit out
     private final SparkMax funnelNeo = new SparkMax(IntakeConstants.NEO_ID, SparkLowLevel.MotorType.kBrushless);
 
-    private StatusCode spinFalconStatus;
-
-    private StatusCode pivotFalconStatus;
-
     public IntakeIOReal() {
 
         TalonFXConfiguration spinTalonFXConfigs = new TalonFXConfiguration();
@@ -46,9 +44,7 @@ public class IntakeIOReal implements IntakeIO {
         spinTalonFXConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         spinTalonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-        Slot0Configs spinConfigs = spinTalonFXConfigs.Slot0;
-
-        spinFalcon.getConfigurator().apply(spinConfigs);
+        spinFalcon.getConfigurator().apply(spinTalonFXConfigs);
 
         pivotTalonFXConfigs.CurrentLimits.withStatorCurrentLimitEnable(true);
         pivotTalonFXConfigs.CurrentLimits.withStatorCurrentLimit(120);
@@ -72,11 +68,12 @@ public class IntakeIOReal implements IntakeIO {
         motionMagicConfigs.MotionMagicCruiseVelocity = IntakeConstants.PIVOT_INTAKE_CRUISE_VELOCITY;
         motionMagicConfigs.MotionMagicAcceleration = IntakeConstants.PIVOT_INTAKE_ACCELERATION;
 
-        pivotFalcon.getConfigurator().apply(pivotConfigs);
+        pivotFalcon.getConfigurator().apply(pivotTalonFXConfigs);
 
         pivotFalcon.setPosition(0);
 
-        funnelNEOConfig.secondaryCurrentLimit(70);
+        funnelNEOConfig.secondaryCurrentLimit(40);
+        funnelNEOConfig.smartCurrentLimit(40);
         funnelNEOConfig.inverted(false);
         funnelNEOConfig.idleMode(SparkBaseConfig.IdleMode.kCoast);
 
@@ -106,16 +103,15 @@ public class IntakeIOReal implements IntakeIO {
         inputs.spinMotorVelocityRPS = spinFalcon.getVelocity().getValueAsDouble();
         inputs.spinMotorAppliedVolts = spinFalcon.getMotorVoltage().getValueAsDouble();
         inputs.spinCurrentAmps = spinFalcon.getStatorCurrent().getValueAsDouble();
-        spinFalconStatus = spinFalcon.getMotorOutputStatus().getStatus();
 
         inputs.pivotMotorPosition = pivotFalcon.getPosition().getValueAsDouble();
         inputs.pivotMotorVelocityRPS = pivotFalcon.getVelocity().getValueAsDouble();
         inputs.pivotMotorAppliedVolts = pivotFalcon.getMotorVoltage().getValueAsDouble();
         inputs.pivotCurrentAmps = pivotFalcon.getStatorCurrent().getValueAsDouble();
-        pivotFalconStatus = pivotFalcon.getMotorOutputStatus().getStatus();
 
-        inputs.funnelMotorPosition = funnelNeo.getEncoder().getPosition();
-        inputs.funnelMotorVelocityRPS = funnelNeo.getEncoder().getVelocity();
+        RelativeEncoder funnelEncoder = funnelNeo.getEncoder();
+        inputs.funnelMotorPosition = funnelEncoder.getPosition();
+        inputs.funnelMotorVelocityRPS = funnelEncoder.getVelocity();
         inputs.funnelCurrentAmps = funnelNeo.getOutputCurrent();
         inputs.funnelOutputVoltage = (funnelNeo.getAppliedOutput() * funnelNeo.getBusVoltage());
     }
