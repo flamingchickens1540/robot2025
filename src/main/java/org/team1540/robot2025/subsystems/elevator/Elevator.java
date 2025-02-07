@@ -114,9 +114,7 @@ public class Elevator extends SubsystemBase {
 
     public Command manualCommand(DoubleSupplier input) {
         return Commands.runEnd(
-                () -> setVoltage(JoystickUtil.smartDeadzone(input.getAsDouble(), 0.1)),
-                this::holdPosition,
-                this);
+                () -> setVoltage(JoystickUtil.smartDeadzone(input.getAsDouble(), 0.1)), this::holdPosition, this);
     }
 
     public Command runSetpointCommand(ElevatorState state) {
