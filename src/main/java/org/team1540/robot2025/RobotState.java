@@ -86,18 +86,13 @@ public class RobotState {
     private boolean shouldAcceptVision(PoseObservation poseObservation) {
         Pose3d estimatedPose = poseObservation.estimatedPoseMeters();
         return poseObservation.numTagsSeen() >= MIN_ACCEPTED_NUM_TAGS // Must see sufficient tags
-                && poseObservation.avgTagDistance() <= MAX_ACCEPTED_AVG_TAG_DIST_METERS // Must be close enough
                 // Must be within field roughly
                 && estimatedPose.getX() >= -MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 && estimatedPose.getX() <= APRIL_TAG_FIELD_LAYOUT.getFieldLength() + MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 && estimatedPose.getY() >= -MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 && estimatedPose.getY() <= APRIL_TAG_FIELD_LAYOUT.getFieldWidth() + MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 // Must not be actively flying
-                && estimatedPose.getZ() <= MAX_ROBOT_Z_TOLERANCE
-                // Must not be translating or rotating too fast
-                && Math.abs(robotVelocity.omegaRadiansPerSecond) <= MAX_ACCEPTED_ROT_SPEED_RAD_PER_SEC
-                && Math.hypot(robotVelocity.vxMetersPerSecond, robotVelocity.vyMetersPerSecond)
-                        <= MAX_ACCEPTED_LINEAR_SPEED_MPS;
+                && estimatedPose.getZ() <= MAX_ROBOT_Z_TOLERANCE;
     }
 
     public void addVelocityData(ChassisSpeeds velocity) {

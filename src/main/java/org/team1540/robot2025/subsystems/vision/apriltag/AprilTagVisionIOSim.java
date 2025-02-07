@@ -7,6 +7,7 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.team1540.robot2025.RobotState;
+import org.team1540.robot2025.SimState;
 
 public class AprilTagVisionIOSim extends AprilTagVisionIOPhoton {
     private final VisionSystemSim visionSim;
@@ -27,7 +28,7 @@ public class AprilTagVisionIOSim extends AprilTagVisionIOPhoton {
     }
 
     public void updateInputs(AprilTagVisionIOInputs inputs) {
-        visionSim.update(RobotState.getInstance().getEstimatedPose());
+        visionSim.update(SimState.getInstance().getSimulatedRobotPose());
         super.updateInputs(inputs);
     }
 }

@@ -26,13 +26,12 @@ public class AprilTagVisionConstants {
     public static final double MAX_ACCEPTED_ROT_SPEED_RAD_PER_SEC = 1.0;
     public static final double MAX_ACCEPTED_LINEAR_SPEED_MPS = 4.0;
     public static final double MIN_ACCEPTED_NUM_TAGS = 1;
-    public static final double MAX_ACCEPTED_AVG_TAG_DIST_METERS = 8.0;
     public static final double MAX_OUTSIDE_OF_FIELD_TOLERANCE = 1;
     public static final double MAX_ROBOT_Z_TOLERANCE = 1;
 
     public static final int SIM_RES_WIDTH = 1280;
-    public static final int SIM_RES_HEIGHT = 960;
+    public static final int SIM_RES_HEIGHT = 800;
     public static final Rotation2d SIM_DIAGONAL_FOV = Rotation2d.fromDegrees(70);
-    public static final double SIM_FPS = 14.5;
-    public static final double SIM_AVG_LATENCY_MS = 100;
+    public static final double SIM_FPS = 25.0;
+    public static final double SIM_AVG_LATENCY_MS = 12.5;
 }

@@ -22,7 +22,23 @@ public class AprilTagVision extends SubsystemBase {
         for (int i = 0; i < cameraInputs.length; i++) {
             cameraInputs[i] = new AprilTagVisionIOInputsAutoLogged();
             disconnectedAlerts[i] =
-                    new Alert("Oh dear, " + visionIOs[i].getName() + " is disconnected D;", Alert.AlertType.kWarning);
+                    new Alert(visionIOs[i].getName() + " is disconnected.", Alert.AlertType.kWarning);
+        }
+    }
+
+    public void periodic() {
+        for (int i = 0; i < visionIOs.length; i++) {
+            visionIOs[i].updateInputs(cameraInputs[i]);
+            Logger.processInputs("Vision/" + visionIOs[i].getName(), cameraInputs[i]);
+        }
+
+        RobotState robotState = RobotState.getInstance();
+
+        for (int i = 0; i < visionIOs.length; i++) {
+            disconnectedAlerts[i].set(!cameraInputs[i].connected);
+            for (PoseObservation poseObservation : cameraInputs[i].poseObservations) {
+                robotState.addVisionMeasurement(poseObservation);
+            }
         }
     }
 
@@ -43,22 +59,10 @@ public class AprilTagVision extends SubsystemBase {
     }
 
     public static AprilTagVision createDummy() {
-        return new AprilTagVision();
-    }
-
-    public void periodic() {
-        for (int i = 0; i < visionIOs.length; i++) {
-            visionIOs[i].updateInputs(cameraInputs[i]);
-            Logger.processInputs("Vision/" + visionIOs[i].getName(), cameraInputs[i]);
-        }
-
-        RobotState robotState = RobotState.getInstance();
-
-        for (int i = 0; i < visionIOs.length; i++) {
-            disconnectedAlerts[i].set(!cameraInputs[i].connected);
-            for (PoseObservation poseObservation : cameraInputs[i].poseObservations) {
-                robotState.addVisionMeasurement(poseObservation);
-            }
-        }
+        return new AprilTagVision(
+                new AprilTagVisionIO() {},
+                new AprilTagVisionIO() {},
+                new AprilTagVisionIO() {},
+                new AprilTagVisionIO() {});
     }
 }
