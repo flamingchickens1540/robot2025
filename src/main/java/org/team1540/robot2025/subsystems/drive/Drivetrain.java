@@ -1,12 +1,10 @@
 package org.team1540.robot2025.subsystems.drive;
 
-import static edu.wpi.first.units.Units.*;
+import static org.team1540.robot2025.subsystems.drive.DrivetrainConstants.*;
 
 import choreo.trajectory.SwerveSample;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -21,7 +19,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -35,6 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
@@ -47,54 +45,6 @@ import org.team1540.robot2025.util.*;
 import org.team1540.robot2025.util.swerve.TrajectoryController;
 
 public class Drivetrain extends SubsystemBase {
-    static final double kOdometryFrequency = 250.0;
-
-    public static final double kDrivebaseRadius = Math.max(
-            Math.max(
-                    Math.hypot(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
-                    Math.hypot(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY)),
-            Math.max(
-                    Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
-                    Math.hypot(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)));
-
-    public static final double kMaxTotalModuleForces = DCMotor.getKrakenX60Foc(4)
-                    .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio)
-                    .getTorque(TunerConstants.FrontLeft.SlipCurrent)
-            / TunerConstants.FrontLeft.WheelRadius;
-
-    public static final double kMaxLinearSpeedMPS = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-    public static final double kMaxLinearAccelMPS2 = kMaxTotalModuleForces / Constants.kRobotMassKg;
-
-    public static final double kMaxAngularSpeedRadPerSec = kMaxLinearSpeedMPS / kDrivebaseRadius;
-    public static final double kMaxAngularAccelRadPerSec2 =
-            kMaxTotalModuleForces * kDrivebaseRadius / Constants.kRobotMOIKgM2;
-    public static final double kMaxSteerSpeedRadPerSec =
-            DCMotor.getFalcon500Foc(1).withReduction(TunerConstants.FrontLeft.SteerMotorGearRatio).freeSpeedRadPerSec;
-
-    public static final double kWheelCOF = 1.4;
-
-    public static final Translation2d[] kModuleTranslations = new Translation2d[] {
-        new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
-        new Translation2d(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY),
-        new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
-        new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY),
-    };
-    public static final SwerveDriveKinematics kKinematics = new SwerveDriveKinematics(kModuleTranslations);
-    public static final RobotConfig kPPRobotConfig = new RobotConfig(
-            Constants.kRobotMassKg,
-            Constants.kRobotMOIKgM2,
-            new ModuleConfig(
-                    TunerConstants.FrontLeft.WheelRadius,
-                    kMaxLinearSpeedMPS,
-                    kWheelCOF,
-                    DCMotor.getKrakenX60Foc(1),
-                    TunerConstants.FrontLeft.DriveMotorGearRatio,
-                    TunerConstants.FrontLeft.SlipCurrent,
-                    1),
-            kModuleTranslations);
-
-    private static final boolean kOptimizeSetpoints = true;
-
     private static boolean hasInstance;
     static final Lock odometryLock = new ReentrantLock();
 
@@ -109,6 +59,7 @@ public class Drivetrain extends SubsystemBase {
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
+    private final SwerveDriveKinematics kinematics = RobotState.getInstance().getKinematics();
 
     private Rotation2d fieldOrientationOffset = Rotation2d.kZero;
 
@@ -121,7 +72,7 @@ public class Drivetrain extends SubsystemBase {
 
     private SwerveSetpoint lastSetpoint;
     private final SwerveSetpointGenerator setpointGenerator =
-            new SwerveSetpointGenerator(kPPRobotConfig, kMaxSteerSpeedRadPerSec);
+            new SwerveSetpointGenerator(ROBOT_CONFIG, MAX_STEER_SPEED_RAD_PER_SEC);
 
     private boolean isFFCharacterizing = false;
     private double ffCharacterizationInput = 0.0;
@@ -138,7 +89,7 @@ public class Drivetrain extends SubsystemBase {
             headingKP.get(),
             headingKI.get(),
             headingKD.get(),
-            new TrapezoidProfile.Constraints(kMaxAngularSpeedRadPerSec, kMaxAngularAccelRadPerSec2));
+            new TrapezoidProfile.Constraints(MAX_ANGULAR_SPEED_RAD_PER_SEC, MAX_ANGULAR_ACCEL_RAD_PER_SEC2));
 
     private final Alert gyroDisconnected = new Alert("Gyro is disconnected", Alert.AlertType.kError);
 
@@ -168,7 +119,7 @@ public class Drivetrain extends SubsystemBase {
                 new PPHolonomicDriveController(
                         new PIDConstants(translationKP.get(), translationKI.get(), translationKD.get()),
                         new PIDConstants(headingKP.get(), headingKI.get(), headingKD.get())),
-                kPPRobotConfig,
+                ROBOT_CONFIG,
                 AllianceFlipUtil::shouldFlip,
                 this);
         PathPlannerLogging.setLogActivePathCallback(
@@ -218,8 +169,8 @@ public class Drivetrain extends SubsystemBase {
                                 .minus(lastModulePositions[moduleIndex].angle)
                                 .getRadians()
                         / dt;
-                if (Math.abs(velocity) > kMaxLinearSpeedMPS * 2
-                        || Math.abs(turnVelocity) > kMaxSteerSpeedRadPerSec * 2) {
+                if (Math.abs(velocity) > MAX_LINEAR_SPEED_MPS * 2
+                        || Math.abs(turnVelocity) > MAX_STEER_SPEED_RAD_PER_SEC * 2) {
                     acceptMeasurement = false;
                     break;
                 }
@@ -228,7 +179,7 @@ public class Drivetrain extends SubsystemBase {
             if (acceptMeasurement) {
                 if (gyroInputs.connected) rawGyroRotation = gyroInputs.odometryYawPositions[i];
                 else {
-                    Twist2d twist = kKinematics.toTwist2d(lastModulePositions, modulePositions);
+                    Twist2d twist = kinematics.toTwist2d(lastModulePositions, modulePositions);
                     rawGyroRotation = rawGyroRotation.plus(Rotation2d.fromRadians(twist.dtheta));
                 }
                 RobotState.getInstance().addOdometryObservation(modulePositions, rawGyroRotation, sampleTimestamps[i]);
@@ -241,7 +192,7 @@ public class Drivetrain extends SubsystemBase {
         Logger.recordOutput("Odometry/RejectedSamples", rejectedSamples);
 
         // Update robot velocities
-        ChassisSpeeds speeds = kKinematics.toChassisSpeeds(getModuleStates());
+        ChassisSpeeds speeds = kinematics.toChassisSpeeds(getModuleStates());
         speeds.omegaRadiansPerSecond =
                 gyroInputs.connected ? gyroInputs.yawVelocityRadPerSec : speeds.omegaRadiansPerSecond;
         RobotState.getInstance().addVelocityData(speeds);
@@ -252,14 +203,14 @@ public class Drivetrain extends SubsystemBase {
                 for (Module module : modules) module.runCharacterization(ffCharacterizationInput);
             } else {
                 SwerveModuleState[] setpointStates;
-                if (kOptimizeSetpoints) {
+                if (OPTIMIZE_SETPOINTS) {
                     SwerveSetpoint newSetpoint =
-                            setpointGenerator.generateSetpoint(lastSetpoint, desiredSpeeds, Constants.kLoopPeriodSecs);
+                            setpointGenerator.generateSetpoint(lastSetpoint, desiredSpeeds, Constants.LOOP_PERIOD_SECS);
                     setpointStates = newSetpoint.moduleStates();
                     lastSetpoint = newSetpoint;
                 } else {
-                    setpointStates = kKinematics.toSwerveModuleStates(
-                            ChassisSpeeds.discretize(desiredSpeeds, Constants.kLoopPeriodSecs));
+                    setpointStates = kinematics.toSwerveModuleStates(
+                            ChassisSpeeds.discretize(desiredSpeeds, Constants.LOOP_PERIOD_SECS));
                 }
 
                 for (int i = 0; i < 4; i++) {
@@ -324,8 +275,9 @@ public class Drivetrain extends SubsystemBase {
      */
     public void stopWithX() {
         Rotation2d[] headings = new Rotation2d[4];
-        for (int i = 0; i < 4; i++) headings[i] = kModuleTranslations[i].getAngle();
-        kKinematics.resetHeadings(headings);
+        Translation2d[] modulePositions = getModuleTranslations();
+        for (int i = 0; i < 4; i++) headings[i] = modulePositions[i].getAngle();
+        kinematics.resetHeadings(headings);
         stop();
     }
 
@@ -336,7 +288,6 @@ public class Drivetrain extends SubsystemBase {
 
     /** Zeroes field-oriented drive to the field based on the calculated odometry yaw */
     public void zeroFieldOrientation() {
-        System.out.println("Erm what the sigma");
         fieldOrientationOffset = rawGyroRotation.minus(
                 AllianceFlipUtil.maybeFlipRotation(RobotState.getInstance().getRobotRotation()));
     }
@@ -387,9 +338,9 @@ public class Drivetrain extends SubsystemBase {
         return Commands.run(
                         () -> {
                             var speeds = new ChassisSpeeds(
-                                    linearPercent.get().getX() * kMaxLinearSpeedMPS,
-                                    linearPercent.get().getY() * kMaxLinearSpeedMPS,
-                                    omegaPercent.getAsDouble() * kMaxAngularSpeedRadPerSec);
+                                    linearPercent.get().getX() * MAX_LINEAR_SPEED_MPS,
+                                    linearPercent.get().getY() * MAX_LINEAR_SPEED_MPS,
+                                    omegaPercent.getAsDouble() * MAX_ANGULAR_SPEED_RAD_PER_SEC);
                             if (fieldRelative.getAsBoolean()) {
                                 speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                                         speeds, rawGyroRotation.minus(fieldOrientationOffset));
@@ -402,38 +353,28 @@ public class Drivetrain extends SubsystemBase {
 
     public Command teleopDriveCommand(XboxController controller, BooleanSupplier fieldRelative) {
         return percentDriveCommand(
-                () -> JoystickUtil.getJoystickTranslation(-controller.getLeftY(), -controller.getLeftX(), 0.1),
+                () -> JoystickUtil.deadzonedJoystickTranslation(-controller.getLeftY(), -controller.getLeftX(), 0.1),
                 () -> JoystickUtil.smartDeadzone(-controller.getRightX(), 0.1),
                 fieldRelative);
     }
 
     public Command teleopDriveWithHeadingCommand(
-            XboxController controller,
-            Supplier<Rotation2d> heading,
-            DoubleSupplier angularVelocityFFRadsPerSec,
-            BooleanSupplier fieldRelative) {
+            XboxController controller, Supplier<Rotation2d> heading, BooleanSupplier fieldRelative) {
         return percentDriveCommand(
-                        () -> JoystickUtil.getJoystickTranslation(-controller.getLeftY(), -controller.getLeftX(), 0.1),
-                        () -> (headingController.calculate(
-                                                RobotState.getInstance()
-                                                        .getRobotRotation()
-                                                        .getRadians(),
-                                                new TrapezoidProfile.State(
-                                                        heading.get().getRadians(),
-                                                        angularVelocityFFRadsPerSec.getAsDouble()))
-                                        + angularVelocityFFRadsPerSec.getAsDouble())
-                                / kMaxAngularSpeedRadPerSec,
+                        () -> JoystickUtil.deadzonedJoystickTranslation(
+                                -controller.getLeftY(), -controller.getLeftX(), 0.1),
+                        () -> headingController.calculate(
+                                        RobotState.getInstance()
+                                                .getRobotRotation()
+                                                .getRadians(),
+                                        new TrapezoidProfile.State(heading.get().getRadians(), 0.0))
+                                / MAX_ANGULAR_SPEED_RAD_PER_SEC,
                         fieldRelative)
                 .beforeStarting(() -> headingController.reset(
                         RobotState.getInstance().getRobotRotation().getRadians(),
                         RobotState.getInstance().getRobotVelocity().omegaRadiansPerSecond))
                 .alongWith(Commands.run(() -> Logger.recordOutput("Drivetrain/HeadingGoal", heading.get())))
                 .until(() -> Math.abs(controller.getRightX()) >= 0.1);
-    }
-
-    public Command teleopDriveWithHeadingCommand(
-            XboxController controller, Supplier<Rotation2d> heading, BooleanSupplier fieldRelative) {
-        return teleopDriveWithHeadingCommand(controller, heading, () -> 0.0, fieldRelative);
     }
 
     public Command feedforwardCharacterization() {
@@ -451,7 +392,7 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public static Drivetrain createReal() {
-        if (Constants.kCurrentMode != Constants.Mode.REAL)
+        if (Constants.CURRENT_MODE != Constants.Mode.REAL)
             DriverStation.reportWarning("Using real drivetrain on simulated robot", false);
         return new Drivetrain(
                 new GyroIOPigeon2(),
@@ -462,10 +403,10 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public static Drivetrain createSim() {
-        if (Constants.kCurrentMode == Constants.Mode.REAL)
+        if (Constants.CURRENT_MODE == Constants.Mode.REAL)
             DriverStation.reportWarning("Using simulated drivetrain on real robot", false);
 
-        var driveSim = SimState.getInstance().getDriveSim();
+        SwerveDriveSimulation driveSim = SimState.getInstance().getDriveSim();
         return new Drivetrain(
                 new GyroIOSim(driveSim.getGyroSimulation()),
                 new ModuleIOSim(TunerConstants.FrontLeft, driveSim.getModules()[0]),
@@ -475,7 +416,7 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public static Drivetrain createDummy() {
-        if (Constants.kCurrentMode == Constants.Mode.REAL)
+        if (Constants.CURRENT_MODE == Constants.Mode.REAL)
             DriverStation.reportWarning("Using dummy drivetrain on real robot", false);
         return new Drivetrain(
                 new GyroIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {}, new ModuleIO() {});
