@@ -15,10 +15,10 @@ public class ElevatorIOSim implements ElevatorIO {
             GEAR_RATIO,
             SIM_CARRIAGE_MASS_KG,
             SPROCKET_RADIUS_M,
-            MIN_HEIGHT,
-            MAX_HEIGHT,
+            MIN_HEIGHT_M,
+            MAX_HEIGHT_M,
             true,
-            MIN_HEIGHT);
+            MIN_HEIGHT_M);
     private double appliedVolts = 0.0;
     private final ProfiledPIDController controller = new ProfiledPIDController(
             KP, KI, KD, new TrapezoidProfile.Constraints(CRUISE_VELOCITY_MPS, MAXIMUM_ACCELERATION_MPS2));
@@ -35,6 +35,7 @@ public class ElevatorIOSim implements ElevatorIO {
         elevatorSim.setInputVoltage(appliedVolts);
         elevatorSim.update(LOOP_PERIOD_SECS);
 
+        inputs.connection = new boolean[] {true, true};
         inputs.positionMeters = new double[] {elevatorSim.getPositionMeters()};
         inputs.velocityMPS = new double[] {elevatorSim.getVelocityMetersPerSecond()};
         inputs.appliedVolts = new double[] {appliedVolts};

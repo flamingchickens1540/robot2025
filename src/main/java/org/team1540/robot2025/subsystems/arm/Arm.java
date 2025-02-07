@@ -9,14 +9,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
+import org.team1540.robot2025.MechanismVisualizer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
-import org.team1540.robot2025.util.MechanismVisualizer;
 
 public class Arm extends SubsystemBase {
 
@@ -36,15 +35,63 @@ public class Arm extends SubsystemBase {
 
     private static boolean hasInstance = false;
 
-    public Arm(ArmIO io) {
+    private Arm(ArmIO io) {
         if (hasInstance) throw new IllegalStateException("Instance of arm already exists");
         hasInstance = true;
         this.io = io;
     }
 
+    public void periodic() {
+        // update + process inputs!
+        io.updateInputs(inputs);
+        Logger.processInputs("Arm", inputs);
+        MechanismVisualizer.getInstance().setArmRotation(inputs.position);
+
+        if (RobotState.isDisabled()) {
+            io.setVoltage(0);
+        }
+
+        LoggedTunableNumber.ifChanged(hashCode(), () -> io.configPID(kP.get(), kI.get(), kD.get()), kP, kI, kD);
+        LoggedTunableNumber.ifChanged(hashCode(), () -> io.configFF(kS.get(), kV.get(), kG.get()), kS, kV, kG);
+
+        avgPositionRots = positionFilter.calculate(inputs.position.getRotations());
+    }
+
+    public void holdPosition() {
+        setPosition(inputs.position);
+    }
+
+    public void setPosition(Rotation2d position) {
+        setpoint = Rotation2d.fromRotations(
+                MathUtil.clamp(position.getRotations(), MIN_ANGLE.getRotations(), MAX_ANGLE.getRotations()));
+        positionFilter.reset();
+        io.setSetpoint(setpoint);
+    }
+
+    public Rotation2d getPosition() {
+        return inputs.position;
+    }
+
+    public void setBrakeMode(boolean isBrakeMode) {
+        io.setBrakeMode(isBrakeMode);
+    }
+
+    public boolean isAtSetpoint() {
+        return MathUtil.isNear(setpoint.getRotations(), avgPositionRots, ERROR_TOLERANCE.getRotations());
+    }
+
+    public Command setpointCommand(ArmState state) {
+        return Commands.run(() -> setPosition(state.angle.get()), this).until(this::isAtSetpoint);
+    }
+
+    @AutoLogOutput(key = "Arm/Setpoint")
+    public Rotation2d getSetpoint() {
+        return setpoint;
+    }
+
     public static Arm createReal() {
         if (Constants.CURRENT_MODE != Constants.Mode.REAL) {
-            DriverStation.reportWarning("Using real shooter on simulated robot", false);
+            DriverStation.reportWarning("Using real arm on simulated robot", false);
         }
         return new Arm(new ArmIOTalonFX());
     }
@@ -61,63 +108,5 @@ public class Arm extends SubsystemBase {
             DriverStation.reportWarning("Using dummy arm on real robot", false);
         }
         return new Arm(new ArmIO() {});
-    }
-
-    public void periodic() {
-        // update + process inputs!
-        io.updateInputs(inputs);
-        Logger.processInputs("Arm", inputs);
-        MechanismVisualizer.setArmRotation(inputs.position);
-
-        if (RobotState.isDisabled()) {
-            io.setVoltage(0);
-        }
-
-        // update tunable numbers
-        if (Constants.isTuningMode()
-                && (kP.hasChanged(hashCode())
-                        || kI.hasChanged(hashCode())
-                        || kD.hasChanged(hashCode())
-                        || kG.hasChanged(hashCode())
-                        || kS.hasChanged(hashCode())
-                        || kV.hasChanged(hashCode()))) {
-            io.configPID(kP.get(), kI.get(), kD.get());
-            io.configFeedForwardTerms(kG.get(), kS.get(), kV.get());
-        }
-
-        avgPositionRots = positionFilter.calculate(inputs.position.getRotations());
-    }
-
-    public void holdPosition() {
-        setPosition(inputs.position);
-    }
-
-    public void setPosition(Rotation2d position) {
-        setpoint = Rotation2d.fromRotations(
-                MathUtil.clamp(position.getRotations(), MIN_ANGLE.getRotations(), MAX_ANGLE.getRotations()));
-        positionFilter.reset();
-        io.setMotorPosition(setpoint);
-    }
-
-    public Rotation2d getPosition() {
-        return inputs.position;
-    }
-
-    public void setBrakeMode(boolean isBrakeMode) {
-        io.setBrakeMode(isBrakeMode);
-    }
-
-    public boolean isAtSetpoint() {
-        return MathUtil.isNear(setpoint.getRotations(), avgPositionRots, ERROR_TOLERANCE.getRotations());
-    }
-
-    public Command setPositionCommand(Supplier<Rotation2d> setpoint) {
-        return new FunctionalCommand(
-                () -> {}, () -> setPosition(setpoint.get()), (ignored) -> {}, this::isAtSetpoint, this);
-    }
-
-    @AutoLogOutput(key = "Arm/Setpoint")
-    public Rotation2d getSetpoint() {
-        return setpoint;
     }
 }

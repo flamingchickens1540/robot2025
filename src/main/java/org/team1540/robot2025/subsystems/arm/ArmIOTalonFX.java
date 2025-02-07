@@ -33,7 +33,6 @@ public class ArmIOTalonFX implements ArmIO {
 
     // constructor
     public ArmIOTalonFX() {
-
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
@@ -99,10 +98,14 @@ public class ArmIOTalonFX implements ArmIO {
 
     @Override
     public void updateInputs(ArmIOInputs inputs) {
-        BaseStatusSignal.refreshAll(
-                motorPosition, cancoderPosition, velocity, appliedVoltage, supplyCurrentAmps, statorCurrentAmps, temp);
+        inputs.motorConnected = BaseStatusSignal.refreshAll(
+                        motorPosition, velocity, appliedVoltage, supplyCurrentAmps, statorCurrentAmps, temp)
+                .isOK();
+        inputs.encoderConnected = BaseStatusSignal.refreshAll(cancoderPosition).isOK();
+
         // TODO: SOFT LIMITS! YAY
         inputs.position = Rotation2d.fromRotations(motorPosition.getValueAsDouble());
+        inputs.absolutePosition = Rotation2d.fromRotations(cancoderPosition.getValueAsDouble());
         inputs.velocityRPM = velocity.getValueAsDouble() * 60; // converting from rps to rpm
         inputs.appliedVolts = appliedVoltage.getValueAsDouble();
         inputs.supplyCurrentAmps = supplyCurrentAmps.getValueAsDouble();
@@ -111,7 +114,7 @@ public class ArmIOTalonFX implements ArmIO {
     }
 
     @Override
-    public void setMotorPosition(Rotation2d motorPosition) {
+    public void setSetpoint(Rotation2d motorPosition) {
         motor.setControl(positionCtrlReq.withPosition(motorPosition.getRotations()));
     }
 
@@ -135,7 +138,7 @@ public class ArmIOTalonFX implements ArmIO {
     }
 
     @Override
-    public void configFeedForwardTerms(double kG, double kS, double kV) {
+    public void configFF(double kS, double kV, double kG) {
         Slot0Configs pidConfigs = motorConfig.Slot0;
         pidConfigs.kG = kG;
         pidConfigs.kS = kS;

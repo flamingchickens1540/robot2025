@@ -10,7 +10,6 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.ConnectedMotorValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -102,17 +101,17 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                 leaderAppliedVoltage,
                 leaderSupplyCurrent,
                 leaderStatorCurrent,
-                leaderTemp
-                );
+                leaderTemp);
         StatusCode followerStatus = BaseStatusSignal.refreshAll(
                 followerPosition,
                 followerVelocity,
                 followerAppliedVoltage,
                 followerSupplyCurrent,
                 followerStatorCurrent,
-                followerTemp
-        );
-        inputs.connection = new boolean[]{leaderDebouncer.calculate(leaderStatus.isOK()), followerDebouncer.calculate(leaderStatus.isOK())};
+                followerTemp);
+        inputs.connection = new boolean[] {
+            leaderDebouncer.calculate(leaderStatus.isOK()), followerDebouncer.calculate(followerStatus.isOK())
+        };
         inputs.supplyCurrentAmps =
                 new double[] {leaderSupplyCurrent.getValueAsDouble(), followerSupplyCurrent.getValueAsDouble()};
         inputs.appliedVolts =

@@ -22,22 +22,18 @@ public class ArmIOSim implements ArmIO {
             MIN_ANGLE.getRadians(),
             MAX_ANGLE.getRadians(),
             true,
-            MIN_ANGLE.getRadians());
+            ArmState.STOW.angle.get().getRadians());
 
     private double armAppliedVolts = 0.0;
     private final ProfiledPIDController controller =
             new ProfiledPIDController(KP, KI, KD, new TrapezoidProfile.Constraints(MAX_VELOCITY_RPS, MAX_ACCELERATION));
-    private final ArmFeedforward feedforward = new ArmFeedforward(KS, KG, KV);
+    private ArmFeedforward feedforward = new ArmFeedforward(KS, KG, KV);
     private boolean isClosedLoop;
-    private TrapezoidProfile.State goalState;
-
-    // methods
 
     @Override
     public void updateInputs(ArmIOInputs inputs) {
         if (isClosedLoop) {
-            armAppliedVolts = controller.calculate(
-                            Units.radiansToRotations(armSim.getAngleRads()), inputs.position.getRotations())
+            armAppliedVolts = controller.calculate(Units.radiansToRotations(armSim.getAngleRads()))
                     + feedforward.calculate(
                             Units.rotationsToRadians(controller.getSetpoint().position),
                             controller.getSetpoint().velocity);
@@ -49,16 +45,23 @@ public class ArmIOSim implements ArmIO {
         inputs.position = Rotation2d.fromRadians(armSim.getAngleRads());
         inputs.appliedVolts = armAppliedVolts;
         inputs.supplyCurrentAmps = armSim.getCurrentDrawAmps();
-        inputs.velocityRPM = armSim.getVelocityRadPerSec() * 60 / (2 * Math.PI); // converting to rpm;
+        inputs.velocityRPM = Units.radiansPerSecondToRotationsPerMinute(armSim.getVelocityRadPerSec());
     }
 
     @Override
-    public void setMotorPosition(Rotation2d motorPosition) {
-        controller.reset(
-                Units.radiansToRotations(armSim.getAngleRads()),
-                Units.radiansToRotations(armSim.getVelocityRadPerSec()));
+    public void setSetpoint(Rotation2d setpoint) {
+        if (!isClosedLoop)
+            controller.reset(
+                    Units.radiansToRotations(armSim.getAngleRads()),
+                    Units.radiansToRotations(armSim.getVelocityRadPerSec()));
         isClosedLoop = true;
-        goalState = new TrapezoidProfile.State(motorPosition.getRotations(), 0);
+        controller.setGoal(new TrapezoidProfile.State(setpoint.getRotations(), 0));
+    }
+
+    @Override
+    public void setVoltage(double volts) {
+        isClosedLoop = false;
+        armAppliedVolts = volts;
     }
 
     @Override
@@ -67,8 +70,7 @@ public class ArmIOSim implements ArmIO {
     }
 
     @Override
-    public void setVoltage(double volts) {
-        isClosedLoop = false;
-        armAppliedVolts = volts;
+    public void configFF(double kS, double kV, double kG) {
+        feedforward = new ArmFeedforward(kS, kG, kV);
     }
 }

@@ -9,13 +9,19 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import org.team1540.robot2025.autos.Autos;
+import org.team1540.robot2025.subsystems.arm.Arm;
+import org.team1540.robot2025.subsystems.arm.ArmConstants;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
+import org.team1540.robot2025.subsystems.elevator.Elevator;
+import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
 
     private final Drivetrain drivetrain;
+    private final Elevator elevator;
+    private final Arm arm;
 
     private final Autos autos;
     private final LoggedAutoChooser autoChooser = new LoggedAutoChooser("Auto Chooser");
@@ -26,16 +32,22 @@ public class RobotContainer {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
+                elevator = Elevator.createReal();
+                arm = Arm.createReal();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
+                elevator = Elevator.createSim();
+                arm = Arm.createSim();
 
                 RobotState.getInstance().resetPose(new Pose2d(3.0, 3.0, Rotation2d.kZero));
                 break;
             default:
                 // Replayed robot, disable IO implementations
                 drivetrain = Drivetrain.createDummy();
+                elevator = Elevator.createDummy();
+                arm = Arm.createDummy();
         }
         autos = new Autos(drivetrain);
 
@@ -49,12 +61,35 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
+
+        Command toScoreCommand = arm.setpointCommand(ArmConstants.ArmState.STOW)
+                .onlyIf(() -> elevator.getPosition() < ElevatorConstants.CLEAR_HEIGHT_M)
+                .withTimeout(0.25)
+                .andThen(Commands.parallel(
+                        elevator.setpointCommand(ElevatorConstants.ElevatorState.L4),
+                        Commands.waitUntil(() -> elevator.getPosition() > ElevatorConstants.CLEAR_HEIGHT_M)
+                                .andThen(arm.setpointCommand(ArmConstants.ArmState.SCORE))));
+        Command stowCommand = arm.setpointCommand(ArmConstants.ArmState.STOW)
+                .withTimeout(0.25)
+                .andThen(elevator.setpointCommand(ElevatorConstants.ElevatorState.BASE));
+        Command dealgifyCommand = arm.setpointCommand(ArmConstants.ArmState.STOW)
+                .onlyIf(() -> elevator.getPosition() < ElevatorConstants.CLEAR_HEIGHT_M)
+                .withTimeout(0.25)
+                .andThen(Commands.parallel(
+                        elevator.setpointCommand(ElevatorConstants.ElevatorState.L3),
+                        Commands.waitUntil(() -> elevator.getPosition() > ElevatorConstants.CLEAR_HEIGHT_M)
+                                .andThen(arm.setpointCommand(ArmConstants.ArmState.REEF_ALGAE))));
+
+        driver.b().onTrue(toScoreCommand);
+        driver.a().onTrue(dealgifyCommand);
+        driver.leftBumper().onTrue(stowCommand);
     }
 
     private void configureAutoRoutines() {
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);
+            autoChooser.addCmd("Elevator FF Characterization", elevator::feedforwardCharacterizationCommand);
         }
     }
 
@@ -66,6 +101,7 @@ public class RobotContainer {
 
     private void configurePeriodicCallbacks() {
         addPeriodicCallback(AlertManager.getInstance()::update, "AlertManager update");
+        addPeriodicCallback(MechanismVisualizer.getInstance()::update, "MechanismVisualizer update");
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             addPeriodicCallback(SimState.getInstance()::update, "Simulation update");
         }
