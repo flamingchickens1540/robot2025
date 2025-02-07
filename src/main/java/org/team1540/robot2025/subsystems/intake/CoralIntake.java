@@ -18,14 +18,14 @@ public class CoralIntake extends SubsystemBase {
     }
 
     public static CoralIntake createReal() {
-        if (Constants.currentMode != Constants.Mode.REAL) {
+        if (Constants.CURRENT_MODE != Constants.Mode.REAL) {
             DriverStation.reportWarning("Using real indexer on simulated robot", false);
         }
         return new CoralIntake(new IntakeIOReal());
     }
 
     public static CoralIntake createDummy() {
-        if (Constants.currentMode == Constants.Mode.REAL) {
+        if (Constants.CURRENT_MODE == Constants.Mode.REAL) {
             DriverStation.reportWarning("Using dummy indexer on real robot", false);
         }
         return new CoralIntake(new IntakeIO() {});
