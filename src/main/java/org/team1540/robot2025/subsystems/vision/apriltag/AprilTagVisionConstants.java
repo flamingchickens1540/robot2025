@@ -23,8 +23,6 @@ public class AprilTagVisionConstants {
     public static final double XY_STD_DEV_COEFF = 0.1;
     public static final double ROT_STD_DEV_COEFF = 0.5;
 
-    public static final double MAX_ACCEPTED_ROT_SPEED_RAD_PER_SEC = 1.0;
-    public static final double MAX_ACCEPTED_LINEAR_SPEED_MPS = 4.0;
     public static final double MIN_ACCEPTED_NUM_TAGS = 1;
     public static final double MAX_OUTSIDE_OF_FIELD_TOLERANCE = 1;
     public static final double MAX_ROBOT_Z_TOLERANCE = 1;
