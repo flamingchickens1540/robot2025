@@ -1,5 +1,6 @@
 package org.team1540.robot2025;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 
 /**
@@ -11,15 +12,13 @@ import edu.wpi.first.wpilibj.DriverStation;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    private static final Mode simMode = Mode.SIM;
-    public static final Mode currentMode = Robot.isReal() ? Mode.REAL : simMode;
+    private static final Mode SIM_MODE = Mode.SIM;
+    public static final Mode CURRENT_MODE = Robot.isReal() ? Mode.REAL : SIM_MODE;
 
-    public static final double LOOP_PERIOD_SECS = 0.02;
-
-    private static final boolean tuningMode = true;
+    private static final boolean TUNING_MODE = true;
 
     public static boolean isTuningMode() {
-        return !DriverStation.isFMSAttached() && tuningMode;
+        return !DriverStation.isFMSAttached() && TUNING_MODE;
     }
 
     public enum Mode {
@@ -30,4 +29,12 @@ public final class Constants {
         /** Replaying from a log file. */
         REPLAY
     }
+
+    public static final double LOOP_PERIOD_SECS = 0.02;
+
+    public static final double ROBOT_MASS_KG = Units.lbsToKilograms(147); // max weight :skull:
+    public static final double ROBOT_MOI_KGM2 = 7.74581;
+
+    public static final double BUMPER_LENGTH_X_METERS = Units.inchesToMeters(35.0);
+    public static final double BUMPER_LENGTH_Y_METERS = Units.inchesToMeters(33.0);
 }
