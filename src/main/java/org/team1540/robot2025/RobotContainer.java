@@ -9,14 +9,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import org.team1540.robot2025.autos.Autos;
+import org.team1540.robot2025.subsystems.Superstructure;
 import org.team1540.robot2025.subsystems.arm.Arm;
-import org.team1540.robot2025.subsystems.arm.ArmConstants;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
-import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
-import org.team1540.robot2025.subsystems.intake.CoralIntakeConstants;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
@@ -29,6 +27,8 @@ public class RobotContainer {
     private final Arm arm;
     private final CoralIntake coralIntake;
     private final Grabber grabber;
+
+    private final Superstructure superstructure;
 
     private final Autos autos;
     private final LoggedAutoChooser autoChooser = new LoggedAutoChooser("Auto Chooser");
@@ -65,6 +65,7 @@ public class RobotContainer {
                 coralIntake = CoralIntake.createDummy();
                 grabber = Grabber.createDummy();
         }
+        superstructure = new Superstructure(elevator, arm, coralIntake, grabber);
         autos = new Autos(drivetrain, elevator, arm, coralIntake);
 
         configureButtonBindings();
@@ -77,40 +78,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
-
-        Command toScoreCommand = arm.setpointCommand(ArmConstants.ArmState.STOW)
-                .onlyIf(() -> elevator.getPosition() < ElevatorConstants.CLEAR_HEIGHT_M)
-                .withTimeout(0.25)
-                .andThen(Commands.parallel(
-                        elevator.setpointCommand(ElevatorConstants.ElevatorState.L4),
-                        Commands.waitUntil(() -> elevator.getPosition() > ElevatorConstants.CLEAR_HEIGHT_M)
-                                .andThen(arm.setpointCommand(ArmConstants.ArmState.SCORE))));
-        Command stowCommand = arm.setpointCommand(ArmConstants.ArmState.STOW)
-                .withTimeout(0.25)
-                .andThen(elevator.setpointCommand(ElevatorConstants.ElevatorState.BASE)
-                        .alongWith(coralIntake.setpointCommand(CoralIntakeConstants.CoralIntakeState.STOW)));
-        Command dealgifyCommand = arm.setpointCommand(ArmConstants.ArmState.STOW)
-                .onlyIf(() -> elevator.getPosition() < ElevatorConstants.CLEAR_HEIGHT_M)
-                .withTimeout(0.25)
-                .andThen(Commands.parallel(
-                        elevator.setpointCommand(ElevatorConstants.ElevatorState.L3),
-                        Commands.waitUntil(() -> elevator.getPosition() > ElevatorConstants.CLEAR_HEIGHT_M)
-                                .andThen(arm.setpointCommand(ArmConstants.ArmState.REEF_ALGAE))));
-        Command coralIntakeCommand = arm.setpointCommand(ArmConstants.ArmState.STOW)
-                .andThen(
-                        elevator.setpointCommand(ElevatorConstants.ElevatorState.BASE),
-                        Commands.parallel(
-                                coralIntake.setpointCommand(CoralIntakeConstants.CoralIntakeState.INTAKE),
-                                arm.setpointCommand(ArmConstants.ArmState.INTAKE)));
-
-        driver.b().onTrue(toScoreCommand);
-        driver.a().onTrue(dealgifyCommand);
-        driver.leftBumper().onTrue(stowCommand);
-        driver.leftTrigger().onTrue(coralIntakeCommand).onFalse(stowCommand);
     }
 
     private void configureAutoRoutines() {
-        autoChooser.addRoutine("Left Side 5 Piece", autos::leftSide5Piece);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);
