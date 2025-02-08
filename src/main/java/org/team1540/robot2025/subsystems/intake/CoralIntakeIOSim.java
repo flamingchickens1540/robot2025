@@ -1,5 +1,7 @@
 package org.team1540.robot2025.subsystems.intake;
 
+import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
+
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -10,37 +12,33 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import org.team1540.robot2025.Constants;
-
-import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
+import org.team1540.robot2025.SimState;
 
 public class CoralIntakeIOSim implements CoralIntakeIO {
-    private final DCMotorSim spinSim =
-            new DCMotorSim(
-                    LinearSystemId.createDCMotorSystem(
-                            DCMotor.getFalcon500Foc(1), 0.001, SPIN_GEAR_RATIO),
-                    DCMotor.getFalcon500Foc(1));
-    private final DCMotorSim funnelSim =
-            new DCMotorSim(
-                    LinearSystemId.createDCMotorSystem(
-                            DCMotor.getNeo550(1), 0.001, FUNNEL_GEAR_RATIO),
-                    DCMotor.getNeo550(1));
-    private final SingleJointedArmSim pivotSim =
-            new SingleJointedArmSim(
-                    DCMotor.getKrakenX60(1),
-                    PIVOT_GEAR_RATIO,
-                    0.02,
-                    Units.inchesToMeters(4),
-                    PIVOT_MIN_ANGLE.getRadians(),
-                    PIVOT_MAX_ANGLE.getRadians(),
-                    true,
-                    PIVOT_MAX_ANGLE.getRadians());
+    private final DCMotorSim spinSim = new DCMotorSim(
+            LinearSystemId.createDCMotorSystem(DCMotor.getFalcon500Foc(1), 0.001, SPIN_GEAR_RATIO),
+            DCMotor.getFalcon500Foc(1));
+    private final DCMotorSim funnelSim = new DCMotorSim(
+            LinearSystemId.createDCMotorSystem(DCMotor.getNeo550(1), 0.001, FUNNEL_GEAR_RATIO), DCMotor.getNeo550(1));
+    private final SingleJointedArmSim pivotSim = new SingleJointedArmSim(
+            DCMotor.getFalcon500Foc(1),
+            PIVOT_GEAR_RATIO,
+            0.1,
+            Units.inchesToMeters(19.75),
+            PIVOT_MIN_ANGLE.getRadians(),
+            PIVOT_MAX_ANGLE.getRadians(),
+            true,
+            PIVOT_MAX_ANGLE.getRadians());
 
     private double spinAppliedVolts = 0.0;
     private double funnelAppliedVolts = 0.0;
     private double pivotAppliedVolts = 0.0;
 
-    private final ProfiledPIDController pivotController =
-            new ProfiledPIDController(PIVOT_KP, PIVOT_KI, PIVOT_KD, new TrapezoidProfile.Constraints(PIVOT_CRUISE_VELOCITY_RPS, PIVOT_ACCELERATION_RPS2));
+    private final ProfiledPIDController pivotController = new ProfiledPIDController(
+            PIVOT_KP,
+            PIVOT_KI,
+            PIVOT_KD,
+            new TrapezoidProfile.Constraints(PIVOT_CRUISE_VELOCITY_RPS, PIVOT_ACCELERATION_RPS2));
     private ArmFeedforward pivotFeedforward = new ArmFeedforward(PIVOT_KS, PIVOT_KG, PIVOT_KV);
     private boolean isPivotClosedLoop;
 
@@ -78,6 +76,8 @@ public class CoralIntakeIOSim implements CoralIntakeIO {
         inputs.pivotMotorVelocityRPS = Units.rotationsToRadians(pivotSim.getVelocityRadPerSec()) / 60.0;
         inputs.pivotStatorCurrentAmps = pivotSim.getCurrentDrawAmps();
         inputs.pivotSupplyCurrentAmps = pivotSim.getCurrentDrawAmps();
+
+        SimState.getInstance().addIntakeData(inputs.pivotPosition);
     }
 
     @Override
@@ -99,7 +99,9 @@ public class CoralIntakeIOSim implements CoralIntakeIO {
     @Override
     public void setPivotSetpoint(Rotation2d rotations) {
         if (!isPivotClosedLoop) {
-            pivotController.reset(Units.radiansToRotations(pivotSim.getAngleRads()), Units.radiansToRotations(pivotSim.getVelocityRadPerSec()));
+            pivotController.reset(
+                    Units.radiansToRotations(pivotSim.getAngleRads()),
+                    Units.radiansToRotations(pivotSim.getVelocityRadPerSec()));
         }
         isPivotClosedLoop = true;
         pivotController.setGoal(new TrapezoidProfile.State(rotations.getRotations(), 0));

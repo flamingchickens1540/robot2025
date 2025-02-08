@@ -1,5 +1,7 @@
 package org.team1540.robot2025.subsystems.intake;
 
+import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Alert;
@@ -10,9 +12,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
+import org.team1540.robot2025.MechanismVisualizer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
-
-import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
 
 public class CoralIntake extends SubsystemBase {
     private static boolean hasInstance = false;
@@ -31,6 +32,7 @@ public class CoralIntake extends SubsystemBase {
     private final Alert rollerDisconnectedAlert = new Alert("Intake roller disconnected", Alert.AlertType.kError);
     private final Alert funnelDisconnectedAlert = new Alert("Intake funnel disconnected", Alert.AlertType.kError);
 
+    @AutoLogOutput(key = "CoralIntake/PivotSetpoint")
     private Rotation2d pivotSetpoint = PIVOT_MIN_ANGLE;
 
     private CoralIntake(CoralIntakeIO io) {
@@ -43,10 +45,22 @@ public class CoralIntake extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("CoralIntake", inputs);
 
+        MechanismVisualizer.getInstance().setIntakeRotation(inputs.pivotPosition);
+
         if (DriverStation.isDisabled()) stopAll();
 
-        LoggedTunableNumber.ifChanged(hashCode(), () -> io.setPivotPID(pivotKP.get(), pivotKI.get(), pivotKD.get()), pivotKP, pivotKI, pivotKD);
-        LoggedTunableNumber.ifChanged(hashCode(), () -> io.setPivotFF(pivotKS.get(), pivotKV.get(), pivotKG.get()), pivotKS, pivotKV, pivotKG);
+        LoggedTunableNumber.ifChanged(
+                hashCode(),
+                () -> io.setPivotPID(pivotKP.get(), pivotKI.get(), pivotKD.get()),
+                pivotKP,
+                pivotKI,
+                pivotKD);
+        LoggedTunableNumber.ifChanged(
+                hashCode(),
+                () -> io.setPivotFF(pivotKS.get(), pivotKV.get(), pivotKG.get()),
+                pivotKS,
+                pivotKV,
+                pivotKG);
 
         pivotDisconnectedAlert.set(!inputs.pivotConnected);
         rollerDisconnectedAlert.set(!inputs.spinConnected);
@@ -82,11 +96,14 @@ public class CoralIntake extends SubsystemBase {
     }
 
     public Command setpointCommand(CoralIntakeState state) {
-        return Commands.runOnce(() -> {
-            setPivotPosition(state.pivotPosition);
-            setRollerVoltage(state.rollerVoltage);
-            setFunnelVoltage(state.funnelVoltage);
-        }, this).andThen(Commands.waitUntil(this::isPivotAtSetpoint));
+        return Commands.runOnce(
+                        () -> {
+                            setPivotPosition(state.pivotPosition);
+                            setRollerVoltage(state.rollerVoltage);
+                            setFunnelVoltage(state.funnelVoltage);
+                        },
+                        this)
+                .andThen(Commands.waitUntil(this::isPivotAtSetpoint));
     }
 
     public static CoralIntake createReal() {

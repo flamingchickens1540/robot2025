@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.subsystems.arm.ArmConstants;
 import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
+import org.team1540.robot2025.subsystems.intake.CoralIntakeConstants;
 
 public class MechanismVisualizer {
     private static MechanismVisualizer instance = null;
@@ -17,6 +18,7 @@ public class MechanismVisualizer {
     }
 
     private Rotation2d armPosition = Rotation2d.kZero;
+    private Rotation2d intakePosition = Rotation2d.kZero;
     private double elevatorPositionMeters = 0.0;
 
     public void update() {
@@ -28,7 +30,11 @@ public class MechanismVisualizer {
                 ArmConstants.ROTATIONAL_ORIGIN.plus(new Translation3d(0.0, 0.0, elevatorPositionMeters)),
                 new Rotation3d(0.0, -armPosition.getRadians(), 0.0));
 
-        Logger.recordOutput("Mechanisms", elevatorCarriage, elevatorStage1, arm);
+        Pose3d intake = new Pose3d(
+                CoralIntakeConstants.ROTATIONAL_ORIGIN,
+                new Rotation3d(0.0, Math.toRadians(90) - intakePosition.getRadians(), 0.0));
+
+        Logger.recordOutput("Mechanisms", elevatorCarriage, elevatorStage1, arm, intake);
     }
 
     public void setElevatorPosition(double positionMeters) {
@@ -37,5 +43,9 @@ public class MechanismVisualizer {
 
     public void setArmRotation(Rotation2d rotation) {
         armPosition = rotation;
+    }
+
+    public void setIntakeRotation(Rotation2d rotation) {
+        intakePosition = rotation;
     }
 }

@@ -35,7 +35,7 @@ public class ArmConstants {
     public static final double DISCONTINUITY_POINT = 0.75;
 
     public static final double CRUISE_VELOCITY_RPS = 3;
-    public static final double MAX_ACCEL_RPS2 = 15;
+    public static final double MAX_ACCEL_RPS2 = 30;
     public static final double JERK_RPS = 2000;
 
     public static final Rotation2d ERROR_TOLERANCE = Rotation2d.fromDegrees(0.7);

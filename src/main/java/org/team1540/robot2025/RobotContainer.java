@@ -15,6 +15,7 @@ import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
 import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
+import org.team1540.robot2025.subsystems.intake.CoralIntakeConstants;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
@@ -54,7 +55,7 @@ public class RobotContainer {
                 arm = Arm.createDummy();
                 coralIntake = CoralIntake.createDummy();
         }
-        autos = new Autos(drivetrain, elevator, arm);
+        autos = new Autos(drivetrain, elevator, arm, coralIntake);
 
         configureButtonBindings();
         configureAutoRoutines();
@@ -76,7 +77,8 @@ public class RobotContainer {
                                 .andThen(arm.setpointCommand(ArmConstants.ArmState.SCORE))));
         Command stowCommand = arm.setpointCommand(ArmConstants.ArmState.STOW)
                 .withTimeout(0.25)
-                .andThen(elevator.setpointCommand(ElevatorConstants.ElevatorState.BASE));
+                .andThen(elevator.setpointCommand(ElevatorConstants.ElevatorState.BASE)
+                        .alongWith(coralIntake.setpointCommand(CoralIntakeConstants.CoralIntakeState.STOW)));
         Command dealgifyCommand = arm.setpointCommand(ArmConstants.ArmState.STOW)
                 .onlyIf(() -> elevator.getPosition() < ElevatorConstants.CLEAR_HEIGHT_M)
                 .withTimeout(0.25)
@@ -84,10 +86,17 @@ public class RobotContainer {
                         elevator.setpointCommand(ElevatorConstants.ElevatorState.L3),
                         Commands.waitUntil(() -> elevator.getPosition() > ElevatorConstants.CLEAR_HEIGHT_M)
                                 .andThen(arm.setpointCommand(ArmConstants.ArmState.REEF_ALGAE))));
+        Command coralIntakeCommand = arm.setpointCommand(ArmConstants.ArmState.STOW)
+                .andThen(
+                        elevator.setpointCommand(ElevatorConstants.ElevatorState.BASE),
+                        Commands.parallel(
+                                coralIntake.setpointCommand(CoralIntakeConstants.CoralIntakeState.INTAKE),
+                                arm.setpointCommand(ArmConstants.ArmState.INTAKE)));
 
         driver.b().onTrue(toScoreCommand);
         driver.a().onTrue(dealgifyCommand);
         driver.leftBumper().onTrue(stowCommand);
+        driver.leftTrigger().onTrue(coralIntakeCommand).onFalse(stowCommand);
     }
 
     private void configureAutoRoutines() {

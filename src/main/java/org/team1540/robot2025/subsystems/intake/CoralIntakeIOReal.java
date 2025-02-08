@@ -1,5 +1,7 @@
 package org.team1540.robot2025.subsystems.intake;
 
+import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -19,8 +21,6 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
-
-import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
 
 public class CoralIntakeIOReal implements CoralIntakeIO {
     // rotation of horizontal beams for the intake, clockwise to intake, counter-clockwise to spit out

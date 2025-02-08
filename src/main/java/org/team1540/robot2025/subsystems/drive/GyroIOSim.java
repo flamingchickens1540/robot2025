@@ -22,7 +22,7 @@ public class GyroIOSim implements GyroIO {
         inputs.yawVelocityRadPerSec = Units.degreesToRadians(
                 gyroSimulation.getMeasuredAngularVelocity().in(RadiansPerSecond));
 
-        inputs.odometryYawTimestamps = SimState.getInstance().getSimulationOdometryTimestamps();
+        inputs.odometryYawTimestamps = SimState.getInstance().getSimOdometryTimestamps();
         inputs.odometryYawPositions = gyroSimulation.getCachedGyroReadings();
     }
 }

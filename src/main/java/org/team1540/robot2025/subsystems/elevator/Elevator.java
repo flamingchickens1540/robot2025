@@ -107,7 +107,8 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command setpointCommand(ElevatorState state) {
-        return Commands.runOnce(() -> setPosition(state.elevatorHeight), this).until(this::isAtSetpoint);
+        return Commands.runOnce(() -> setPosition(state.elevatorHeight), this)
+                .andThen(Commands.waitUntil(this::isAtSetpoint));
     }
 
     public Command manualCommand(DoubleSupplier input) {
