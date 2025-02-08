@@ -14,6 +14,7 @@ import org.team1540.robot2025.subsystems.arm.ArmConstants;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
 import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
+import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
@@ -22,6 +23,7 @@ public class RobotContainer {
     private final Drivetrain drivetrain;
     private final Elevator elevator;
     private final Arm arm;
+    private final CoralIntake coralIntake;
 
     private final Autos autos;
     private final LoggedAutoChooser autoChooser = new LoggedAutoChooser("Auto Chooser");
@@ -34,12 +36,14 @@ public class RobotContainer {
                 drivetrain = Drivetrain.createReal();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
+                coralIntake = CoralIntake.createReal();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
+                coralIntake = CoralIntake.createSim();
 
                 RobotState.getInstance().resetPose(new Pose2d(3.0, 3.0, Rotation2d.kZero));
                 break;
@@ -48,6 +52,7 @@ public class RobotContainer {
                 drivetrain = Drivetrain.createDummy();
                 elevator = Elevator.createDummy();
                 arm = Arm.createDummy();
+                coralIntake = CoralIntake.createDummy();
         }
         autos = new Autos(drivetrain, elevator, arm);
 

@@ -3,35 +3,33 @@ package org.team1540.robot2025.subsystems.intake;
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
-public interface IntakeIO {
+public interface CoralIntakeIO {
     @AutoLog
     class CoralIntakeInputs {
         public boolean spinConnected = true;
-        public double spinMotorPosition = 0;
         public double spinMotorVelocityRPS = 0;
         public double spinMotorAppliedVolts = 0;
-        public double spinSupplyCurrent = 0;
-        public double spinStatorCurrent = 0;
+        public double spinSupplyCurrentAmps = 0;
+        public double spinStatorCurrentAmps = 0;
 
         public boolean funnelConnected = true;
-        public double funnelMotorPosition = 0;
         public double funnelMotorVelocityRPS = 0;
         public double funnelAppliedVolts = 0;
         public double funnelMotorAppliedVolts = 0;
-        public double funnelSupplyCurrent = 0;
-        public double funnelStatorCurrent = 0;
+        public double funnelSupplyCurrentAmps = 0;
+        public double funnelStatorCurrentAmps = 0;
 
         public boolean pivotConnected = true;
-        public double pivotMotorPosition = 0;
+        public Rotation2d pivotPosition = Rotation2d.kZero;
         public double pivotMotorVelocityRPS = 0;
         public double pivotMotorAppliedVolts = 0;
-        public double pivotSupplyCurrent = 0;
-        public double pivotStatorCurrent = 0;
+        public double pivotSupplyCurrentAmps = 0;
+        public double pivotStatorCurrentAmps = 0;
     }
 
-    default void setRollerVoltage(double speed) {}
+    default void setRollerVoltage(double voltage) {}
 
-    default void setFunnelVoltage(double speed) {}
+    default void setFunnelVoltage(double voltage) {}
 
     default void setPivotSetpoint(Rotation2d rotations) {}
 

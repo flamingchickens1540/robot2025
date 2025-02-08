@@ -35,7 +35,7 @@ public class ArmIOSim implements ArmIO {
             armAppliedVolts = controller.calculate(Units.radiansToRotations(armSim.getAngleRads()))
                     + feedforward.calculate(
                             Units.rotationsToRadians(controller.getSetpoint().position),
-                            controller.getSetpoint().velocity);
+                            Units.rotationsToRadians(controller.getSetpoint().velocity));
         }
 
         armSim.setInputVoltage(armAppliedVolts);

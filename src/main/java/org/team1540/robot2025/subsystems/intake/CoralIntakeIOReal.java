@@ -8,6 +8,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.RelativeEncoder;
@@ -19,9 +20,11 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 
-public class IntakeIOReal implements IntakeIO {
+import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
+
+public class CoralIntakeIOReal implements CoralIntakeIO {
     // rotation of horizontal beams for the intake, clockwise to intake, counter-clockwise to spit out
-    private final TalonFX spinFalcon = new TalonFX(IntakeConstants.SPIN_FALCON_ID);
+    private final TalonFX spinFalcon = new TalonFX(SPIN_MOTOR_ID);
 
     private final StatusSignal<AngularVelocity> spinVelocity = spinFalcon.getVelocity();
     private final StatusSignal<Angle> spinPosition = spinFalcon.getPosition();
@@ -33,7 +36,7 @@ public class IntakeIOReal implements IntakeIO {
     private final VoltageOut spinVoltageRequest = new VoltageOut(0);
 
     // controls position of intake
-    private final TalonFX pivotFalcon = new TalonFX(IntakeConstants.PIVOT_FALCON_ID);
+    private final TalonFX pivotFalcon = new TalonFX(PIVOT_MOTOR_ID);
 
     private final StatusSignal<AngularVelocity> pivotVelocity = pivotFalcon.getVelocity();
     private final StatusSignal<Angle> pivotPosition = pivotFalcon.getPosition();
@@ -46,11 +49,11 @@ public class IntakeIOReal implements IntakeIO {
     private final VoltageOut pivotVoltageRequest = new VoltageOut(0);
 
     // clockwise to intake, counter-clockwise to spit out
-    private final SparkMax funnelNeo = new SparkMax(IntakeConstants.NEO_ID, SparkLowLevel.MotorType.kBrushless);
+    private final SparkMax funnelNeo = new SparkMax(FUNNEL_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
 
     RelativeEncoder funnelEncoder = funnelNeo.getEncoder();
 
-    public IntakeIOReal() {
+    public CoralIntakeIOReal() {
         TalonFXConfiguration spinTalonFXConfigs = new TalonFXConfiguration();
         TalonFXConfiguration pivotTalonFXConfigs = new TalonFXConfiguration();
         SparkMaxConfig funnelNEOConfig = new SparkMaxConfig();
@@ -62,6 +65,7 @@ public class IntakeIOReal implements IntakeIO {
         spinTalonFXConfigs.CurrentLimits.withSupplyCurrentLowerTime(0.5);
         spinTalonFXConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         spinTalonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        spinTalonFXConfigs.Feedback.SensorToMechanismRatio = SPIN_GEAR_RATIO;
 
         spinFalcon.getConfigurator().apply(spinTalonFXConfigs);
 
@@ -72,29 +76,31 @@ public class IntakeIOReal implements IntakeIO {
         pivotTalonFXConfigs.CurrentLimits.withSupplyCurrentLowerTime(0.5);
         pivotTalonFXConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         pivotTalonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        pivotTalonFXConfigs.Feedback.SensorToMechanismRatio = PIVOT_GEAR_RATIO;
 
-        Slot0Configs pivotConfigs = pivotTalonFXConfigs.Slot0;
-
-        pivotConfigs.kS = IntakeConstants.PIVOT_INTAKE_KS;
-        pivotConfigs.kV = IntakeConstants.PIVOT_INTAKE_KV;
-        pivotConfigs.kA = IntakeConstants.PIVOT_INTAKE_KA;
-        pivotConfigs.kP = IntakeConstants.PIVOT_INTAKE_KP;
-        pivotConfigs.kI = IntakeConstants.PIVOT_INTAKE_KI;
-        pivotConfigs.kD = IntakeConstants.PIVOT_INTAKE_KD;
+        Slot0Configs pivotGains = pivotTalonFXConfigs.Slot0;
+        pivotGains.kS = PIVOT_KS;
+        pivotGains.kV = PIVOT_KV;
+        pivotGains.kG = PIVOT_KG;
+        pivotGains.kP = PIVOT_KP;
+        pivotGains.kI = PIVOT_KI;
+        pivotGains.kD = PIVOT_KD;
+        pivotGains.GravityType = GravityTypeValue.Arm_Cosine;
 
         MotionMagicConfigs motionMagicConfigs = pivotTalonFXConfigs.MotionMagic;
 
-        motionMagicConfigs.MotionMagicCruiseVelocity = IntakeConstants.PIVOT_INTAKE_CRUISE_VELOCITY;
-        motionMagicConfigs.MotionMagicAcceleration = IntakeConstants.PIVOT_INTAKE_ACCELERATION;
+        motionMagicConfigs.MotionMagicCruiseVelocity = PIVOT_CRUISE_VELOCITY_RPS;
+        motionMagicConfigs.MotionMagicAcceleration = PIVOT_ACCELERATION_RPS2;
 
         pivotFalcon.getConfigurator().apply(pivotTalonFXConfigs);
 
-        pivotFalcon.setPosition(0);
+        pivotFalcon.setPosition(PIVOT_MAX_ANGLE.getRotations());
 
         funnelNEOConfig.secondaryCurrentLimit(80);
         funnelNEOConfig.smartCurrentLimit(40);
         funnelNEOConfig.inverted(false);
         funnelNEOConfig.idleMode(SparkBaseConfig.IdleMode.kCoast);
+        funnelNEOConfig.encoder.positionConversionFactor(1.0 / FUNNEL_GEAR_RATIO);
 
         funnelNeo.configure(
                 funnelNEOConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
@@ -134,23 +140,21 @@ public class IntakeIOReal implements IntakeIO {
                         pivotTemp)
                 .isOK();
 
-        inputs.spinMotorPosition = spinPosition.getValueAsDouble();
         inputs.spinMotorVelocityRPS = spinVelocity.getValueAsDouble();
         inputs.spinMotorAppliedVolts = spinAppliedVoltage.getValueAsDouble();
-        inputs.spinSupplyCurrent = spinSupplyCurrent.getValueAsDouble();
-        inputs.spinStatorCurrent = spinStatorCurrent.getValueAsDouble();
+        inputs.spinSupplyCurrentAmps = spinSupplyCurrent.getValueAsDouble();
+        inputs.spinStatorCurrentAmps = spinStatorCurrent.getValueAsDouble();
 
-        inputs.pivotMotorPosition = pivotPosition.getValueAsDouble();
+        inputs.pivotPosition = Rotation2d.fromRotations(pivotPosition.getValueAsDouble());
         inputs.pivotMotorVelocityRPS = pivotVelocity.getValueAsDouble();
         inputs.pivotMotorAppliedVolts = pivotAppliedVoltage.getValueAsDouble();
-        inputs.pivotSupplyCurrent = pivotSupplyCurrent.getValueAsDouble();
-        inputs.pivotStatorCurrent = pivotStatorCurrent.getValueAsDouble();
+        inputs.pivotSupplyCurrentAmps = pivotSupplyCurrent.getValueAsDouble();
+        inputs.pivotStatorCurrentAmps = pivotStatorCurrent.getValueAsDouble();
 
         inputs.funnelAppliedVolts = (funnelNeo.getAppliedOutput() * funnelNeo.getBusVoltage());
-        inputs.funnelMotorPosition = funnelEncoder.getPosition();
         inputs.funnelMotorVelocityRPS = funnelEncoder.getVelocity();
-        inputs.funnelSupplyCurrent = funnelNeo.getOutputCurrent();
-        inputs.funnelStatorCurrent = funnelNeo.getOutputCurrent();
+        inputs.funnelSupplyCurrentAmps = funnelNeo.getOutputCurrent();
+        inputs.funnelStatorCurrentAmps = funnelNeo.getOutputCurrent();
     }
 
     public void setPivotPID(double kP, double kI, double kD) {

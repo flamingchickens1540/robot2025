@@ -1,0 +1,42 @@
+package org.team1540.robot2025.subsystems.intake;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+
+public class CoralIntakeConstants {
+    public static final int SPIN_MOTOR_ID = 0;
+    public static final int PIVOT_MOTOR_ID = 1;
+    public static final int FUNNEL_MOTOR_ID = 2;
+
+    public static final double SPIN_GEAR_RATIO = 2.0;
+    public static final double FUNNEL_GEAR_RATIO = 1.0;
+
+    public static final double PIVOT_GEAR_RATIO = 9.0 * (48.0 / 28.0) * (36.0 / 18.0);
+    public static final double PIVOT_KS = 0.25;
+    public static final double PIVOT_KV = 0.12;
+    public static final double PIVOT_KG = 0.1;
+    public static final double PIVOT_KP = 2.4;
+    public static final double PIVOT_KI = 0;
+    public static final double PIVOT_KD = 0.1;
+
+    public static final int PIVOT_CRUISE_VELOCITY_RPS = 80;
+    public static final int PIVOT_ACCELERATION_RPS2 = 160;
+
+    public static final Rotation2d PIVOT_MIN_ANGLE = Rotation2d.fromDegrees(0);
+    public static final Rotation2d PIVOT_MAX_ANGLE = Rotation2d.fromDegrees(90);
+
+    public enum CoralIntakeState {
+        STOW(PIVOT_MAX_ANGLE, 0.0, 0.0),
+        INTAKE(PIVOT_MIN_ANGLE, 12.0, 12.0),
+        EJECT(PIVOT_MIN_ANGLE, -12.0, -12.0),;
+
+        public final Rotation2d pivotPosition;
+        public final double rollerVoltage;
+        public final double funnelVoltage;
+
+        CoralIntakeState(Rotation2d pivotPosition, double rollerVoltage, double funnelVoltage) {
+            this.pivotPosition = pivotPosition;
+            this.rollerVoltage = rollerVoltage;
+            this.funnelVoltage = funnelVoltage;
+        }
+    }
+}
