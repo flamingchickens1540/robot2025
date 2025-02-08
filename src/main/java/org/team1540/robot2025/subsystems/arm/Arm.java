@@ -1,10 +1,8 @@
 package org.team1540.robot2025.subsystems.arm;
 
 import static org.team1540.robot2025.subsystems.arm.ArmConstants.*;
-// import static org.team1540.robot2025.subsystems.arm.ArmConstants.KP;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
@@ -18,19 +16,16 @@ import org.team1540.robot2025.MechanismVisualizer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class Arm extends SubsystemBase {
-
     // fields:
     private final ArmIO io;
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
-    private final LinearFilter positionFilter = LinearFilter.movingAverage(5); // units: rots
     private Rotation2d setpoint = new Rotation2d();
-    private double avgPositionRots = 0;
 
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Arm/kP", KP);
     private final LoggedTunableNumber kI = new LoggedTunableNumber("Arm/kI", KI);
     private final LoggedTunableNumber kD = new LoggedTunableNumber("Arm/kD", KD);
     private final LoggedTunableNumber kG = new LoggedTunableNumber("Arm/kG", KG);
-    private final LoggedTunableNumber kS = new LoggedTunableNumber("Arm/kSF", KS);
+    private final LoggedTunableNumber kS = new LoggedTunableNumber("Arm/kS", KS);
     private final LoggedTunableNumber kV = new LoggedTunableNumber("Arm/kV", KV);
 
     private static boolean hasInstance = false;
@@ -53,8 +48,6 @@ public class Arm extends SubsystemBase {
 
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configPID(kP.get(), kI.get(), kD.get()), kP, kI, kD);
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configFF(kS.get(), kV.get(), kG.get()), kS, kV, kG);
-
-        avgPositionRots = positionFilter.calculate(inputs.position.getRotations());
     }
 
     public void holdPosition() {
@@ -64,7 +57,6 @@ public class Arm extends SubsystemBase {
     public void setPosition(Rotation2d position) {
         setpoint = Rotation2d.fromRotations(
                 MathUtil.clamp(position.getRotations(), MIN_ANGLE.getRotations(), MAX_ANGLE.getRotations()));
-        positionFilter.reset();
         io.setSetpoint(setpoint);
     }
 
@@ -76,8 +68,9 @@ public class Arm extends SubsystemBase {
         io.setBrakeMode(isBrakeMode);
     }
 
+    @AutoLogOutput(key = "Arm/AtSetpoint")
     public boolean isAtSetpoint() {
-        return MathUtil.isNear(setpoint.getRotations(), avgPositionRots, ERROR_TOLERANCE.getRotations());
+        return MathUtil.isNear(setpoint.getRotations(), inputs.position.getRotations(), ERROR_TOLERANCE.getRotations());
     }
 
     public Command setpointCommand(ArmState state) {

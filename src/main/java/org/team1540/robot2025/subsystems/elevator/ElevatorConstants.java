@@ -33,10 +33,11 @@ public class ElevatorConstants {
 
     public enum ElevatorState {
         BASE(MIN_HEIGHT_M),
+        SOURCE(0.25),
         L1(0.5),
         L2(1.0),
         L3(1.2),
-        L4(1.5),
+        L4(MAX_HEIGHT_M),
         BARGE(MAX_HEIGHT_M);
 
         public final double elevatorHeight;

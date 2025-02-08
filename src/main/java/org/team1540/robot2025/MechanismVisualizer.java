@@ -27,7 +27,6 @@ public class MechanismVisualizer {
         Pose3d arm = new Pose3d(
                 ArmConstants.ROTATIONAL_ORIGIN.plus(new Translation3d(0.0, 0.0, elevatorPositionMeters)),
                 new Rotation3d(0.0, -armPosition.getRadians(), 0.0));
-        //        arm = Pose3d.kZero;
 
         Logger.recordOutput("Mechanisms", elevatorCarriage, elevatorStage1, arm);
     }

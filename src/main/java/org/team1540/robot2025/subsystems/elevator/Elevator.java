@@ -3,7 +3,6 @@ package org.team1540.robot2025.subsystems.elevator;
 import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
@@ -24,7 +23,6 @@ public class Elevator extends SubsystemBase {
 
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
-    private final LinearFilter positionFilter = LinearFilter.movingAverage(10);
     private double setpointMeters;
 
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Elevator/kP", KP);
@@ -54,7 +52,6 @@ public class Elevator extends SubsystemBase {
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configFF(kS.get(), kV.get(), kG.get()), kS, kV, kG);
 
         MechanismVisualizer.getInstance().setElevatorPosition(inputs.positionMeters[0]);
-        positionFilter.calculate(inputs.positionMeters[0]);
 
         leaderDisconnectedAlert.set(!inputs.connection[0]);
         followerDisconnectedAlert.set(!inputs.connection[1]);
@@ -66,8 +63,9 @@ public class Elevator extends SubsystemBase {
         io.setSetpoint(setpointMeters);
     }
 
+    @AutoLogOutput(key = "Elevator/AtSetpoint")
     public boolean isAtSetpoint() {
-        return MathUtil.isNear(setpointMeters, positionFilter.lastValue(), POS_ERR_TOLERANCE_M)
+        return MathUtil.isNear(setpointMeters, inputs.positionMeters[0], POS_ERR_TOLERANCE_M)
                 || (inputs.atLowerLimit && setpointMeters <= 0);
     }
 
@@ -79,7 +77,7 @@ public class Elevator extends SubsystemBase {
         io.setVoltage(0.0);
     }
 
-    @AutoLogOutput(key = "Elevator/setpoint")
+    @AutoLogOutput(key = "Elevator/Setpoint")
     public double getSetpoint() {
         return setpointMeters;
     }

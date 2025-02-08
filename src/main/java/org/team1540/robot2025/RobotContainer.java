@@ -49,7 +49,7 @@ public class RobotContainer {
                 elevator = Elevator.createDummy();
                 arm = Arm.createDummy();
         }
-        autos = new Autos(drivetrain);
+        autos = new Autos(drivetrain, elevator, arm);
 
         configureButtonBindings();
         configureAutoRoutines();
@@ -86,6 +86,7 @@ public class RobotContainer {
     }
 
     private void configureAutoRoutines() {
+        autoChooser.addRoutine("Left Side 5 Piece", autos::leftSide5Piece);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);

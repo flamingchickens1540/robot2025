@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -19,7 +20,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 
 public class IntakeIOReal implements IntakeIO {
-
     // rotation of horizontal beams for the intake, clockwise to intake, counter-clockwise to spit out
     private final TalonFX spinFalcon = new TalonFX(IntakeConstants.SPIN_FALCON_ID);
 
@@ -27,8 +27,10 @@ public class IntakeIOReal implements IntakeIO {
     private final StatusSignal<Angle> spinPosition = spinFalcon.getPosition();
     private final StatusSignal<Voltage> spinAppliedVoltage = spinFalcon.getMotorVoltage();
     private final StatusSignal<Current> spinSupplyCurrent = spinFalcon.getSupplyCurrent();
-    private final StatusSignal<Temperature> spinTemp = spinFalcon.getDeviceTemp();
     private final StatusSignal<Current> spinStatorCurrent = spinFalcon.getStatorCurrent();
+    private final StatusSignal<Temperature> spinTemp = spinFalcon.getDeviceTemp();
+
+    private final VoltageOut spinVoltageRequest = new VoltageOut(0);
 
     // controls position of intake
     private final TalonFX pivotFalcon = new TalonFX(IntakeConstants.PIVOT_FALCON_ID);
@@ -37,10 +39,11 @@ public class IntakeIOReal implements IntakeIO {
     private final StatusSignal<Angle> pivotPosition = pivotFalcon.getPosition();
     private final StatusSignal<Voltage> pivotAppliedVoltage = pivotFalcon.getMotorVoltage();
     private final StatusSignal<Current> pivotSupplyCurrent = pivotFalcon.getSupplyCurrent();
-    private final StatusSignal<Temperature> pivotTemp = pivotFalcon.getDeviceTemp();
     private final StatusSignal<Current> pivotStatorCurrent = pivotFalcon.getStatorCurrent();
+    private final StatusSignal<Temperature> pivotTemp = pivotFalcon.getDeviceTemp();
 
     private final MotionMagicVoltage pivotPositionRequest = new MotionMagicVoltage(0).withSlot(0);
+    private final VoltageOut pivotVoltageRequest = new VoltageOut(0);
 
     // clockwise to intake, counter-clockwise to spit out
     private final SparkMax funnelNeo = new SparkMax(IntakeConstants.NEO_ID, SparkLowLevel.MotorType.kBrushless);
@@ -48,7 +51,6 @@ public class IntakeIOReal implements IntakeIO {
     RelativeEncoder funnelEncoder = funnelNeo.getEncoder();
 
     public IntakeIOReal() {
-
         TalonFXConfiguration spinTalonFXConfigs = new TalonFXConfiguration();
         TalonFXConfiguration pivotTalonFXConfigs = new TalonFXConfiguration();
         SparkMaxConfig funnelNEOConfig = new SparkMaxConfig();
@@ -89,7 +91,7 @@ public class IntakeIOReal implements IntakeIO {
 
         pivotFalcon.setPosition(0);
 
-        funnelNEOConfig.secondaryCurrentLimit(40);
+        funnelNEOConfig.secondaryCurrentLimit(80);
         funnelNEOConfig.smartCurrentLimit(40);
         funnelNEOConfig.inverted(false);
         funnelNEOConfig.idleMode(SparkBaseConfig.IdleMode.kCoast);
@@ -99,13 +101,18 @@ public class IntakeIOReal implements IntakeIO {
     }
 
     @Override
-    public void setPivot(Rotation2d rotations) {
+    public void setPivotSetpoint(Rotation2d rotations) {
         pivotFalcon.setControl(pivotPositionRequest.withPosition(rotations.getRotations()));
     }
 
     @Override
+    public void setPivotVoltage(double voltage) {
+        pivotFalcon.setControl(pivotVoltageRequest.withOutput(voltage));
+    }
+
+    @Override
     public void setRollerVoltage(double voltage) {
-        spinFalcon.setVoltage(voltage);
+        spinFalcon.setControl(spinVoltageRequest.withOutput(voltage));
     }
 
     @Override
@@ -115,33 +122,52 @@ public class IntakeIOReal implements IntakeIO {
 
     @Override
     public void updateInputs(CoralIntakeInputs inputs) {
-        BaseStatusSignal.refreshAll(
-                spinVelocity,
-                spinPosition,
-                spinAppliedVoltage,
-                spinSupplyCurrent,
-                spinTemp,
-                spinStatorCurrent,
-                pivotVelocity,
-                pivotPosition,
-                pivotAppliedVoltage,
-                pivotSupplyCurrent,
-                pivotTemp,
-                pivotStatorCurrent);
+        inputs.spinConnected = BaseStatusSignal.refreshAll(
+                        spinVelocity, spinPosition, spinAppliedVoltage, spinSupplyCurrent, spinStatorCurrent, spinTemp)
+                .isOK();
+        inputs.pivotConnected = BaseStatusSignal.refreshAll(
+                        pivotVelocity,
+                        pivotPosition,
+                        pivotAppliedVoltage,
+                        pivotSupplyCurrent,
+                        pivotStatorCurrent,
+                        pivotTemp)
+                .isOK();
 
         inputs.spinMotorPosition = spinPosition.getValueAsDouble();
         inputs.spinMotorVelocityRPS = spinVelocity.getValueAsDouble();
         inputs.spinMotorAppliedVolts = spinAppliedVoltage.getValueAsDouble();
-        inputs.spinCurrentAmps = spinStatorCurrent.getValueAsDouble();
+        inputs.spinSupplyCurrent = spinSupplyCurrent.getValueAsDouble();
+        inputs.spinStatorCurrent = spinStatorCurrent.getValueAsDouble();
 
         inputs.pivotMotorPosition = pivotPosition.getValueAsDouble();
         inputs.pivotMotorVelocityRPS = pivotVelocity.getValueAsDouble();
         inputs.pivotMotorAppliedVolts = pivotAppliedVoltage.getValueAsDouble();
-        inputs.pivotCurrentAmps = pivotStatorCurrent.getValueAsDouble();
+        inputs.pivotSupplyCurrent = pivotSupplyCurrent.getValueAsDouble();
+        inputs.pivotStatorCurrent = pivotStatorCurrent.getValueAsDouble();
 
+        inputs.funnelAppliedVolts = (funnelNeo.getAppliedOutput() * funnelNeo.getBusVoltage());
         inputs.funnelMotorPosition = funnelEncoder.getPosition();
         inputs.funnelMotorVelocityRPS = funnelEncoder.getVelocity();
-        inputs.funnelCurrentAmps = funnelNeo.getOutputCurrent();
-        inputs.funnelOutputVoltage = (funnelNeo.getAppliedOutput() * funnelNeo.getBusVoltage());
+        inputs.funnelSupplyCurrent = funnelNeo.getOutputCurrent();
+        inputs.funnelStatorCurrent = funnelNeo.getOutputCurrent();
+    }
+
+    public void setPivotPID(double kP, double kI, double kD) {
+        Slot0Configs configs = new Slot0Configs();
+        pivotFalcon.getConfigurator().refresh(configs);
+        configs.kP = kP;
+        configs.kI = kI;
+        configs.kD = kD;
+        pivotFalcon.getConfigurator().apply(configs);
+    }
+
+    public void setPivotFF(double kS, double kV, double kG) {
+        Slot0Configs configs = new Slot0Configs();
+        pivotFalcon.getConfigurator().refresh(configs);
+        configs.kS = kS;
+        configs.kV = kV;
+        configs.kA = kG;
+        pivotFalcon.getConfigurator().apply(configs);
     }
 }
