@@ -14,17 +14,21 @@ import org.team1540.robot2025.subsystems.arm.ArmConstants;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
 import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
+import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.subsystems.intake.CoralIntakeConstants;
+import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
 
     private final Drivetrain drivetrain;
+    private final AprilTagVision aprilTagVision;
     private final Elevator elevator;
     private final Arm arm;
     private final CoralIntake coralIntake;
+    private final Grabber grabber;
 
     private final Autos autos;
     private final LoggedAutoChooser autoChooser = new LoggedAutoChooser("Auto Chooser");
@@ -35,25 +39,31 @@ public class RobotContainer {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
+                aprilTagVision = AprilTagVision.createReal();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
                 coralIntake = CoralIntake.createReal();
+                grabber = Grabber.createReal();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
+                aprilTagVision = AprilTagVision.createSim();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
                 coralIntake = CoralIntake.createSim();
+                grabber = Grabber.createSim();
 
                 RobotState.getInstance().resetPose(new Pose2d(3.0, 3.0, Rotation2d.kZero));
                 break;
             default:
                 // Replayed robot, disable IO implementations
                 drivetrain = Drivetrain.createDummy();
+                aprilTagVision = AprilTagVision.createDummy();
                 elevator = Elevator.createDummy();
                 arm = Arm.createDummy();
                 coralIntake = CoralIntake.createDummy();
+                grabber = Grabber.createDummy();
         }
         autos = new Autos(drivetrain, elevator, arm, coralIntake);
 

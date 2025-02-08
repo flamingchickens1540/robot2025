@@ -12,13 +12,11 @@ public class Grabber extends SubsystemBase {
     private final SensorIO sensorIO;
     private final GrabberIOInputsAutoLogged grabberInputs = new GrabberIOInputsAutoLogged();
     private final SensorIOInputsAutoLogged sensorInputs = new SensorIOInputsAutoLogged();
-    private final Alert motorDisconnectedAlert =
-            new Alert("Grabber motor is disconnected", Alert.AlertType.kWarning);
+    private final Alert motorDisconnectedAlert = new Alert("Grabber motor is disconnected", Alert.AlertType.kWarning);
     private final Alert beforeSensorDisconnectedAlert =
             new Alert("Before sensor is disconnected", Alert.AlertType.kWarning);
     private final Alert afterSensorDisconnectedAlert =
             new Alert("After sensor is disconnected", Alert.AlertType.kWarning);
-
 
     private Grabber(GrabberIO grabberIO, SensorIO sensorIO) {
         this.grabberIO = grabberIO;
