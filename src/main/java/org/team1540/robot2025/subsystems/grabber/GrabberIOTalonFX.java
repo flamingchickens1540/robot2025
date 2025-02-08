@@ -5,7 +5,6 @@ import static org.team1540.robot2025.subsystems.grabber.GrabberConstants.*;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -23,7 +22,6 @@ public class GrabberIOTalonFX implements GrabberIO {
     private final StatusSignal<Angle> motorAngle = motor.getPosition();
 
     private final VoltageOut voltageControl = new VoltageOut(0).withEnableFOC(true);
-    private final VelocityVoltage velocityControl = new VelocityVoltage(0).withEnableFOC(true);
 
     public GrabberIOTalonFX() {
         TalonFXConfiguration motorConfig = new TalonFXConfiguration();
@@ -46,14 +44,15 @@ public class GrabberIOTalonFX implements GrabberIO {
 
     @Override
     public void updateInputs(GrabberIOInputs inputs) {
-        BaseStatusSignal.refreshAll(
-                motorSupplyCurrent, motorStatorCurrent, motorVoltage, motorTemp, motorVelocity, motorAngle);
+        inputs.motorConnected = BaseStatusSignal.refreshAll(
+                        motorSupplyCurrent, motorStatorCurrent, motorVoltage, motorTemp, motorVelocity, motorAngle)
+                .isOK();
 
         inputs.motorSupplyCurrentAmps = motorSupplyCurrent.getValueAsDouble();
         inputs.motorStatorCurrentAmps = motorStatorCurrent.getValueAsDouble();
         inputs.motorAppliedVolts = motorVoltage.getValueAsDouble();
         inputs.motorTempCelsius = motorTemp.getValueAsDouble();
-        inputs.velocityRPM = motorVelocity.getValueAsDouble();
+        inputs.motorVelocityRPM = motorVelocity.getValueAsDouble();
     }
 
     @Override

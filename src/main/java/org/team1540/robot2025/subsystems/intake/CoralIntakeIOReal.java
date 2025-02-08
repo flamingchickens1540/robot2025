@@ -93,7 +93,6 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
         motionMagicConfigs.MotionMagicAcceleration = PIVOT_ACCELERATION_RPS2;
 
         pivotFalcon.getConfigurator().apply(pivotTalonFXConfigs);
-
         pivotFalcon.setPosition(PIVOT_MAX_ANGLE.getRotations());
 
         funnelNEOConfig.secondaryCurrentLimit(80);
@@ -104,6 +103,23 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
 
         funnelNeo.configure(
                 funnelNEOConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+
+        BaseStatusSignal.setUpdateFrequencyForAll(
+                50.0,
+                spinVelocity,
+                spinPosition,
+                spinAppliedVoltage,
+                spinSupplyCurrent,
+                spinStatorCurrent,
+                spinTemp,
+                pivotVelocity,
+                pivotPosition,
+                pivotAppliedVoltage,
+                pivotSupplyCurrent,
+                pivotStatorCurrent,
+                pivotTemp);
+        spinFalcon.optimizeBusUtilization();
+        pivotFalcon.optimizeBusUtilization();
     }
 
     @Override

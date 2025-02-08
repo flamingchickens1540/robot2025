@@ -21,7 +21,7 @@ public class GrabberIOSim implements GrabberIO {
         sim.update(LOOP_PERIOD_SECS);
         inputs.motorSupplyCurrentAmps = sim.getCurrentDrawAmps();
         inputs.motorAppliedVolts = motorVoltage;
-        inputs.velocityRPM = sim.getAngularVelocityRPM();
+        inputs.motorVelocityRPM = sim.getAngularVelocityRPM();
     }
 
     @Override
