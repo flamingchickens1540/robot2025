@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -17,9 +18,10 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.Logger;
-import org.team1540.robot2025.subsystems.drive.Drivetrain;
-import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO.PoseObservation;
+import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
+import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO;
 
 public class RobotState {
     private static RobotState instance = null;
@@ -29,6 +31,8 @@ public class RobotState {
         return instance;
     }
 
+    private final SwerveDriveKinematics kinematics =
+            new SwerveDriveKinematics(DrivetrainConstants.getModuleTranslations());
     private final SwerveDrivePoseEstimator poseEstimator;
     private ChassisSpeeds robotVelocity = new ChassisSpeeds();
 
@@ -39,14 +43,13 @@ public class RobotState {
         new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()
     };
 
-    //    private Trajectory<SwerveSample> activeTrajectory = null;
     private Pose2d[] activeTrajectory;
 
     private final Field2d field = new Field2d();
 
     private RobotState() {
         poseEstimator = new SwerveDrivePoseEstimator(
-                Drivetrain.kKinematics,
+                kinematics,
                 lastGyroRotation,
                 lastModulePositions,
                 Pose2d.kZero,
@@ -55,6 +58,12 @@ public class RobotState {
         resetTimer.start();
 
         SmartDashboard.putData(field);
+
+        AutoLogOutputManager.addObject(this);
+    }
+
+    public SwerveDriveKinematics getKinematics() {
+        return kinematics;
     }
 
     public void addOdometryObservation(SwerveModulePosition[] modulePositions, Rotation2d gyroAngle, double timestamp) {
@@ -64,7 +73,7 @@ public class RobotState {
         field.setRobotPose(getEstimatedPose());
     }
 
-    public void addVisionMeasurement(PoseObservation visionPose) {
+    public void addVisionMeasurement(AprilTagVisionIO.PoseObservation visionPose) {
         if (shouldAcceptVision(visionPose)) {
             poseEstimator.addVisionMeasurement(
                     visionPose.estimatedPoseMeters().toPose2d(),
@@ -73,7 +82,7 @@ public class RobotState {
         }
     }
 
-    private Matrix<N3, N1> getStdDevs(PoseObservation poseObservation) {
+    private Matrix<N3, N1> getStdDevs(AprilTagVisionIO.PoseObservation poseObservation) {
         double xyStdDev =
                 XY_STD_DEV_COEFF * Math.pow(poseObservation.avgTagDistance(), 2.0) / poseObservation.numTagsSeen();
         double rotStdDev =
@@ -83,7 +92,7 @@ public class RobotState {
         return VecBuilder.fill(xyStdDev, xyStdDev, acceptYaw ? rotStdDev : Double.POSITIVE_INFINITY);
     }
 
-    private boolean shouldAcceptVision(PoseObservation poseObservation) {
+    private boolean shouldAcceptVision(AprilTagVisionIO.PoseObservation poseObservation) {
         Pose3d estimatedPose = poseObservation.estimatedPoseMeters();
         return poseObservation.numTagsSeen() >= MIN_ACCEPTED_NUM_TAGS // Must see sufficient tags
                 // Must be within field roughly
@@ -116,7 +125,7 @@ public class RobotState {
     }
 
     public void resetPose(Pose2d newPose) {
-        if (Constants.kCurrentMode == Constants.Mode.SIM) SimState.getInstance().resetSimPose(newPose);
+        if (Constants.CURRENT_MODE == Constants.Mode.SIM) SimState.getInstance().resetSimPose(newPose);
         poseEstimator.resetPosition(lastGyroRotation, lastModulePositions, newPose);
         resetTimer.restart();
     }
