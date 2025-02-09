@@ -90,6 +90,10 @@ public class CoralIntake extends SubsystemBase {
         setPivotVoltage(0);
     }
 
+    public void holdPivot() {
+        setPivotPosition(inputs.pivotPosition);
+    }
+
     @AutoLogOutput(key = "CoralIntake/PivotAtSetpoint")
     public boolean isPivotAtSetpoint() {
         return MathUtil.isNear(pivotSetpoint.getDegrees(), inputs.pivotPosition.getDegrees(), 3.0);

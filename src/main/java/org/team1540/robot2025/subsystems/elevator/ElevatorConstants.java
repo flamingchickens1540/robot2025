@@ -40,10 +40,10 @@ public class ElevatorConstants {
         L4(MAX_HEIGHT_M),
         BARGE(MAX_HEIGHT_M);
 
-        public final double elevatorHeight;
+        public final double height;
 
         ElevatorState(double height) {
-            this.elevatorHeight = height;
+            this.height = height;
         }
     }
 }
