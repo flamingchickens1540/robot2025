@@ -10,6 +10,13 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 
 public class ElevatorIOSim implements ElevatorIO {
+    private static final double SIM_KP = 300;
+    private static final double SIM_KI = 0;
+    private static final double SIM_KD = 0;
+    private static final double SIM_KS = 0.03178;
+    private static final double SIM_KV = 2.562;
+    private static final double SIM_KG = 0;
+
     private final ElevatorSim elevatorSim = new ElevatorSim(
             DCMotor.getKrakenX60(2),
             GEAR_RATIO,
@@ -21,8 +28,8 @@ public class ElevatorIOSim implements ElevatorIO {
             MIN_HEIGHT_M);
     private double appliedVolts = 0.0;
     private final ProfiledPIDController controller = new ProfiledPIDController(
-            KP, KI, KD, new TrapezoidProfile.Constraints(CRUISE_VELOCITY_MPS, MAXIMUM_ACCELERATION_MPS2));
-    private ElevatorFeedforward feedforward = new ElevatorFeedforward(KS, KG, KV);
+            SIM_KP, SIM_KI, SIM_KD, new TrapezoidProfile.Constraints(CRUISE_VELOCITY_MPS, MAXIMUM_ACCELERATION_MPS2));
+    private ElevatorFeedforward feedforward = new ElevatorFeedforward(SIM_KS, SIM_KG, SIM_KV);
     private boolean isClosedLoop;
     private TrapezoidProfile.State setpoint;
 
@@ -54,15 +61,5 @@ public class ElevatorIOSim implements ElevatorIO {
     public void setVoltage(double volts) {
         isClosedLoop = false;
         appliedVolts = volts;
-    }
-
-    @Override
-    public void configFF(double kS, double kV, double kG) {
-        feedforward = new ElevatorFeedforward(kS, kG, kV);
-    }
-
-    @Override
-    public void configPID(double kP, double kI, double kD) {
-        controller.setPID(kP, kI, kD);
     }
 }

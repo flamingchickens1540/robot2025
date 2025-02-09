@@ -106,6 +106,10 @@ public class Elevator extends SubsystemBase {
         setPosition(inputs.positionMeters[0]);
     }
 
+    public void resetPosition(double positionMeters) {
+        io.resetPosition(positionMeters);
+    }
+
     public Command setpointCommand(ElevatorState state) {
         return Commands.runOnce(() -> setPosition(state.elevatorHeight), this)
                 .andThen(Commands.waitUntil(this::isAtSetpoint));

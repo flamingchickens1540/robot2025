@@ -13,6 +13,7 @@ import org.team1540.robot2025.subsystems.Superstructure;
 import org.team1540.robot2025.subsystems.arm.Arm;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
+import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
@@ -20,6 +21,7 @@ import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
+    private final CommandXboxController copilot = new CommandXboxController(1);
 
     private final Drivetrain drivetrain;
     private final AprilTagVision aprilTagVision;
@@ -38,12 +40,12 @@ public class RobotContainer {
         switch (Constants.CURRENT_MODE) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
-                drivetrain = Drivetrain.createReal();
-                aprilTagVision = AprilTagVision.createReal();
+                drivetrain = Drivetrain.createDummy();
+                aprilTagVision = AprilTagVision.createDummy();
                 elevator = Elevator.createReal();
-                arm = Arm.createReal();
-                coralIntake = CoralIntake.createReal();
-                grabber = Grabber.createReal();
+                arm = Arm.createDummy();
+                coralIntake = CoralIntake.createDummy();
+                grabber = Grabber.createDummy();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
@@ -78,6 +80,11 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
+
+        copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
+        copilot.x().toggleOnTrue(elevator.manualCommand(() -> -copilot.getLeftY()));
+        copilot.a().whileTrue(elevator.setpointCommand(ElevatorConstants.ElevatorState.L1));
+        copilot.b().whileTrue(elevator.setpointCommand(ElevatorConstants.ElevatorState.L3));
     }
 
     private void configureAutoRoutines() {

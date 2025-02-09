@@ -15,6 +15,13 @@ import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.SimState;
 
 public class CoralIntakeIOSim implements CoralIntakeIO {
+    private static final double SIM_KS = 0.01;
+    private static final double SIM_KV = 0.58;
+    private static final double SIM_KG = 0.2;
+    private static final double SIM_KP = 40;
+    private static final double SIM_KI = 0;
+    private static final double SIM_KD = 0;
+
     private final DCMotorSim spinSim = new DCMotorSim(
             LinearSystemId.createDCMotorSystem(DCMotor.getFalcon500Foc(1), 0.001, SPIN_GEAR_RATIO),
             DCMotor.getFalcon500Foc(1));
@@ -35,11 +42,11 @@ public class CoralIntakeIOSim implements CoralIntakeIO {
     private double pivotAppliedVolts = 0.0;
 
     private final ProfiledPIDController pivotController = new ProfiledPIDController(
-            PIVOT_KP,
-            PIVOT_KI,
-            PIVOT_KD,
+            SIM_KP,
+            SIM_KI,
+            SIM_KD,
             new TrapezoidProfile.Constraints(PIVOT_CRUISE_VELOCITY_RPS, PIVOT_ACCELERATION_RPS2));
-    private ArmFeedforward pivotFeedforward = new ArmFeedforward(PIVOT_KS, PIVOT_KG, PIVOT_KV);
+    private ArmFeedforward pivotFeedforward = new ArmFeedforward(SIM_KS, SIM_KG, SIM_KV);
     private boolean isPivotClosedLoop;
 
     public CoralIntakeIOSim() {

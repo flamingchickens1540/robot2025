@@ -12,6 +12,13 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 public class ArmIOSim implements ArmIO {
+    private static final double SIM_KP = 300;
+    private static final double SIM_KI = 50;
+    private static final double SIM_KD = 1;
+    private static final double SIM_KS = 0.03;
+    private static final double SIM_KG = 0.37;
+    private static final double SIM_KV = 0.8;
+
     // fields
     private final SingleJointedArmSim armSim = new SingleJointedArmSim(
             DCMotor.getKrakenX60(1),
@@ -24,9 +31,9 @@ public class ArmIOSim implements ArmIO {
             ArmState.STOW.angle.get().getRadians());
 
     private double armAppliedVolts = 0.0;
-    private final ProfiledPIDController controller =
-            new ProfiledPIDController(KP, KI, KD, new TrapezoidProfile.Constraints(MAX_VELOCITY_RPS, MAX_ACCELERATION));
-    private ArmFeedforward feedforward = new ArmFeedforward(KS, KG, KV);
+    private final ProfiledPIDController controller = new ProfiledPIDController(
+            SIM_KP, SIM_KI, SIM_KD, new TrapezoidProfile.Constraints(MAX_VELOCITY_RPS, MAX_ACCELERATION));
+    private ArmFeedforward feedforward = new ArmFeedforward(SIM_KS, SIM_KG, SIM_KV);
     private boolean isClosedLoop;
 
     @Override
@@ -61,15 +68,5 @@ public class ArmIOSim implements ArmIO {
     public void setVoltage(double volts) {
         isClosedLoop = false;
         armAppliedVolts = volts;
-    }
-
-    @Override
-    public void configPID(double kP, double kI, double kD) {
-        controller.setPID(kP, kI, kD);
-    }
-
-    @Override
-    public void configFF(double kS, double kV, double kG) {
-        feedforward = new ArmFeedforward(kS, kG, kV);
     }
 }

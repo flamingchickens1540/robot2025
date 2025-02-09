@@ -26,6 +26,8 @@ public interface ElevatorIO {
 
     default void setBrakeMode(boolean brakeMode) {}
 
+    default void resetPosition(double positionMeters) {}
+
     default void configPID(double kP, double kI, double kD) {}
 
     default void configFF(double kS, double kV, double kG) {}
