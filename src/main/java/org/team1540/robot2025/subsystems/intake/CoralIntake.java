@@ -130,14 +130,14 @@ public class CoralIntake extends SubsystemBase {
     }
 
     public Command commandToSetpoint(CoralIntakeState state) {
-        return Commands.runOnce(
+        return Commands.run(
                         () -> {
                             setPivotPosition(state.pivotPosition());
                             setRollerVoltage(state.rollerVoltage.getAsDouble());
                             setFunnelVoltage(state.funnelVoltage.getAsDouble());
                         },
                         this)
-                .andThen(Commands.waitUntil(this::isPivotAtSetpoint));
+                .until(this::isPivotAtSetpoint);
     }
 
     public static CoralIntake createReal() {
