@@ -1,10 +1,10 @@
 package org.team1540.robot2025.subsystems.grabber;
 
-import au.grapplerobotics.LaserCan;
-import au.grapplerobotics.interfaces.LaserCanInterface;
-
 import static au.grapplerobotics.interfaces.LaserCanInterface.LASERCAN_STATUS_VALID_MEASUREMENT;
 import static org.team1540.robot2025.subsystems.grabber.GrabberConstants.*;
+
+import au.grapplerobotics.LaserCan;
+import au.grapplerobotics.interfaces.LaserCanInterface;
 
 public class SensorIOLaserCAN implements SensorIO {
     private final LaserCan beforeLaserCAN;
@@ -26,6 +26,4 @@ public class SensorIOLaserCAN implements SensorIO {
                 && afterMeasurement.status == LASERCAN_STATUS_VALID_MEASUREMENT
                 && afterMeasurement.distance_mm <= LASER_CAN_DETECT_DISTANCE_MM;
     }
-
-
 }

@@ -6,6 +6,7 @@ public interface ElevatorIO {
 
     @AutoLog
     class ElevatorIOInputs {
+        public boolean[] connection = new boolean[2];
 
         public double[] supplyCurrentAmps = new double[2];
         public double[] statorCurrentAmps = new double[2];
@@ -13,8 +14,6 @@ public interface ElevatorIO {
         public double[] tempCelsius = new double[2];
         public double[] positionMeters = new double[2];
         public double[] velocityMPS = new double[2];
-        public boolean[] connection;
-
         public boolean atUpperLimit = false;
         public boolean atLowerLimit = false;
     }
@@ -26,6 +25,8 @@ public interface ElevatorIO {
     default void setSetpoint(double setpointMeters) {}
 
     default void setBrakeMode(boolean brakeMode) {}
+
+    default void resetPosition(double positionMeters) {}
 
     default void configPID(double kP, double kI, double kD) {}
 

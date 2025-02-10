@@ -5,8 +5,10 @@ import static edu.wpi.first.units.Units.KilogramSquareMeters;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Timer;
+import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -28,6 +30,7 @@ public class SimState {
     }
 
     private final SwerveDriveSimulation driveSim;
+    private final IntakeSimulation intakeSim;
 
     private SimState() {
         if (Constants.CURRENT_MODE != Constants.Mode.SIM)
@@ -53,6 +56,9 @@ public class SimState {
                         DrivetrainConstants.WHEEL_COF)));
         driveSim = new SwerveDriveSimulation(simConfig, Pose2d.kZero);
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
+
+        intakeSim = IntakeSimulation.OverTheBumperIntake(
+                "", driveSim, Inches.of(19.275), Inches.of(14.223), IntakeSimulation.IntakeSide.FRONT, 1);
 
         AutoLogOutputManager.addObject(this);
     }
@@ -81,7 +87,7 @@ public class SimState {
         driveSim.setSimulationWorldPose(pose);
     }
 
-    public double[] getSimulationOdometryTimestamps() {
+    public double[] getSimOdometryTimestamps() {
         double[] odometryTimestamps = new double[SimulatedArena.getSimulationSubTicksIn1Period()];
         for (int i = 0; i < odometryTimestamps.length; i++) {
             odometryTimestamps[i] = Timer.getFPGATimestamp()
@@ -89,5 +95,13 @@ public class SimState {
                     + i * SimulatedArena.getSimulationDt().in(Seconds);
         }
         return odometryTimestamps;
+    }
+
+    public void addIntakeData(Rotation2d pivotPosition) {
+        if (pivotPosition.getDegrees() < 30) {
+            intakeSim.startIntake();
+        } else {
+            intakeSim.stopIntake();
+        }
     }
 }

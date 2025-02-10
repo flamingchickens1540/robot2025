@@ -89,7 +89,7 @@ public class ModuleIOSim implements ModuleIO {
         inputs.turnSupplyCurrentAmps = moduleSim.getSteerMotorSupplyCurrent().in(Amps);
         inputs.turnStatorCurrentAmps = moduleSim.getSteerMotorStatorCurrent().in(Amps);
 
-        inputs.odometryTimestamps = SimState.getInstance().getSimulationOdometryTimestamps();
+        inputs.odometryTimestamps = SimState.getInstance().getSimOdometryTimestamps();
         inputs.odometryDrivePositionsRads = Arrays.stream(moduleSim.getCachedDriveWheelFinalPositions())
                 .mapToDouble(angle -> angle.in(Radians))
                 .toArray();

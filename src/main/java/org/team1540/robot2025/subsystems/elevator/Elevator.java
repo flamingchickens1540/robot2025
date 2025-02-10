@@ -3,27 +3,43 @@ package org.team1540.robot2025.subsystems.elevator;
 import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
-import org.team1540.robot2025.util.JoystickUtil;
+import org.team1540.robot2025.commands.CharacterizationCommands;
+import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
-import org.team1540.robot2025.util.MechanismVisualiser;
 
-public class Elevator implements Subsystem {
+public class Elevator extends SubsystemBase {
+    private static boolean hasInstance = false;
+
+    public enum ElevatorState {
+        BASE(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
+        SOURCE(new LoggedTunableNumber("Elevator/Setpoints/Source", 0.25)),
+        L1(new LoggedTunableNumber("Elevator/Setpoints/L1", 0.5)),
+        L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 1.0)),
+        L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 1.5)),
+        L4(new LoggedTunableNumber("Elevator/Setpoints/L4", MAX_HEIGHT_M)),
+        BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
+        ;
+
+        public final DoubleSupplier height;
+
+        ElevatorState(DoubleSupplier height) {
+            this.height = height;
+        }
+    }
+
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
-    private final LinearFilter positionFilter = LinearFilter.movingAverage(10);
     private double setpointMeters;
-    private final double DEADZONE = 0.2;
-    private static boolean hasInstance = false;
 
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Elevator/kP", KP);
     private final LoggedTunableNumber kI = new LoggedTunableNumber("Elevator/kI", KI);
@@ -31,6 +47,9 @@ public class Elevator implements Subsystem {
     private final LoggedTunableNumber kS = new LoggedTunableNumber("Elevator/kS", KS);
     private final LoggedTunableNumber kV = new LoggedTunableNumber("Elevator/kV", KV);
     private final LoggedTunableNumber kG = new LoggedTunableNumber("Elevator/kG", KG);
+
+    private final Alert leaderDisconnectedAlert = new Alert("Elevator leader disconnected", Alert.AlertType.kError);
+    private final Alert followerDisconnectedAlert = new Alert("Elevator follower disconnected", Alert.AlertType.kError);
 
     private Elevator(ElevatorIO elevatorIO) {
         if (hasInstance) throw new IllegalStateException("Instance of elevator already exists");
@@ -45,25 +64,24 @@ public class Elevator implements Subsystem {
 
         if (RobotState.isDisabled()) stop();
 
-        if (kP.hasChanged(hashCode()) || kI.hasChanged(hashCode()) || kD.hasChanged(hashCode())) {
-            io.configPID(kP.get(), kI.get(), kD.get());
-        }
-        if (kS.hasChanged(hashCode()) || kV.hasChanged(hashCode()) || kG.hasChanged(hashCode())) {
-            io.configFF(kS.get(), kV.get(), kG.get());
-        }
+        LoggedTunableNumber.ifChanged(hashCode(), () -> io.configPID(kP.get(), kI.get(), kD.get()), kP, kI, kD);
+        LoggedTunableNumber.ifChanged(hashCode(), () -> io.configFF(kS.get(), kV.get(), kG.get()), kS, kV, kG);
 
-        MechanismVisualiser.setElevatorPosition(inputs.positionMeters[0]);
-        positionFilter.calculate(inputs.positionMeters[0]);
+        MechanismVisualizer.getInstance().setElevatorPosition(inputs.positionMeters[0]);
+
+        leaderDisconnectedAlert.set(!inputs.connection[0]);
+        followerDisconnectedAlert.set(!inputs.connection[1]);
     }
 
     public void setPosition(double positionMeters) {
-        positionMeters = MathUtil.clamp(positionMeters, MIN_HEIGHT, MAX_HEIGHT);
+        positionMeters = MathUtil.clamp(positionMeters, MIN_HEIGHT_M, MAX_HEIGHT_M);
         setpointMeters = positionMeters;
         io.setSetpoint(setpointMeters);
     }
 
+    @AutoLogOutput(key = "Elevator/AtSetpoint")
     public boolean isAtSetpoint() {
-        return MathUtil.isNear(setpointMeters, positionFilter.lastValue(), POS_ERR_TOLERANCE_METERS)
+        return MathUtil.isNear(setpointMeters, inputs.positionMeters[0], POS_ERR_TOLERANCE_M)
                 || (inputs.atLowerLimit && setpointMeters <= 0);
     }
 
@@ -75,7 +93,7 @@ public class Elevator implements Subsystem {
         io.setVoltage(0.0);
     }
 
-    @AutoLogOutput(key = "Elevator/setpoint")
+    @AutoLogOutput(key = "Elevator/Setpoint")
     public double getSetpoint() {
         return setpointMeters;
     }
@@ -104,21 +122,24 @@ public class Elevator implements Subsystem {
         setPosition(inputs.positionMeters[0]);
     }
 
+    public void resetPosition(double positionMeters) {
+        io.resetPosition(positionMeters);
+    }
+
     public Command setpointCommand(ElevatorState state) {
-        return Commands.runOnce(() -> setPosition(state.elevatorHeight), this).until(this::isAtSetpoint);
+        return Commands.run(() -> setPosition(state.height.getAsDouble()), this).until(this::isAtSetpoint);
     }
 
     public Command manualCommand(DoubleSupplier input) {
-        return Commands.runEnd(
-                () -> {
-                    setVoltage(JoystickUtil.smartDeadzone(input.getAsDouble(), DEADZONE));
-                },
-                this::holdPosition,
-                this);
+        return Commands.runEnd(() -> setVoltage(input.getAsDouble()), this::holdPosition, this);
     }
 
     public Command runSetpointCommand(ElevatorState state) {
-        return Commands.run(() -> setPosition(state.elevatorHeight), this);
+        return Commands.run(() -> setPosition(state.height.getAsDouble()), this);
+    }
+
+    public Command feedforwardCharacterizationCommand() {
+        return CharacterizationCommands.feedforward(this::setVoltage, this::getVelocity, this);
     }
 
     public static Elevator createReal() {

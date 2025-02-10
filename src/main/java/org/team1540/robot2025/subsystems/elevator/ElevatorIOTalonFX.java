@@ -18,7 +18,6 @@ import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 public class ElevatorIOTalonFX implements ElevatorIO {
-
     private final MotionMagicVoltage profiledPositionControl = new MotionMagicVoltage(0.0).withEnableFOC(true);
 
     // Leader Elevator Motor
@@ -67,8 +66,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
         config.Slot0.kG = KG;
         config.Slot0.GravityType = GravityTypeValue.Elevator_Static;
 
-        config.MotionMagic.MotionMagicCruiseVelocity = 1;
-        config.MotionMagic.MotionMagicAcceleration = 2;
+        config.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY_MPS;
+        config.MotionMagic.MotionMagicAcceleration = MAXIMUM_ACCELERATION_MPS2;
 
         leader.getConfigurator().apply(config);
         follower.getConfigurator().apply(config);
@@ -110,7 +109,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                 followerStatorCurrent,
                 followerTemp);
         inputs.connection = new boolean[] {
-            leaderDebouncer.calculate(leaderStatus.isOK()), followerDebouncer.calculate(leaderStatus.isOK())
+            leaderDebouncer.calculate(leaderStatus.isOK()), followerDebouncer.calculate(followerStatus.isOK())
         };
         inputs.supplyCurrentAmps =
                 new double[] {leaderSupplyCurrent.getValueAsDouble(), followerSupplyCurrent.getValueAsDouble()};
@@ -121,8 +120,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                 new double[] {leaderStatorCurrent.getValueAsDouble(), followerStatorCurrent.getValueAsDouble()};
         inputs.positionMeters = new double[] {leaderPosition.getValueAsDouble(), followerPosition.getValueAsDouble()};
         inputs.velocityMPS = new double[] {leaderVelocity.getValueAsDouble(), followerVelocity.getValueAsDouble()};
-        inputs.atUpperLimit = upperLimitSwitch.get();
-        inputs.atLowerLimit = lowerLimitSwitch.get();
+        inputs.atUpperLimit = !upperLimitSwitch.get();
+        inputs.atLowerLimit = !lowerLimitSwitch.get();
     }
 
     public void setVoltage(double volts) {
@@ -138,7 +137,12 @@ public class ElevatorIOTalonFX implements ElevatorIO {
     public void setBrakeMode(boolean brakeMode) {
         leader.setNeutralMode(brakeMode ? NeutralModeValue.Brake : NeutralModeValue.Coast);
         follower.setNeutralMode(brakeMode ? NeutralModeValue.Brake : NeutralModeValue.Coast);
-        // follower.setControl(followerControl);
+    }
+
+    @Override
+    public void resetPosition(double positionMeters) {
+        leader.setPosition(positionMeters);
+        follower.setPosition(positionMeters);
     }
 
     public void configPID(double kP, double kI, double kD) {
