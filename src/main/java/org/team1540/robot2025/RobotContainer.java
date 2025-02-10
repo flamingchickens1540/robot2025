@@ -43,7 +43,7 @@ public class RobotContainer {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
-                aprilTagVision = AprilTagVision.createReal();
+                aprilTagVision = AprilTagVision.createDummy();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
                 coralIntake = CoralIntake.createReal();
