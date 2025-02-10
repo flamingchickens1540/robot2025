@@ -167,7 +167,7 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
         inputs.pivotSupplyCurrentAmps = pivotSupplyCurrent.getValueAsDouble();
         inputs.pivotStatorCurrentAmps = pivotStatorCurrent.getValueAsDouble();
 
-        inputs.funnelAppliedVolts = (funnelNeo.getAppliedOutput() * funnelNeo.getBusVoltage());
+        inputs.funnelMotorAppliedVolts = (funnelNeo.getAppliedOutput() * funnelNeo.getBusVoltage());
         inputs.funnelMotorVelocityRPS = funnelEncoder.getVelocity();
         inputs.funnelSupplyCurrentAmps = funnelNeo.getOutputCurrent();
         inputs.funnelStatorCurrentAmps = funnelNeo.getOutputCurrent();

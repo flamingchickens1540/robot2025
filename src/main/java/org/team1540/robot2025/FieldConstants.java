@@ -53,20 +53,14 @@ public class FieldConstants {
         public static final double faceToZoneLine =
                 Units.inchesToMeters(12); // Side of the reef to the inside of the reef zone line
 
-        public static final Pose2d[] centerFaces =
-                new Pose2d[] {
-                        new Pose2d(
-                                Units.inchesToMeters(144.003), Units.inchesToMeters(158.500), Rotation2d.fromDegrees(180)),
-                        new Pose2d(
-                                Units.inchesToMeters(160.373), Units.inchesToMeters(186.857), Rotation2d.fromDegrees(120)),
-                        new Pose2d(
-                                Units.inchesToMeters(193.116), Units.inchesToMeters(186.858), Rotation2d.fromDegrees(60)),
-                        new Pose2d(Units.inchesToMeters(209.489), Units.inchesToMeters(158.502), Rotation2d.fromDegrees(0)),
-                        new Pose2d(
-                                Units.inchesToMeters(193.118), Units.inchesToMeters(130.145), Rotation2d.fromDegrees(-60)),
-                        new Pose2d(
-                                Units.inchesToMeters(160.375), Units.inchesToMeters(130.144), Rotation2d.fromDegrees(-120))
-                }; // Starting facing the driver station in clockwise order
+        public static final Pose2d[] centerFaces = new Pose2d[] {
+            new Pose2d(Units.inchesToMeters(144.003), Units.inchesToMeters(158.500), Rotation2d.fromDegrees(180)),
+            new Pose2d(Units.inchesToMeters(160.373), Units.inchesToMeters(186.857), Rotation2d.fromDegrees(120)),
+            new Pose2d(Units.inchesToMeters(193.116), Units.inchesToMeters(186.858), Rotation2d.fromDegrees(60)),
+            new Pose2d(Units.inchesToMeters(209.489), Units.inchesToMeters(158.502), Rotation2d.fromDegrees(0)),
+            new Pose2d(Units.inchesToMeters(193.118), Units.inchesToMeters(130.145), Rotation2d.fromDegrees(-60)),
+            new Pose2d(Units.inchesToMeters(160.375), Units.inchesToMeters(130.144), Rotation2d.fromDegrees(-120))
+        }; // Starting facing the driver station in clockwise order
         public static final List<Map<ReefHeight, Pose3d>> branchPositions =
                 new ArrayList<>(); // Starting at the right branch facing the driver station in clockwise
 

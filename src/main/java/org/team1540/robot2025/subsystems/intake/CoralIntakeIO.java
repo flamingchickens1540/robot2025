@@ -14,7 +14,6 @@ public interface CoralIntakeIO {
 
         public boolean funnelConnected = true;
         public double funnelMotorVelocityRPS = 0;
-        public double funnelAppliedVolts = 0;
         public double funnelMotorAppliedVolts = 0;
         public double funnelSupplyCurrentAmps = 0;
         public double funnelStatorCurrentAmps = 0;
