@@ -3,6 +3,7 @@ package org.team1540.robot2025.subsystems.arm;
 import static org.team1540.robot2025.subsystems.arm.ArmConstants.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -12,6 +13,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 
@@ -30,6 +32,9 @@ public class ArmIOTalonFX implements ArmIO {
     private final VoltageOut voltageCtrlReq = new VoltageOut(0);
 
     private final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
+
+    private final Debouncer motorConnectedDebounce = new Debouncer(0.5);
+    private final Debouncer encoderConnectedDebounce = new Debouncer(0.5);
 
     // constructor
     public ArmIOTalonFX() {
@@ -98,12 +103,13 @@ public class ArmIOTalonFX implements ArmIO {
 
     @Override
     public void updateInputs(ArmIOInputs inputs) {
-        inputs.motorConnected = BaseStatusSignal.refreshAll(
-                        motorPosition, velocity, appliedVoltage, supplyCurrentAmps, statorCurrentAmps, temp)
-                .isOK();
-        inputs.encoderConnected = BaseStatusSignal.refreshAll(cancoderPosition).isOK();
+        StatusCode motorStatus = BaseStatusSignal.refreshAll(
+                motorPosition, velocity, appliedVoltage, supplyCurrentAmps, statorCurrentAmps, temp);
+        StatusCode cancoderStatus = BaseStatusSignal.refreshAll(cancoderPosition);
 
-        // TODO: SOFT LIMITS! YAY
+        inputs.motorConnected = motorConnectedDebounce.calculate(motorStatus.isOK());
+        inputs.encoderConnected = encoderConnectedDebounce.calculate(cancoderStatus.isOK());
+
         inputs.position = Rotation2d.fromRotations(motorPosition.getValueAsDouble());
         inputs.absolutePosition = Rotation2d.fromRotations(cancoderPosition.getValueAsDouble());
         inputs.velocityRPM = velocity.getValueAsDouble() * 60; // converting from rps to rpm

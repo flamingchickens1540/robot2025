@@ -3,6 +3,7 @@ package org.team1540.robot2025.subsystems.intake;
 import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -13,12 +14,14 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 
@@ -50,8 +53,11 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
 
     // clockwise to intake, counter-clockwise to spit out
     private final SparkMax funnelNeo = new SparkMax(FUNNEL_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
+    private final RelativeEncoder funnelEncoder = funnelNeo.getEncoder();
 
-    RelativeEncoder funnelEncoder = funnelNeo.getEncoder();
+    private final Debouncer spinConnectedDebounce = new Debouncer(0.5);
+    private final Debouncer pivotConnectedDebounce = new Debouncer(0.5);
+    private final Debouncer funnelConnectedDebounce = new Debouncer(0.5);
 
     public CoralIntakeIOReal() {
         TalonFXConfiguration spinTalonFXConfigs = new TalonFXConfiguration();
@@ -144,23 +150,18 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
 
     @Override
     public void updateInputs(CoralIntakeInputs inputs) {
-        inputs.spinConnected = BaseStatusSignal.refreshAll(
-                        spinVelocity, spinPosition, spinAppliedVoltage, spinSupplyCurrent, spinStatorCurrent, spinTemp)
-                .isOK();
-        inputs.pivotConnected = BaseStatusSignal.refreshAll(
-                        pivotVelocity,
-                        pivotPosition,
-                        pivotAppliedVoltage,
-                        pivotSupplyCurrent,
-                        pivotStatorCurrent,
-                        pivotTemp)
-                .isOK();
+        StatusCode spinStatus = BaseStatusSignal.refreshAll(
+                spinVelocity, spinPosition, spinAppliedVoltage, spinSupplyCurrent, spinStatorCurrent, spinTemp);
+        StatusCode pivotStatus = BaseStatusSignal.refreshAll(
+                pivotVelocity, pivotPosition, pivotAppliedVoltage, pivotSupplyCurrent, pivotStatorCurrent, pivotTemp);
 
+        inputs.spinConnected = spinConnectedDebounce.calculate(spinStatus.isOK());
         inputs.spinMotorVelocityRPS = spinVelocity.getValueAsDouble();
         inputs.spinMotorAppliedVolts = spinAppliedVoltage.getValueAsDouble();
         inputs.spinSupplyCurrentAmps = spinSupplyCurrent.getValueAsDouble();
         inputs.spinStatorCurrentAmps = spinStatorCurrent.getValueAsDouble();
 
+        inputs.pivotConnected = pivotConnectedDebounce.calculate(pivotStatus.isOK());
         inputs.pivotPosition = Rotation2d.fromRotations(pivotPosition.getValueAsDouble());
         inputs.pivotMotorVelocityRPS = pivotVelocity.getValueAsDouble();
         inputs.pivotMotorAppliedVolts = pivotAppliedVoltage.getValueAsDouble();
@@ -171,6 +172,7 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
         inputs.funnelMotorVelocityRPS = funnelEncoder.getVelocity();
         inputs.funnelSupplyCurrentAmps = funnelNeo.getOutputCurrent();
         inputs.funnelStatorCurrentAmps = funnelNeo.getOutputCurrent();
+        inputs.funnelConnected = funnelConnectedDebounce.calculate(funnelNeo.getLastError() == REVLibError.kOk);
     }
 
     public void setPivotPID(double kP, double kI, double kD) {

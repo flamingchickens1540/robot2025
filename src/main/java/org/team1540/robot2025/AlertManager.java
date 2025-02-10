@@ -25,6 +25,7 @@ public class AlertManager {
 
     private final Debouncer canErrorDebouncer = new Debouncer(0.5, Debouncer.DebounceType.kBoth);
     private final Debouncer canivoreErrorDebouncer = new Debouncer(0.5, Debouncer.DebounceType.kBoth);
+    private final Debouncer lowBatteryDebouncer = new Debouncer(0.5, Debouncer.DebounceType.kBoth);
     private final Debouncer lowBatteryDisabledDebouncer = new Debouncer(1.5, Debouncer.DebounceType.kRising);
 
     private int lastRioCanTEC = 0;
@@ -59,7 +60,8 @@ public class AlertManager {
 
         canErrorAlert.set(canErrorDebouncer.calculate(rioCanError));
         canivoreErrorAlert.set(canivoreErrorDebouncer.calculate(canivoreError));
-        lowBatteryAlert.set(RobotController.getBatteryVoltage() < lowBatteryVoltageThreshold
-                && lowBatteryDisabledDebouncer.calculate(DriverStation.isDisabled()));
+        lowBatteryAlert.set(
+                lowBatteryDebouncer.calculate(RobotController.getBatteryVoltage() < lowBatteryVoltageThreshold)
+                        && lowBatteryDisabledDebouncer.calculate(DriverStation.isDisabled()));
     }
 }
