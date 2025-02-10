@@ -9,10 +9,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import org.ironmaple.simulation.SimulatedArena;
 import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.RobotState;
-import org.team1540.robot2025.subsystems.arm.Arm;
+import org.team1540.robot2025.subsystems.Superstructure;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
-import org.team1540.robot2025.subsystems.elevator.Elevator;
-import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.util.AllianceFlipUtil;
 
 public class Autos {
@@ -21,15 +19,11 @@ public class Autos {
     private final AutoFactory autoFactory;
 
     private final Drivetrain drivetrain;
-    private final Elevator elevator;
-    private final Arm arm;
-    private final CoralIntake coralIntake;
+    private final Superstructure superstructure;
 
-    public Autos(Drivetrain drivetrain, Elevator elevator, Arm arm, CoralIntake coralIntake) {
+    public Autos(Drivetrain drivetrain, Superstructure superstructure) {
         this.drivetrain = drivetrain;
-        this.elevator = elevator;
-        this.arm = arm;
-        this.coralIntake = coralIntake;
+        this.superstructure = superstructure;
 
         autoFactory = new AutoFactory(
                 robotState::getEstimatedPose,
