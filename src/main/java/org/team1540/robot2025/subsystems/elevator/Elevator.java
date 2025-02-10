@@ -15,7 +15,6 @@ import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.MechanismVisualizer;
 import org.team1540.robot2025.commands.CharacterizationCommands;
-import org.team1540.robot2025.util.JoystickUtil;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class Elevator extends SubsystemBase {
@@ -116,7 +115,7 @@ public class Elevator extends SubsystemBase {
 
     public Command manualCommand(DoubleSupplier input) {
         return Commands.runEnd(
-                () -> setVoltage(JoystickUtil.smartDeadzone(input.getAsDouble(), 0.1)), this::holdPosition, this);
+                () -> setVoltage(input.getAsDouble()), this::holdPosition, this);
     }
 
     public Command runSetpointCommand(ElevatorState state) {

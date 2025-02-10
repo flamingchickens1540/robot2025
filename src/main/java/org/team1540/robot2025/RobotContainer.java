@@ -17,6 +17,7 @@ import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
+import org.team1540.robot2025.util.JoystickUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
@@ -82,7 +83,7 @@ public class RobotContainer {
         driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
         copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
-        copilot.x().toggleOnTrue(elevator.manualCommand(() -> -copilot.getLeftY()));
+        copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
         copilot.a().whileTrue(elevator.setpointCommand(ElevatorConstants.ElevatorState.L1));
         copilot.b().whileTrue(elevator.setpointCommand(ElevatorConstants.ElevatorState.L3));
     }
