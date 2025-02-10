@@ -74,7 +74,7 @@ public class Arm extends SubsystemBase {
     }
 
     public Command setpointCommand(ArmState state) {
-        return Commands.run(() -> setPosition(state.angle.get()), this).until(this::isAtSetpoint);
+        return Commands.run(() -> setPosition(state.angle), this).until(this::isAtSetpoint);
     }
 
     @AutoLogOutput(key = "Arm/Setpoint")

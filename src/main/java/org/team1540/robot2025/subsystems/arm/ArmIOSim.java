@@ -28,7 +28,7 @@ public class ArmIOSim implements ArmIO {
             MIN_ANGLE.getRadians(),
             MAX_ANGLE.getRadians(),
             true,
-            ArmState.STOW.angle.get().getRadians());
+            ArmState.STOW.angle.getRadians());
 
     private double armAppliedVolts = 0.0;
     private final ProfiledPIDController controller = new ProfiledPIDController(

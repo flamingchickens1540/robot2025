@@ -2,7 +2,6 @@ package org.team1540.robot2025.subsystems.arm;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import java.util.function.Supplier;
 
 public class ArmConstants {
     public static final double GEAR_RATIO = 28;
@@ -41,14 +40,14 @@ public class ArmConstants {
     public static final Rotation2d ERROR_TOLERANCE = Rotation2d.fromDegrees(0.7);
 
     public enum ArmState {
-        STOW(() -> Rotation2d.fromDegrees(120)),
-        INTAKE(() -> Rotation2d.fromDegrees(60)),
-        REEF_ALGAE(() -> Rotation2d.fromDegrees(0)),
-        SCORE(() -> Rotation2d.fromDegrees(135));
+        STOW(Rotation2d.fromDegrees(120)),
+        INTAKE(Rotation2d.fromDegrees(60)),
+        REEF_ALGAE(Rotation2d.fromDegrees(0)),
+        SCORE(Rotation2d.fromDegrees(135));
 
-        public final Supplier<Rotation2d> angle;
+        public final Rotation2d angle;
 
-        ArmState(Supplier<Rotation2d> angle) {
+        ArmState(Rotation2d angle) {
             this.angle = angle;
         }
     }
