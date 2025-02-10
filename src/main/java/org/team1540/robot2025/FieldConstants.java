@@ -133,7 +133,7 @@ public class FieldConstants {
         }
 
         public static ReefHeight fromLevel(int level) {
-            return values()[MathUtil.clamp(1, 4, level - 1)];
+            return values()[MathUtil.clamp(1, 4, level) - 1];
         }
 
         public final double height;

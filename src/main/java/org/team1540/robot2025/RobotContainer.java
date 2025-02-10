@@ -15,7 +15,6 @@ import org.team1540.robot2025.subsystems.Superstructure;
 import org.team1540.robot2025.subsystems.arm.Arm;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
-import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
@@ -43,12 +42,12 @@ public class RobotContainer {
         switch (Constants.CURRENT_MODE) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
-                drivetrain = Drivetrain.createDummy();
-                aprilTagVision = AprilTagVision.createDummy();
+                drivetrain = Drivetrain.createReal();
+                aprilTagVision = AprilTagVision.createReal();
                 elevator = Elevator.createReal();
-                arm = Arm.createDummy();
-                coralIntake = CoralIntake.createDummy();
-                grabber = Grabber.createDummy();
+                arm = Arm.createReal();
+                coralIntake = CoralIntake.createReal();
+                grabber = Grabber.createReal();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
@@ -86,8 +85,8 @@ public class RobotContainer {
 
         copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
         copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
-        copilot.a().whileTrue(elevator.setpointCommand(ElevatorConstants.ElevatorState.L1));
-        copilot.b().whileTrue(elevator.setpointCommand(ElevatorConstants.ElevatorState.L3));
+        copilot.a().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L1));
+        copilot.b().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L3));
     }
 
     private void configureAutoRoutines() {

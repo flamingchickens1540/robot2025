@@ -20,6 +20,23 @@ import org.team1540.robot2025.util.LoggedTunableNumber;
 public class Elevator extends SubsystemBase {
     private static boolean hasInstance = false;
 
+    public enum ElevatorState {
+        BASE(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
+        SOURCE(new LoggedTunableNumber("Elevator/Setpoints/Source", 0.25)),
+        L1(new LoggedTunableNumber("Elevator/Setpoints/L1", 0.5)),
+        L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 1.0)),
+        L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 1.5)),
+        L4(new LoggedTunableNumber("Elevator/Setpoints/L4", MAX_HEIGHT_M)),
+        BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
+        ;
+
+        public final DoubleSupplier height;
+
+        ElevatorState(DoubleSupplier height) {
+            this.height = height;
+        }
+    }
+
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
     private double setpointMeters;
@@ -110,7 +127,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command setpointCommand(ElevatorState state) {
-        return Commands.runOnce(() -> setPosition(state.height), this).andThen(Commands.waitUntil(this::isAtSetpoint));
+        return Commands.run(() -> setPosition(state.height.getAsDouble()), this).until(this::isAtSetpoint);
     }
 
     public Command manualCommand(DoubleSupplier input) {
@@ -118,7 +135,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command runSetpointCommand(ElevatorState state) {
-        return Commands.run(() -> setPosition(state.height), this);
+        return Commands.run(() -> setPosition(state.height.getAsDouble()), this);
     }
 
     public Command feedforwardCharacterizationCommand() {

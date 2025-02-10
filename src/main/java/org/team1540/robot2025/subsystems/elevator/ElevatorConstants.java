@@ -30,20 +30,4 @@ public class ElevatorConstants {
     public static final double SPROCKET_CIRCUMFERENCE_M = 2 * SPROCKET_RADIUS_M * Math.PI;
     public static final double MOTOR_ROTS_PER_METER = GEAR_RATIO / SPROCKET_CIRCUMFERENCE_M;
     public static final double SIM_CARRIAGE_MASS_KG = 1.55;
-
-    public enum ElevatorState {
-        BASE(MIN_HEIGHT_M),
-        SOURCE(0.25),
-        L1(0.5),
-        L2(1.0),
-        L3(1.2),
-        L4(MAX_HEIGHT_M),
-        BARGE(MAX_HEIGHT_M);
-
-        public final double height;
-
-        ElevatorState(double height) {
-            this.height = height;
-        }
-    }
 }

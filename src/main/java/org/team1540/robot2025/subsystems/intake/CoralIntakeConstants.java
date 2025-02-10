@@ -26,20 +26,4 @@ public class CoralIntakeConstants {
     public static final Rotation2d PIVOT_MAX_ANGLE = Rotation2d.fromDegrees(90);
 
     public static final Translation3d ROTATIONAL_ORIGIN = new Translation3d(0.304800, 0.0, 0.1270000);
-
-    public enum CoralIntakeState {
-        STOW(PIVOT_MAX_ANGLE, 0.0, 0.0),
-        INTAKE(PIVOT_MIN_ANGLE, 12.0, 12.0),
-        EJECT(PIVOT_MIN_ANGLE, -12.0, -12.0);
-
-        public final Rotation2d pivotPosition;
-        public final double rollerVoltage;
-        public final double funnelVoltage;
-
-        CoralIntakeState(Rotation2d pivotPosition, double rollerVoltage, double funnelVoltage) {
-            this.pivotPosition = pivotPosition;
-            this.rollerVoltage = rollerVoltage;
-            this.funnelVoltage = funnelVoltage;
-        }
-    }
 }

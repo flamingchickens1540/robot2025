@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
@@ -16,7 +17,25 @@ import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class Arm extends SubsystemBase {
-    // fields:
+    private static boolean hasInstance = false;
+
+    public enum ArmState {
+        STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
+        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 60)),
+        REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 0)),
+        SCORE(new LoggedTunableNumber("Arm/Setpoints/ScoreDegrees", 135));
+
+        private final DoubleSupplier positionDegrees;
+
+        ArmState(DoubleSupplier positionDegrees) {
+            this.positionDegrees = positionDegrees;
+        }
+
+        public Rotation2d position() {
+            return Rotation2d.fromDegrees(positionDegrees.getAsDouble());
+        }
+    }
+
     private final ArmIO io;
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
     private Rotation2d setpoint = new Rotation2d();
@@ -27,8 +46,6 @@ public class Arm extends SubsystemBase {
     private final LoggedTunableNumber kG = new LoggedTunableNumber("Arm/kG", KG);
     private final LoggedTunableNumber kS = new LoggedTunableNumber("Arm/kS", KS);
     private final LoggedTunableNumber kV = new LoggedTunableNumber("Arm/kV", KV);
-
-    private static boolean hasInstance = false;
 
     private Arm(ArmIO io) {
         if (hasInstance) throw new IllegalStateException("Instance of arm already exists");
@@ -79,7 +96,7 @@ public class Arm extends SubsystemBase {
     }
 
     public Command commandToSetpoint(ArmState state) {
-        return Commands.run(() -> setPosition(state.angle), this).until(this::isAtSetpoint);
+        return Commands.run(() -> setPosition(state.position()), this).until(this::isAtSetpoint);
     }
 
     public static Arm createReal() {

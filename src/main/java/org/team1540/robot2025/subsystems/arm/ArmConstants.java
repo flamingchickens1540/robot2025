@@ -38,17 +38,4 @@ public class ArmConstants {
     public static final double JERK_RPS = 2000;
 
     public static final Rotation2d ERROR_TOLERANCE = Rotation2d.fromDegrees(0.7);
-
-    public enum ArmState {
-        STOW(Rotation2d.fromDegrees(120)),
-        INTAKE(Rotation2d.fromDegrees(60)),
-        REEF_ALGAE(Rotation2d.fromDegrees(0)),
-        SCORE(Rotation2d.fromDegrees(135));
-
-        public final Rotation2d angle;
-
-        ArmState(Rotation2d angle) {
-            this.angle = angle;
-        }
-    }
 }

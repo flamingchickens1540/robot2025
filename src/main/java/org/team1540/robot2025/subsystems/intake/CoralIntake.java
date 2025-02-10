@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
@@ -17,6 +18,35 @@ import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class CoralIntake extends SubsystemBase {
     private static boolean hasInstance = false;
+
+    public enum CoralIntakeState {
+        STOW(
+                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees()),
+                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/RollerVoltage", 0.0),
+                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/FunnelVoltage", 0.0)),
+        INTAKE(
+                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()),
+                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/RollerVoltage", 12.0),
+                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/FunnelVoltage", 12.0)),
+        EJECT(
+                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()),
+                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/RollerVoltage", -12.0),
+                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/FunnelVoltage", -12.0));
+
+        private final DoubleSupplier pivotPosition;
+        public final DoubleSupplier rollerVoltage;
+        public final DoubleSupplier funnelVoltage;
+
+        CoralIntakeState(DoubleSupplier pivotPositionDeg, DoubleSupplier rollerVoltage, DoubleSupplier funnelVoltage) {
+            this.pivotPosition = pivotPositionDeg;
+            this.rollerVoltage = rollerVoltage;
+            this.funnelVoltage = funnelVoltage;
+        }
+
+        public Rotation2d pivotPosition() {
+            return Rotation2d.fromDegrees(pivotPosition.getAsDouble());
+        }
+    }
 
     private final CoralIntakeIO io;
     private final CoralIntakeInputsAutoLogged inputs = new CoralIntakeInputsAutoLogged();
@@ -99,12 +129,12 @@ public class CoralIntake extends SubsystemBase {
         return MathUtil.isNear(pivotSetpoint.getDegrees(), inputs.pivotPosition.getDegrees(), 3.0);
     }
 
-    public Command setpointCommand(CoralIntakeState state) {
+    public Command commandToSetpoint(CoralIntakeState state) {
         return Commands.runOnce(
                         () -> {
-                            setPivotPosition(state.pivotPosition);
-                            setRollerVoltage(state.rollerVoltage);
-                            setFunnelVoltage(state.funnelVoltage);
+                            setPivotPosition(state.pivotPosition());
+                            setRollerVoltage(state.rollerVoltage.getAsDouble());
+                            setFunnelVoltage(state.funnelVoltage.getAsDouble());
                         },
                         this)
                 .andThen(Commands.waitUntil(this::isPivotAtSetpoint));
