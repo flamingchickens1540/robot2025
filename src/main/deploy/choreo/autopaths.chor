@@ -3,7 +3,15 @@
  "version":1,
  "type":"Swerve",
  "variables":{
-  "expressions":{},
+  "expressions":{
+   "MaxV":{
+    "dimension":"LinVel",
+    "var":{
+     "exp":"3.5 m / s",
+     "val":3.5
+    }
+   }
+  },
   "poses":{
    "RA":{
     "x":{
@@ -253,8 +261,8 @@
      "val":7.572288990020752
     },
     "heading":{
-     "exp":"-90 deg",
-     "val":-1.5707963267948966
+     "exp":"90 deg",
+     "val":1.5707963267948966
     }
    },
    "StartR":{
@@ -268,7 +276,7 @@
     },
     "heading":{
      "exp":"-StartL.heading",
-     "val":1.5707963267948966
+     "val":-1.5707963267948966
     }
    }
   }
