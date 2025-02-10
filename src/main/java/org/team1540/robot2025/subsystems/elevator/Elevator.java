@@ -13,7 +13,7 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
-import org.team1540.robot2025.MechanismVisualizer;
+import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.commands.CharacterizationCommands;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 

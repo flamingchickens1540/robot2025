@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
-import org.team1540.robot2025.MechanismVisualizer;
+import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class Arm extends SubsystemBase {
@@ -73,13 +73,13 @@ public class Arm extends SubsystemBase {
         return MathUtil.isNear(setpoint.getRotations(), inputs.position.getRotations(), ERROR_TOLERANCE.getRotations());
     }
 
-    public Command setpointCommand(ArmState state) {
-        return Commands.run(() -> setPosition(state.angle), this).until(this::isAtSetpoint);
-    }
-
     @AutoLogOutput(key = "Arm/Setpoint")
     public Rotation2d getSetpoint() {
         return setpoint;
+    }
+
+    public Command commandToSetpoint(ArmState state) {
+        return Commands.run(() -> setPosition(state.angle), this).until(this::isAtSetpoint);
     }
 
     public static Arm createReal() {
