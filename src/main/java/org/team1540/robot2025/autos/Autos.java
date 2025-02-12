@@ -5,7 +5,9 @@ import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
 import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.RobotState;
@@ -46,5 +48,24 @@ public class Autos {
                 SimulatedArena.getInstance().resetFieldForAuto();
             }));
         }
+    }
+
+    public AutoRoutine testAuto() {
+        AutoRoutine routine = autoFactory.newRoutine("Test Auto");
+        List<AutoTrajectory> trajectories = List.of(
+                routine.trajectory("StartLtoI"),
+                routine.trajectory("IJtoSrcLL"),
+                routine.trajectory("SrcLLtoK"),
+                routine.trajectory("KLtoSrcLR"),
+                routine.trajectory("SrcLRtoL"),
+                routine.trajectory("KLtoSrcLR"),
+                routine.trajectory("SrcLRtoA"));
+        resetPoseInSim(routine, trajectories.get(0));
+
+        routine.active()
+                .onTrue(Commands.sequence(trajectories.stream()
+                        .map(traj -> traj.cmd().andThen(Commands.waitSeconds(0.1)))
+                        .toArray(Command[]::new)));
+        return routine;
     }
 }

@@ -17,7 +17,7 @@
   "waypoints":[
     {"x":{"exp":"StartC.x", "val":7.1227641105651855}, "y":{"exp":"StartC.y", "val":4.024473190307617}, "heading":{"exp":"StartC.heading", "val":0.0}, "intervals":23, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"5.558979511260986 m", "val":5.558979511260986}, "y":{"exp":"2.7037763595581055 m", "val":2.7037763595581055}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":24, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"RE.x", "val":4.834258079528809}, "y":{"exp":"RE.y", "val":2.689262628555298}, "heading":{"exp":"RE.heading", "val":-1.0471975511965976}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"E.x", "val":4.834258079528809}, "y":{"exp":"E.y", "val":2.689262628555298}, "heading":{"exp":"E.heading", "val":-1.0471975511965976}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},

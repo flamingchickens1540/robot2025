@@ -74,7 +74,7 @@ public class RobotState {
     }
 
     public void addVisionMeasurement(AprilTagVisionIO.PoseObservation visionPose) {
-        if (shouldAcceptVision(visionPose)) {
+        if (shouldAcceptVision(visionPose) && resetTimer.hasElapsed(0.1)) {
             poseEstimator.addVisionMeasurement(
                     visionPose.estimatedPoseMeters().toPose2d(),
                     visionPose.lastMeasurementTimestampSecs(),

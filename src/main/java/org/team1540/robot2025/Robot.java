@@ -9,6 +9,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import org.littletonrobotics.urcl.URCL;
 import org.team1540.robot2025.generated.BuildConstants;
 
 /**
@@ -47,6 +48,7 @@ public class Robot extends LoggedRobot {
                 // Running on a real robot, log to a USB stick ("/U/logs")
                 Logger.addDataReceiver(new WPILOGWriter());
                 Logger.addDataReceiver(new NT4Publisher());
+                Logger.registerURCL(URCL.startExternal());
                 break;
 
             case SIM:

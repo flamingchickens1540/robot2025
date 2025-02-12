@@ -90,6 +90,7 @@ public class RobotContainer {
     }
 
     private void configureAutoRoutines() {
+        autoChooser.addRoutine("Test Auto", autos::testAuto);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);
