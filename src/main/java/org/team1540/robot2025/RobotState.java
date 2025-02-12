@@ -97,9 +97,9 @@ public class RobotState {
         return poseObservation.numTagsSeen() >= MIN_ACCEPTED_NUM_TAGS // Must see sufficient tags
                 // Must be within field roughly
                 && estimatedPose.getX() >= -MAX_OUTSIDE_OF_FIELD_TOLERANCE
-                && estimatedPose.getX() <= APRIL_TAG_FIELD_LAYOUT.getFieldLength() + MAX_OUTSIDE_OF_FIELD_TOLERANCE
+                && estimatedPose.getX() <= FieldConstants.fieldLength + MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 && estimatedPose.getY() >= -MAX_OUTSIDE_OF_FIELD_TOLERANCE
-                && estimatedPose.getY() <= APRIL_TAG_FIELD_LAYOUT.getFieldWidth() + MAX_OUTSIDE_OF_FIELD_TOLERANCE
+                && estimatedPose.getY() <= FieldConstants.fieldWidth + MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 // Must not be actively flying
                 && estimatedPose.getZ() <= MAX_ROBOT_Z_TOLERANCE;
     }

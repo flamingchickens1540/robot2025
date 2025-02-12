@@ -21,14 +21,14 @@ public class AprilTagVision extends SubsystemBase {
         this.disconnectedAlerts = new Alert[visionIOs.length];
         for (int i = 0; i < cameraInputs.length; i++) {
             cameraInputs[i] = new AprilTagVisionIOInputsAutoLogged();
-            disconnectedAlerts[i] = new Alert(visionIOs[i].getName() + " is disconnected.", Alert.AlertType.kWarning);
+            disconnectedAlerts[i] = new Alert(visionIOs[i].name + " is disconnected.", Alert.AlertType.kWarning);
         }
     }
 
     public void periodic() {
         for (int i = 0; i < visionIOs.length; i++) {
             visionIOs[i].updateInputs(cameraInputs[i]);
-            Logger.processInputs("Vision/" + visionIOs[i].getName(), cameraInputs[i]);
+            Logger.processInputs("Vision/" + visionIOs[i].name, cameraInputs[i]);
         }
 
         RobotState robotState = RobotState.getInstance();
@@ -59,9 +59,9 @@ public class AprilTagVision extends SubsystemBase {
 
     public static AprilTagVision createDummy() {
         return new AprilTagVision(
-                new AprilTagVisionIO() {},
-                new AprilTagVisionIO() {},
-                new AprilTagVisionIO() {},
-                new AprilTagVisionIO() {});
+                new AprilTagVisionIO(FL_CAMERA_NAME) {},
+                new AprilTagVisionIO(FR_CAMERA_NAME) {},
+                new AprilTagVisionIO(BL_CAMERA_NAME) {},
+                new AprilTagVisionIO(BR_CAMERA_NAME) {});
     }
 }
