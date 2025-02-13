@@ -73,13 +73,15 @@ public class RobotState {
         field.setRobotPose(getEstimatedPose());
     }
 
-    public void addVisionMeasurement(AprilTagVisionIO.PoseObservation visionPose) {
+    public boolean addVisionMeasurement(AprilTagVisionIO.PoseObservation visionPose) {
         if (shouldAcceptVision(visionPose)) {
             poseEstimator.addVisionMeasurement(
                     visionPose.estimatedPoseMeters().toPose2d(),
                     visionPose.lastMeasurementTimestampSecs(),
                     getStdDevs(visionPose));
+            return true;
         }
+        return false;
     }
 
     private Matrix<N3, N1> getStdDevs(AprilTagVisionIO.PoseObservation poseObservation) {

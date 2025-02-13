@@ -2,9 +2,14 @@ package org.team1540.robot2025.subsystems.vision.apriltag;
 
 import static org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionConstants.*;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.littletonrobotics.junction.Logger;
+import org.team1540.robot2025.FieldConstants;
 import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO.PoseObservation;
 
@@ -33,12 +38,27 @@ public class AprilTagVision extends SubsystemBase {
 
         RobotState robotState = RobotState.getInstance();
 
+        List<Pose3d> acceptedPoses = new ArrayList<>();
+        List<Pose3d> rejectedPoses = new ArrayList<>();
+        List<Pose3d> seenTagPoses = new ArrayList<>();
         for (int i = 0; i < visionIOs.length; i++) {
             disconnectedAlerts[i].set(!cameraInputs[i].connected);
             for (PoseObservation poseObservation : cameraInputs[i].poseObservations) {
-                robotState.addVisionMeasurement(poseObservation);
+                if (robotState.addVisionMeasurement(poseObservation)) {
+                    acceptedPoses.add(poseObservation.estimatedPoseMeters());
+                } else {
+                    rejectedPoses.add(poseObservation.estimatedPoseMeters());
+                }
             }
+            seenTagPoses.addAll(Arrays.stream(cameraInputs[i].seenTagIDs)
+                    .mapToObj(tagID ->
+                            FieldConstants.aprilTagLayout.getTagPose(tagID).orElse(Pose3d.kZero))
+                    .toList());
         }
+
+        Logger.recordOutput("Vision/AcceptedPoses", acceptedPoses.toArray(new Pose3d[0]));
+        Logger.recordOutput("Vision/RejectedPoses", rejectedPoses.toArray(new Pose3d[0]));
+        Logger.recordOutput("Vision/SeenTagPoses", seenTagPoses.toArray(new Pose3d[0]));
     }
 
     public static AprilTagVision createReal() {

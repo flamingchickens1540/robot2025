@@ -14,7 +14,7 @@ public abstract class AprilTagVisionIO {
     public static class AprilTagVisionIOInputs {
         public boolean connected = false;
         public PoseObservation[] poseObservations = new PoseObservation[0];
-        public int[] tagIDs = new int[0];
+        public int[] seenTagIDs = new int[0];
     }
 
     public record PoseObservation(
