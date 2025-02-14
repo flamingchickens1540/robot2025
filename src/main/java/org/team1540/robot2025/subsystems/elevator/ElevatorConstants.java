@@ -9,7 +9,7 @@ public class ElevatorConstants {
     public static final int UPPER_LIMIT_ID = 0;
     public static final int LOWER_LIMIT_ID = 1;
     public static final double MIN_HEIGHT_M = 0.0;
-    public static final double MAX_HEIGHT_M = Units.inchesToMeters(63.25);
+    public static final double MAX_HEIGHT_M = Units.inchesToMeters(62.5);
     public static final double STAGE_1_HEIGHT_M = Units.inchesToMeters(30.331);
     public static final double CLEAR_HEIGHT_M = 0.25;
     public static final double POS_ERR_TOLERANCE_M = 0.01;
@@ -21,7 +21,7 @@ public class ElevatorConstants {
     public static final double KP = 150;
     public static final double KI = 0;
     public static final double KD = 0;
-    public static final double KG = 0.385; // TODO update with correct value
+    public static final double KG = 0.425; // TODO update with correct value
 
     public static final double CRUISE_VELOCITY_MPS = 3.0;
     public static final double MAXIMUM_ACCELERATION_MPS2 = 7.0;

@@ -2,7 +2,7 @@ package org.team1540.robot2025.subsystems.grabber;
 
 public class GrabberConstants {
     // TODO: Fix this
-    public static final int MOTOR_ID = 13;
+    public static final int MOTOR_ID = 16;
     public static final int CANDI_ID = 1;
     public static final int BEFORE_LASER_CAN_ID = 2;
     public static final int AFTER_LASER_CAN_ID = 3;

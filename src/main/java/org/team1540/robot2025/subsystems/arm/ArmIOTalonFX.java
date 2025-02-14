@@ -39,11 +39,11 @@ public class ArmIOTalonFX implements ArmIO {
     // constructor
     public ArmIOTalonFX() {
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
         motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
         motorConfig.Feedback.FeedbackRemoteSensorID = CANCODER_ID;
-        motorConfig.Feedback.SensorToMechanismRatio = CANCODER_TO_PIVOT_RATIO * MOTOR_TO_CANCODER;
+        motorConfig.Feedback.SensorToMechanismRatio = CANCODER_TO_PIVOT_RATIO;
         motorConfig.Feedback.RotorToSensorRatio = MOTOR_TO_CANCODER;
 
         motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;

@@ -32,7 +32,7 @@ public class ArmIOSim implements ArmIO {
 
     private double armAppliedVolts = 0.0;
     private final ProfiledPIDController controller = new ProfiledPIDController(
-            SIM_KP, SIM_KI, SIM_KD, new TrapezoidProfile.Constraints(MAX_VELOCITY_RPS, MAX_ACCELERATION));
+            SIM_KP, SIM_KI, SIM_KD, new TrapezoidProfile.Constraints(CRUISE_VELOCITY_RPS, MAX_ACCEL_RPS2));
     private ArmFeedforward feedforward = new ArmFeedforward(SIM_KS, SIM_KG, SIM_KV);
     private boolean isClosedLoop;
 

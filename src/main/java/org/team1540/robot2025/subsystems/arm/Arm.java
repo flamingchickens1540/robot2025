@@ -20,7 +20,7 @@ public class Arm extends SubsystemBase {
     private static boolean hasInstance = false;
 
     public enum ArmState {
-        STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
+        STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 125)),
         INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 60)),
         REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 0)),
         SCORE(new LoggedTunableNumber("Arm/Setpoints/ScoreDegrees", 135));
