@@ -1,7 +1,5 @@
 package org.team1540.robot2025.subsystems.vision.apriltag;
 
-import static org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionConstants.APRIL_TAG_FIELD_LAYOUT;
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.ArrayList;
@@ -11,6 +9,7 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.team1540.robot2025.FieldConstants;
 
 public class AprilTagVisionIOPhoton implements AprilTagVisionIO {
     protected final PhotonCamera camera;
@@ -52,7 +51,7 @@ public class AprilTagVisionIOPhoton implements AprilTagVisionIO {
             } else if (!result.targets.isEmpty()) {
                 PhotonTrackedTarget target = result.targets.get(0);
 
-                Optional<Pose3d> tagPose = APRIL_TAG_FIELD_LAYOUT.getTagPose(target.fiducialId);
+                Optional<Pose3d> tagPose = FieldConstants.aprilTagLayout.getTagPose(target.fiducialId);
                 if (tagPose.isPresent()) {
                     Transform3d fieldToTarget = new Transform3d(
                             tagPose.get().getTranslation(), tagPose.get().getRotation());

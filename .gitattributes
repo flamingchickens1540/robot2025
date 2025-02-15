@@ -1,2 +1,9 @@
 src/main/deploy/** linguist-language=JSON linguist-generated=true
-**/*.java               text=auto
+vendordeps linguist-generated=true
+* text=auto
+*.java text
+*.json text
+
+*.jar binary
+*.glb binary
+*.png binary
