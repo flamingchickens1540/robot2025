@@ -1,8 +1,11 @@
 package org.team1540.robot2025;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -102,7 +105,12 @@ public class RobotContainer {
     }
 
     private void configureRobotModeTriggers() {
-        RobotModeTriggers.disabled().whileFalse(leds.showRSLState());
+        RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
+        RobotModeTriggers.autonomous()
+                .whileTrue(leds.viewTop.commandShowPattern(() -> LEDPattern.solid(Leds.getAllianceColor())));
+        RobotModeTriggers.teleop()
+                .whileTrue(leds.viewTop.commandShowPattern(
+                        () -> LEDPattern.solid(Leds.getAllianceColor()).breathe(Seconds.of(3))));
         RobotModeTriggers.teleop()
                 .and(DriverStation::isFMSAttached)
                 .onTrue(Commands.runOnce(drivetrain::zeroFieldOrientation));
