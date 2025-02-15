@@ -143,5 +143,5 @@ public class FieldConstants {
     public static final double aprilTagWidth = Units.inchesToMeters(6.50);
     public static final int aprilTagCount = 22;
     public static final AprilTagFieldLayout aprilTagLayout =
-            AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+            AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
 }

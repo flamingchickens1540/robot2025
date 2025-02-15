@@ -1,14 +1,9 @@
 package org.team1540.robot2025.subsystems.vision.apriltag;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 
 public class AprilTagVisionConstants {
-    public static final AprilTagFieldLayout APRIL_TAG_FIELD_LAYOUT =
-            AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
-
     public static final String FL_CAMERA_NAME = "front-left-camera";
     public static final String FR_CAMERA_NAME = "front-right-camera";
     public static final String BL_CAMERA_NAME = "back-left-camera";

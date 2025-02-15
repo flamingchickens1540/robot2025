@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
+import org.team1540.robot2025.FieldConstants;
 import org.team1540.robot2025.SimState;
 
 public class AprilTagVisionIOSim extends AprilTagVisionIOPhoton {
@@ -15,7 +16,7 @@ public class AprilTagVisionIOSim extends AprilTagVisionIOPhoton {
         super(cameraName, cameraTransform);
 
         this.visionSim = new VisionSystemSim(cameraName);
-        visionSim.addAprilTags(APRIL_TAG_FIELD_LAYOUT);
+        visionSim.addAprilTags(FieldConstants.aprilTagLayout);
 
         SimCameraProperties properties = new SimCameraProperties();
         properties.setCalibration(SIM_RES_WIDTH, SIM_RES_HEIGHT, SIM_DIAGONAL_FOV);
