@@ -1,19 +1,36 @@
 package org.team1540.robot2025.subsystems.vision.apriltag;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 
 public class AprilTagVisionConstants {
-    public static final String FL_CAMERA_NAME = "front-left-camera";
-    public static final String FR_CAMERA_NAME = "front-right-camera";
-    public static final String BL_CAMERA_NAME = "back-left-camera";
-    public static final String BR_CAMERA_NAME = "back-right-camera";
+    public static final String FL_CAMERA_NAME = "front-left";
+    public static final String FR_CAMERA_NAME = "front-right";
+    public static final String BL_CAMERA_NAME = "back-left";
+    public static final String BR_CAMERA_NAME = "back-right";
 
-    // TODO: get camera transforms
-    public static final Transform3d FL_CAMERA_TRANSFORM = new Transform3d();
-    public static final Transform3d FR_CAMERA_TRANSFORM = new Transform3d();
-    public static final Transform3d BL_CAMERA_TRANSFORM = new Transform3d();
-    public static final Transform3d BR_CAMERA_TRANSFORM = new Transform3d();
+    public static final Transform3d FL_CAMERA_TRANSFORM = new Transform3d(
+            Units.inchesToMeters(11.539),
+            Units.inchesToMeters(10.954),
+            Units.inchesToMeters(8.216),
+            new Rotation3d(0.0, Math.toRadians(-25.5), Math.toRadians(32.467)));
+    public static final Transform3d FR_CAMERA_TRANSFORM = new Transform3d(
+            Units.inchesToMeters(11.539),
+            Units.inchesToMeters(-10.954),
+            Units.inchesToMeters(8.216),
+            new Rotation3d(0.0, Math.toRadians(-25.5), Math.toRadians(-32.467)));
+    public static final Transform3d BL_CAMERA_TRANSFORM = new Transform3d(
+            Units.inchesToMeters(-11.853),
+            Units.inchesToMeters(11.259),
+            Units.inchesToMeters(8.211),
+            new Rotation3d(0.0, Math.toRadians(-26), Math.toRadians(180 - 26)));
+    public static final Transform3d BR_CAMERA_TRANSFORM = new Transform3d(
+            Units.inchesToMeters(-11.853),
+            Units.inchesToMeters(-11.259),
+            Units.inchesToMeters(8.211),
+            new Rotation3d(0.0, Math.toRadians(-26), Math.toRadians(-180 + 26)));
 
     public static final double XY_STD_DEV_COEFF = 0.1;
     public static final double ROT_STD_DEV_COEFF = 0.5;
