@@ -23,8 +23,13 @@ public class Arm extends SubsystemBase {
         STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
         INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 60)),
         REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 0)),
-        SCORE(new LoggedTunableNumber("Arm/Setpoints/ScoreDegrees", 135));
-
+        SCORE_L2_L3(new LoggedTunableNumber(
+                "Arm/Setpoints/ScoreL2_L3Degrees", 55)), // TODO: talk to Simon abt getting happy values
+        SCORE_L1(new LoggedTunableNumber("Arm/Setpoints/ScoreL1Degrees", 40)),
+        SCORE_L4(new LoggedTunableNumber("Arm/Setpoints/ScoreL4Degrees", 0)),
+        FUNNEL(new LoggedTunableNumber("Arm/Setpoints/FunnelDegrees", 115)),
+        GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 210));
+        // TODO: stow with algae, back for most,
         private final DoubleSupplier positionDegrees;
 
         ArmState(DoubleSupplier positionDegrees) {

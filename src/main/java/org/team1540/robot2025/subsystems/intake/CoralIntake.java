@@ -20,27 +20,14 @@ public class CoralIntake extends SubsystemBase {
     private static boolean hasInstance = false;
 
     public enum CoralIntakeState {
-        STOW(
-                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees()),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/RollerVoltage", 0.0),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/FunnelVoltage", 0.0)),
-        INTAKE(
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/RollerVoltage", 12.0),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/FunnelVoltage", 12.0)),
-        EJECT(
-                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/RollerVoltage", -12.0),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/FunnelVoltage", -12.0));
+        STOW(new LoggedTunableNumber("CoralIntake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees())),
+        INTAKE(new LoggedTunableNumber("CoralIntake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees())),
+        EJECT(new LoggedTunableNumber("CoralIntake/Setpoints/Eject/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()));
 
         private final DoubleSupplier pivotPosition;
-        public final DoubleSupplier rollerVoltage;
-        public final DoubleSupplier funnelVoltage;
 
-        CoralIntakeState(DoubleSupplier pivotPositionDeg, DoubleSupplier rollerVoltage, DoubleSupplier funnelVoltage) {
+        CoralIntakeState(DoubleSupplier pivotPositionDeg) {
             this.pivotPosition = pivotPositionDeg;
-            this.rollerVoltage = rollerVoltage;
-            this.funnelVoltage = funnelVoltage;
         }
 
         public Rotation2d pivotPosition() {
@@ -129,15 +116,40 @@ public class CoralIntake extends SubsystemBase {
         return MathUtil.isNear(pivotSetpoint.getDegrees(), inputs.pivotPosition.getDegrees(), 3.0);
     }
 
-    public Command commandToSetpoint(CoralIntakeState state) {
+    public Command commandToSetpoint(
+            CoralIntakeState
+                    state) { // TODO: Make the pivot position be able to be set without setting the roller voltage
         return Commands.run(
                         () -> {
                             setPivotPosition(state.pivotPosition());
-                            setRollerVoltage(state.rollerVoltage.getAsDouble());
-                            setFunnelVoltage(state.funnelVoltage.getAsDouble());
+                            //                            setRollerVoltage(state.rollerVoltage.getAsDouble());
+                            //                            setFunnelVoltage(state.funnelVoltage.getAsDouble());
                         },
                         this)
                 .until(this::isPivotAtSetpoint);
+    }
+
+    public Command commandRunIntake(CoralIntakeState state) {
+        return switch (state) {
+            case STOW -> Commands.runOnce(
+                    () -> {
+                        setRollerVoltage(0.0);
+                        setFunnelVoltage(0.0);
+                    },
+                    this);
+            case INTAKE -> Commands.runOnce(
+                    () -> {
+                        setRollerVoltage(12.0);
+                        setFunnelVoltage(12.0);
+                    },
+                    this);
+            case EJECT -> Commands.runOnce(
+                    () -> {
+                        setFunnelVoltage(-12.0);
+                        setRollerVoltage(-12.0);
+                    },
+                    this);
+        };
     }
 
     public static CoralIntake createReal() {

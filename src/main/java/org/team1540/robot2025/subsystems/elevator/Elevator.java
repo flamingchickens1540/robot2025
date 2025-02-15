@@ -22,12 +22,15 @@ public class Elevator extends SubsystemBase {
 
     public enum ElevatorState {
         BASE(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
-        SOURCE(new LoggedTunableNumber("Elevator/Setpoints/Source", 0.25)),
+        FUNNEL(new LoggedTunableNumber("Elevator/Setpoints/Funnel", 0.25)),
         L1(new LoggedTunableNumber("Elevator/Setpoints/L1", 0.5)),
         L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 1.0)),
         L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 1.5)),
         L4(new LoggedTunableNumber("Elevator/Setpoints/L4", MAX_HEIGHT_M)),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
+        GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.4)),
+        REEF_ALGAE_LOW(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLow", 0)),
+        REEF_ALGAE_HIGH(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHigh", 0));
         ;
 
         public final DoubleSupplier height;
