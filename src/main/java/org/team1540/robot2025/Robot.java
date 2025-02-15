@@ -1,5 +1,6 @@
 package org.team1540.robot2025;
 
+import au.grapplerobotics.CanBridge;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -22,6 +23,9 @@ public class Robot extends LoggedRobot {
     private RobotContainer robotContainer;
 
     public Robot() {
+        if (Constants.isTuningMode()) {
+            CanBridge.runTCP();
+        }
         // Record metadata
         Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -42,7 +46,7 @@ public class Robot extends LoggedRobot {
         Logger.recordMetadata("TuningMode", Constants.isTuningMode() ? "on" : "off");
 
         // Set up data receivers & replay source
-        switch (Constants.currentMode) {
+        switch (Constants.CURRENT_MODE) {
             case REAL:
                 // Running on a real robot, log to a USB stick ("/U/logs")
                 Logger.addDataReceiver(new WPILOGWriter());
