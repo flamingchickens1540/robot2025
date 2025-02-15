@@ -79,30 +79,49 @@ public class RobotContainer {
     }
 
     private void configureButtonBindings() {
-        drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
-        driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
-        driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
+        //        drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
+        //        driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
+        //        driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
         copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
         copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
         //        copilot.a().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L1));
-//        copilot.a().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L3));
+        //        copilot.a().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L3));
 
         //        copilot.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW));
         //        copilot.b().whileTrue(arm.commandToSetpoint(Arm.ArmState.INTAKE));
         //        copilot.a().whileTrue(grabber.commandRun(0.5));
+
         copilot.b()
                 .whileTrue(Commands.parallel(
                         elevator.setpointCommand(Elevator.ElevatorState.L4),
-                        arm.commandToSetpoint(Arm.ArmState.SCORE),
-                        grabber.commandRun(0.5)).beforeStarting(Commands.waitSeconds(0.2)));
-        copilot.rightBumper().whileTrue(grabber.commandRun(0.2));
-        copilot.a().whileTrue(
-                Commands.sequence(
+                        arm.commandToSetpoint(Arm.ArmState.SCORE)));
+        //                        Commands.waitUntil(() -> arm.getPosition().getDegrees()
+        //                                        > Arm.ArmState.SCORE.position().getDegrees() - 5)
+        //                                .andThen(grabber.commandRun(0.5))));
+        copilot.a()
+                .whileTrue(Commands.parallel(
                         elevator.setpointCommand(Elevator.ElevatorState.L4),
-                        arm.commandToSetpoint(Arm.ArmState.STOW)
-                )
-        );
+                        arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE)));
+        //        copilot.b()
+        //                .whileTrue(Commands.parallel(
+        //                        elevator.setpointCommand(Elevator.ElevatorState.L2),
+        //                        arm.commandToSetpoint(Arm.ArmState.LOW_SCORE)));
+
+        copilot.rightBumper().whileTrue(grabber.commandRun(0.5));
+        copilot.leftBumper().whileTrue(grabber.commandRun(-0.5));
+        //        copilot.a()
+        //                .whileTrue(Commands.sequence(
+        //                        elevator.setpointCommand(Elevator.ElevatorState.L4),
+        // arm.commandToSetpoint(Arm.ArmState.STOW)));
+        copilot.rightTrigger()
+                .whileTrue(Commands.parallel(
+                        Commands.sequence(
+                                arm.commandToSetpoint(Arm.ArmState.SCORE),
+                                elevator.setpointCommand(Elevator.ElevatorState.L4)),
+                        Commands.sequence(
+                                grabber.commandRun(0.25).until(() -> elevator.getPosition() > 1.25),
+                                grabber.commandRun(-1))));
     }
 
     private void configureAutoRoutines() {
