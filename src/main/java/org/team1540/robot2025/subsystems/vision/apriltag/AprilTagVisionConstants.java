@@ -6,10 +6,10 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 
 public class AprilTagVisionConstants {
-    public static final String FL_CAMERA_NAME = "front-left-camera";
-    public static final String FR_CAMERA_NAME = "front-right-camera";
-    public static final String BL_CAMERA_NAME = "back-left-camera";
-    public static final String BR_CAMERA_NAME = "back-right-camera";
+    public static final String FL_CAMERA_NAME = "front-left";
+    public static final String FR_CAMERA_NAME = "front-right";
+    public static final String BL_CAMERA_NAME = "back-left";
+    public static final String BR_CAMERA_NAME = "back-right";
 
     public static final Transform3d FL_CAMERA_TRANSFORM = new Transform3d(
             Units.inchesToMeters(11.539),
