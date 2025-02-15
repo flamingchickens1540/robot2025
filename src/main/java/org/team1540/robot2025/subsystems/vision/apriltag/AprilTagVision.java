@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.FieldConstants;
 import org.team1540.robot2025.RobotState;
@@ -18,6 +17,10 @@ public class AprilTagVision extends SubsystemBase {
     private final AprilTagVisionIOInputsAutoLogged[] cameraInputs;
 
     private final Alert[] disconnectedAlerts;
+
+    private final ArrayList<Pose3d> lastAcceptedPoses = new ArrayList<>();
+    private final ArrayList<Pose3d> lastRejectedPoses = new ArrayList<>();
+    private final ArrayList<Pose3d> lastSeenTagPoses = new ArrayList<>();
 
     private AprilTagVision(AprilTagVisionIO... visionIOs) {
         this.visionIOs = visionIOs;
@@ -38,27 +41,27 @@ public class AprilTagVision extends SubsystemBase {
 
         RobotState robotState = RobotState.getInstance();
 
-        List<Pose3d> acceptedPoses = new ArrayList<>();
-        List<Pose3d> rejectedPoses = new ArrayList<>();
-        List<Pose3d> seenTagPoses = new ArrayList<>();
+        lastAcceptedPoses.clear();
+        lastRejectedPoses.clear();
+        lastSeenTagPoses.clear();
         for (int i = 0; i < visionIOs.length; i++) {
             disconnectedAlerts[i].set(!cameraInputs[i].connected);
             for (PoseObservation poseObservation : cameraInputs[i].poseObservations) {
                 if (robotState.addVisionMeasurement(poseObservation)) {
-                    acceptedPoses.add(poseObservation.estimatedPoseMeters());
+                    lastAcceptedPoses.add(poseObservation.estimatedPoseMeters());
                 } else {
-                    rejectedPoses.add(poseObservation.estimatedPoseMeters());
+                    lastRejectedPoses.add(poseObservation.estimatedPoseMeters());
                 }
             }
-            seenTagPoses.addAll(Arrays.stream(cameraInputs[i].seenTagIDs)
+            lastSeenTagPoses.addAll(Arrays.stream(cameraInputs[i].seenTagIDs)
                     .mapToObj(tagID ->
                             FieldConstants.aprilTagLayout.getTagPose(tagID).orElse(Pose3d.kZero))
                     .toList());
         }
 
-        Logger.recordOutput("Vision/AcceptedPoses", acceptedPoses.toArray(new Pose3d[0]));
-        Logger.recordOutput("Vision/RejectedPoses", rejectedPoses.toArray(new Pose3d[0]));
-        Logger.recordOutput("Vision/SeenTagPoses", seenTagPoses.toArray(new Pose3d[0]));
+        Logger.recordOutput("Vision/AcceptedPoses", lastAcceptedPoses.toArray(new Pose3d[0]));
+        Logger.recordOutput("Vision/RejectedPoses", lastRejectedPoses.toArray(new Pose3d[0]));
+        Logger.recordOutput("Vision/SeenTagPoses", lastSeenTagPoses.toArray(new Pose3d[0]));
     }
 
     public static AprilTagVision createReal() {

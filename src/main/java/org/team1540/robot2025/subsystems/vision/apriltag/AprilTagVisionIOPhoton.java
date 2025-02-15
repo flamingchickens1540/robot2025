@@ -11,8 +11,9 @@ import org.team1540.robot2025.FieldConstants;
 
 public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
     protected final PhotonCamera camera;
-
     protected final Transform3d cameraTransformMeters;
+
+    private final Set<Integer> lastSeenTagIDs = new HashSet<>();
 
     public AprilTagVisionIOPhoton(String cameraName, Transform3d cameraTransformMeters) {
         super(cameraName);
@@ -24,7 +25,6 @@ public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
     public void updateInputs(AprilTagVisionIOInputs inputs) {
         inputs.connected = camera.isConnected();
 
-        Set<Integer> tagIDs = new HashSet<>();
         List<PoseObservation> poseObservations = new ArrayList<>();
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
             if (result.getMultiTagResult().isPresent()) {
@@ -39,7 +39,7 @@ public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
                             target.getBestCameraToTarget().getTranslation().getNorm();
                 }
 
-                tagIDs.addAll(multitagResult.fiducialIDsUsed.stream()
+                lastSeenTagIDs.addAll(multitagResult.fiducialIDsUsed.stream()
                         .map(Short::intValue)
                         .toList());
                 poseObservations.add(new PoseObservation(
@@ -60,7 +60,7 @@ public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
                     Transform3d fieldToRobot = fieldToCamera.plus(cameraTransformMeters.inverse());
                     Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
-                    tagIDs.add(target.fiducialId);
+                    lastSeenTagIDs.add(target.fiducialId);
                     poseObservations.add(new PoseObservation(
                             robotPose,
                             1,
@@ -70,7 +70,7 @@ public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
                 }
             }
 
-            inputs.seenTagIDs = tagIDs.stream().mapToInt(Integer::intValue).toArray();
+            inputs.seenTagIDs = lastSeenTagIDs.stream().mapToInt(Integer::intValue).toArray();
             inputs.poseObservations = poseObservations.toArray(new PoseObservation[0]);
         }
     }

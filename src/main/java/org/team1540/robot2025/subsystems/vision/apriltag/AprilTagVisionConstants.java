@@ -31,7 +31,7 @@ public class AprilTagVisionConstants {
             Units.inchesToMeters(-11.259),
             Units.inchesToMeters(8.211),
             new Rotation3d(0.0, Math.toRadians(-26), Math.toRadians(-180 + 26)));
-    
+
     public static final double XY_STD_DEV_COEFF = 0.1;
     public static final double ROT_STD_DEV_COEFF = 0.5;
 
