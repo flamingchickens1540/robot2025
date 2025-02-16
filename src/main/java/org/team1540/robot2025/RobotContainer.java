@@ -1,8 +1,11 @@
 package org.team1540.robot2025;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -18,6 +21,7 @@ import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
+import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
@@ -32,6 +36,7 @@ public class RobotContainer {
     private final CoralIntake coralIntake;
     private final Grabber grabber;
     private final Climber climber;
+    private final Leds leds = new Leds();
 
     private final Superstructure superstructure;
 
@@ -153,6 +158,12 @@ public class RobotContainer {
     }
 
     private void configureRobotModeTriggers() {
+        RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
+        RobotModeTriggers.autonomous()
+                .whileTrue(leds.viewTop.commandShowPattern(() -> LEDPattern.solid(Leds.getAllianceColor())));
+        RobotModeTriggers.teleop()
+                .whileTrue(leds.viewTop.commandShowPattern(
+                        () -> LEDPattern.solid(Leds.getAllianceColor()).breathe(Seconds.of(3))));
         RobotModeTriggers.teleop()
                 .and(DriverStation::isFMSAttached)
                 .onTrue(Commands.runOnce(drivetrain::zeroFieldOrientation));
