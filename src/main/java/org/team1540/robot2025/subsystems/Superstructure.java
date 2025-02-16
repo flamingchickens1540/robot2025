@@ -18,15 +18,15 @@ public class Superstructure {
         L4_FRONT(Arm.ArmState.SCORE_L4, Elevator.ElevatorState.L4, CoralIntake.CoralIntakeState.STOW),
         DEALGIFY_HIGH_FRONT(
                 Arm.ArmState.REEF_ALGAE, Elevator.ElevatorState.REEF_ALGAE_HIGH, CoralIntake.CoralIntakeState.STOW),
-    //        SCORE_BARGE_FRONT,
-    //        L1_BACK,
-    //        L2_BACK,
-    //        L3_BACK,
-    //        L4_BACK,
-    //        DEALGIFY_LOW_BACK,
-    //        DEALGIFY_HIGH_BACK,
-    //        SCORE_BARGE_BACK,
-    //        PROCESSOR
+        SCORE_BARGE_FRONT(Arm.ArmState.BARGE, Elevator.ElevatorState.BARGE, CoralIntake.CoralIntakeState.STOW),
+        L1_BACK(Arm.ArmState.SCORE_L1_REVERSE, Elevator.ElevatorState.L1, CoralIntake.CoralIntakeState.STOW),
+        L2_BACK(Arm.ArmState.SCORE_L2_L3_REVERSE, Elevator.ElevatorState.L2, CoralIntake.CoralIntakeState.STOW),
+        L3_BACK(Arm.ArmState.SCORE_L2_L3_REVERSE, Elevator.ElevatorState.L3, CoralIntake.CoralIntakeState.STOW),
+        L4_BACK(Arm.ArmState.SCORE_L4_REVERSE, Elevator.ElevatorState.L4, CoralIntake.CoralIntakeState.STOW),
+        DEALGIFY_LOW_BACK(Arm.ArmState.REEF_ALGAE_REVERSE, Elevator.ElevatorState.REEF_ALGAE_LOW, CoralIntake.CoralIntakeState.STOW),
+        DEALGIFY_HIGH_BACK(Arm.ArmState.REEF_ALGAE_REVERSE, Elevator.ElevatorState.REEF_ALGAE_HIGH, CoralIntake.CoralIntakeState.STOW),
+        SCORE_BARGE_BACK(Arm.ArmState.BARGE_REVERSE, Elevator.ElevatorState.BARGE, CoralIntake.CoralIntakeState.STOW),
+        PROCESSOR(Arm.ArmState.PROCESSOR, Elevator.ElevatorState.PROCESSOR, CoralIntake.CoralIntakeState.STOW)
     ;
 
         private Arm.ArmState armState;

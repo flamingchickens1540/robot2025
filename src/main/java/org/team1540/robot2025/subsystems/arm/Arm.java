@@ -14,6 +14,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.services.MechanismVisualizer;
+import org.team1540.robot2025.subsystems.elevator.Elevator;
+import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class Arm extends SubsystemBase {
@@ -24,11 +26,18 @@ public class Arm extends SubsystemBase {
         INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 60)),
         REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 0)),
         SCORE_L2_L3(new LoggedTunableNumber(
-                "Arm/Setpoints/ScoreL2_L3Degrees", 55)), // TODO: talk to Simon abt getting happy values
-        SCORE_L1(new LoggedTunableNumber("Arm/Setpoints/ScoreL1Degrees", 40)),
-        SCORE_L4(new LoggedTunableNumber("Arm/Setpoints/ScoreL4Degrees", 0)),
+                "Arm/Setpoints/ScoreL2L3Degrees", 125)), // TODO: talk to Simon abt getting happy values
+        SCORE_L1(new LoggedTunableNumber("Arm/Setpoints/ScoreL1Degrees", 140)),
+        SCORE_L4(new LoggedTunableNumber("Arm/Setpoints/ScoreL4Degrees", 180)),
         FUNNEL(new LoggedTunableNumber("Arm/Setpoints/FunnelDegrees", 115)),
-        GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 210));
+        GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 210)),
+        BARGE(new LoggedTunableNumber("Arm/Setpoints/BargeDegrees", 60)),
+        SCORE_L1_REVERSE(new LoggedTunableNumber("Arm/Setpoints/ScoreL1ReverseDegrees", 40)),
+        SCORE_L2_L3_REVERSE(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3ReverseDegrees", 55)),
+        SCORE_L4_REVERSE(new LoggedTunableNumber("Arm/Setpoints/ScoreL4ReverseDegrees", 0)),
+        REEF_ALGAE_REVERSE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeReverseDegrees", 0)),
+        BARGE_REVERSE(new LoggedTunableNumber("Arm/Setpoints/BargeReverseDegrees", 0)),
+        PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/ProcessorDegrees", 0));
         // TODO: stow with algae, back for most,
         private final DoubleSupplier positionDegrees;
 

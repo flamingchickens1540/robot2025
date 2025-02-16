@@ -30,8 +30,9 @@ public class Elevator extends SubsystemBase {
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
         GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.4)),
         REEF_ALGAE_LOW(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLow", 0)),
-        REEF_ALGAE_HIGH(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHigh", 0));
-        ;
+        REEF_ALGAE_HIGH(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHigh", 0)),
+        PROCESSOR(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHigh", 0));
+
 
         public final DoubleSupplier height;
 
