@@ -23,14 +23,17 @@ public class Elevator extends SubsystemBase {
     public enum ElevatorState {
         BASE(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
         FUNNEL(new LoggedTunableNumber("Elevator/Setpoints/Funnel", 0.25)),
-        L1(new LoggedTunableNumber("Elevator/Setpoints/L1", 0.5)),
-        L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 1.0)),
-        L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 1.5)),
+        L1_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L1Front", 0.5)), // TODO: may not work
+        L1_BACK(new LoggedTunableNumber("Elevator/Setpoints/L1Back", 0.7)),
+        L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 0.55)),
+        L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 0.92)),
         L4(new LoggedTunableNumber("Elevator/Setpoints/L4", MAX_HEIGHT_M)),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
-        GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.4)),
-        REEF_ALGAE_LOW(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLow", 0)),
-        REEF_ALGAE_HIGH(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHigh", 0));
+        GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.33)),
+        REEF_ALGAE_LOW(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLow", 0.55)),
+        REEF_ALGAE_HIGH(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHigh", 0.92)),
+        PROCESSOR(new LoggedTunableNumber("Elevator/Setpoints/Processor", 0)), // TODO: get value
+        STOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/StowAlgae", 0.03)),
         ;
 
         public final DoubleSupplier height;

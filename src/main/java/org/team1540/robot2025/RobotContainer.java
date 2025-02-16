@@ -92,7 +92,7 @@ public class RobotContainer {
 
         copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
         copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
-        copilot.a().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L1));
+        copilot.a().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L1_BACK));
         copilot.b().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L3));
     }
 

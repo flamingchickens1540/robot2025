@@ -9,25 +9,41 @@ import org.team1540.robot2025.subsystems.intake.CoralIntake;
 public class Superstructure {
     public enum SuperstructureState {
         STOW(Arm.ArmState.STOW, Elevator.ElevatorState.BASE, CoralIntake.CoralIntakeState.STOW),
+        STOW_ALGAE(Arm.ArmState.STOW_ALGAE, Elevator.ElevatorState.STOW_ALGAE, CoralIntake.CoralIntakeState.STOW),
         INTAKE_GROUND(Arm.ArmState.INTAKE, Elevator.ElevatorState.BASE, CoralIntake.CoralIntakeState.INTAKE),
         INTAKE_FUNNEL(Arm.ArmState.FUNNEL, Elevator.ElevatorState.FUNNEL, CoralIntake.CoralIntakeState.STOW),
         INTAKE_ALGAE(Arm.ArmState.GROUND_ALGAE, Elevator.ElevatorState.GROUND_ALGAE, CoralIntake.CoralIntakeState.STOW),
-        L1_FRONT(Arm.ArmState.SCORE_L1, Elevator.ElevatorState.L1, CoralIntake.CoralIntakeState.STOW),
-        L2_FRONT(Arm.ArmState.SCORE_L2_L3, Elevator.ElevatorState.L2, CoralIntake.CoralIntakeState.STOW),
-        L3_FRONT(Arm.ArmState.SCORE_L2_L3, Elevator.ElevatorState.L3, CoralIntake.CoralIntakeState.STOW),
-        L4_FRONT(Arm.ArmState.SCORE_L4, Elevator.ElevatorState.L4, CoralIntake.CoralIntakeState.STOW),
+
+        L1_FRONT(Arm.ArmState.SCORE_L1_FRONT, Elevator.ElevatorState.L1_FRONT, CoralIntake.CoralIntakeState.STOW),
+        L1_BACK(Arm.ArmState.SCORE_L1_BACK, Elevator.ElevatorState.L1_BACK, CoralIntake.CoralIntakeState.STOW),
+
+        L2_FRONT(Arm.ArmState.SCORE_L2_L3_FRONT, Elevator.ElevatorState.L2, CoralIntake.CoralIntakeState.STOW),
+        L2_BACK(Arm.ArmState.SCORE_L2_L3_BACK, Elevator.ElevatorState.L2, CoralIntake.CoralIntakeState.STOW),
+
+        L3_FRONT(Arm.ArmState.SCORE_L2_L3_FRONT, Elevator.ElevatorState.L3, CoralIntake.CoralIntakeState.STOW),
+        L3_BACK(Arm.ArmState.SCORE_L2_L3_BACK, Elevator.ElevatorState.L3, CoralIntake.CoralIntakeState.STOW),
+
+        L4_FRONT(Arm.ArmState.SCORE_L4_FRONT, Elevator.ElevatorState.L4, CoralIntake.CoralIntakeState.STOW),
+        L4_BACK(Arm.ArmState.SCORE_L4_BACK, Elevator.ElevatorState.L4, CoralIntake.CoralIntakeState.STOW),
+
+        // No dealgify low front
+        DEALGIFY_LOW_BACK(
+                Arm.ArmState.REEF_ALGAE_BACK, Elevator.ElevatorState.REEF_ALGAE_LOW, CoralIntake.CoralIntakeState.STOW),
+
         DEALGIFY_HIGH_FRONT(
-                Arm.ArmState.REEF_ALGAE, Elevator.ElevatorState.REEF_ALGAE_HIGH, CoralIntake.CoralIntakeState.STOW),
-    //        SCORE_BARGE_FRONT,
-    //        L1_BACK,
-    //        L2_BACK,
-    //        L3_BACK,
-    //        L4_BACK,
-    //        DEALGIFY_LOW_BACK,
-    //        DEALGIFY_HIGH_BACK,
-    //        SCORE_BARGE_BACK,
-    //        PROCESSOR
-    ;
+                Arm.ArmState.REEF_ALGAE_FRONT,
+                Elevator.ElevatorState.REEF_ALGAE_HIGH,
+                CoralIntake.CoralIntakeState.STOW),
+        DEALGIFY_HIGH_BACK(
+                Arm.ArmState.REEF_ALGAE_BACK,
+                Elevator.ElevatorState.REEF_ALGAE_HIGH,
+                CoralIntake.CoralIntakeState.STOW),
+
+        // barge is same from both sides
+        SCORE_BARGE(Arm.ArmState.SCORE_BARGE, Elevator.ElevatorState.BARGE, CoralIntake.CoralIntakeState.STOW),
+
+        // no processor front (?)
+        PROCESSOR_BACK(Arm.ArmState.PROCESSOR, Elevator.ElevatorState.PROCESSOR, CoralIntake.CoralIntakeState.STOW);
 
         private Arm.ArmState armState;
         private Elevator.ElevatorState elevatorState;
