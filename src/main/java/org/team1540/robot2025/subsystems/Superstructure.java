@@ -40,7 +40,8 @@ public class Superstructure {
                 CoralIntake.CoralIntakeState.STOW),
 
         // barge is same from both sides
-        SCORE_BARGE(Arm.ArmState.SCORE_BARGE, Elevator.ElevatorState.BARGE, CoralIntake.CoralIntakeState.STOW),
+        SCORE_BARGE_FRONT(Arm.ArmState.SCORE_BARGE_FRONT, Elevator.ElevatorState.BARGE, CoralIntake.CoralIntakeState.STOW),
+        SCORE_BARGE_BACK(Arm.ArmState.SCORE_BARGE_BACK, Elevator.ElevatorState.BARGE, CoralIntake.CoralIntakeState.STOW),
 
         // no processor front (?)
         PROCESSOR_BACK(Arm.ArmState.PROCESSOR, Elevator.ElevatorState.PROCESSOR, CoralIntake.CoralIntakeState.STOW);

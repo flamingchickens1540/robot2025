@@ -25,8 +25,7 @@ public class Leds extends SubsystemBase {
     public Leds() {
         ledStrip.setLength(buffer.getLength());
         ledStrip.start();
-        viewFull.setDefaultPattern(
-                LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(Value.one().div(Second.of(5))));
+        viewFull.setDefaultPattern(CustomLEDPatterns.movingRainbow(Value.one().div(Second.of(5))));
     }
 
     @Override

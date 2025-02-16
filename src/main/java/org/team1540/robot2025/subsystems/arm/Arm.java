@@ -22,10 +22,11 @@ public class Arm extends SubsystemBase {
     public enum ArmState {
         STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
         STOW_ALGAE(new LoggedTunableNumber("Arm/Setpoints/StowAlgaeDegrees", 142)),
+        
         INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 54)),
         FUNNEL(new LoggedTunableNumber("Arm/Setpoints/FunnelDegrees", 100)),
 
-        // TODO: do I need a low + high or is arm pos the same?
+
         REEF_ALGAE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeFrontDegrees", 0)), // TODO: get value
         REEF_ALGAE_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeBackDegrees", 180)),
         GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 220)),
@@ -36,8 +37,10 @@ public class Arm extends SubsystemBase {
         SCORE_L2_L3_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3BackDegrees", 115)),
         SCORE_L4_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontDegrees", 80)),
         SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 113)),
-        SCORE_BARGE(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeDegrees", 90));
-        // TODO: SCORE_BARGE_BACK?
+        SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 90)),
+        SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 0)),
+        ;
+
         private final DoubleSupplier positionDegrees;
 
         ArmState(DoubleSupplier positionDegrees) {
