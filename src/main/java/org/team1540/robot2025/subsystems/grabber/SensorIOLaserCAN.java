@@ -18,10 +18,12 @@ public class SensorIOLaserCAN implements SensorIO {
     @Override
     public void updateInputs(SensorIOInputs inputs) {
         LaserCanInterface.Measurement beforeMeasurement = beforeLaserCAN.getMeasurement();
-        inputs.afterSensorTripped = beforeMeasurement != null
+        inputs.beforeSensorConnected = beforeMeasurement != null;
+        inputs.beforeSensorTripped = beforeMeasurement != null
                 && beforeMeasurement.status == LASERCAN_STATUS_VALID_MEASUREMENT
                 && beforeMeasurement.distance_mm <= LASER_CAN_DETECT_DISTANCE_MM;
         LaserCanInterface.Measurement afterMeasurement = afterLaserCAN.getMeasurement();
+        inputs.afterSensorConnected = afterMeasurement != null;
         inputs.afterSensorTripped = afterMeasurement != null
                 && afterMeasurement.status == LASERCAN_STATUS_VALID_MEASUREMENT
                 && afterMeasurement.distance_mm <= LASER_CAN_DETECT_DISTANCE_MM;

@@ -15,16 +15,16 @@ public class ArmConstants {
     public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(250);
 
     // PID loop constants
-    public static final double KP = 25;
+    public static final double KP = 65;
     public static final double KI = 0;
-    public static final double KD = 0;
+    public static final double KD = 0.2;
 
     //    public static final double KS = 0.03;
     //    public static final double KG = 0.37;
     //    public static final double KV = 0.8;
 
     public static final double KS = 0.03;
-    public static final double KG = 0.41;
+    public static final double KG = 0.5;
     public static final double KV = 0.55;
 
     public static final int CANCODER_ID = 30;
@@ -34,9 +34,9 @@ public class ArmConstants {
     public static final double CANCODER_OFFSET_ROTS = -0.32421875; // TODO: get offset
     public static final double DISCONTINUITY_POINT = 0.75;
 
-    public static final double CRUISE_VELOCITY_RPS = 3;
-    public static final double MAX_ACCEL_RPS2 = 10;
+    public static final double CRUISE_VELOCITY_RPS = 2.54;
+    public static final double MAX_ACCEL_RPS2 = 6;
     public static final double JERK_RPS = 2000;
 
-    public static final Rotation2d ERROR_TOLERANCE = Rotation2d.fromDegrees(1);
+    public static final Rotation2d ERROR_TOLERANCE = Rotation2d.fromDegrees(3);
 }

@@ -28,8 +28,8 @@ public class Elevator extends SubsystemBase {
         L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 0.92)),
         L4(new LoggedTunableNumber("Elevator/Setpoints/L4", MAX_HEIGHT_M)),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
-        LOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/LowAlgae", 0.55)),
-        HIGH_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/HighAlgae", 0.92)),
+        LOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/LowAlgae", 0.6)),
+        HIGH_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/HighAlgae", 0.1)),
         FLOOR_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/FloorAlgae", 0.33)),
         STOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/StowAlgae", 0.03)),
         ;
@@ -131,7 +131,9 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command commandToSetpoint(ElevatorState state) {
-        return Commands.run(() -> setPosition(state.height.getAsDouble()), this).until(this::isAtSetpoint);
+        return (Commands.run(() -> setPosition(state.height.getAsDouble()), this)
+                        .until(this::isAtSetpoint))
+                .handleInterrupt(this::holdPosition);
     }
 
     public Command manualCommand(DoubleSupplier input) {

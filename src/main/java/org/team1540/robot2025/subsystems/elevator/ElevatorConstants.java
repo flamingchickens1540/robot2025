@@ -8,7 +8,7 @@ public class ElevatorConstants {
     public static final int FOLLOWER_ID = 14;
     public static final int UPPER_LIMIT_ID = 0;
     public static final int LOWER_LIMIT_ID = 1;
-    public static final double MIN_HEIGHT_M = 0.0;
+    public static final double MIN_HEIGHT_M = 0.01;
     public static final double MAX_HEIGHT_M = Units.inchesToMeters(62.5);
     public static final double STAGE_1_HEIGHT_M = Units.inchesToMeters(30.331);
     public static final double CLEAR_HEIGHT_M = 0.25;

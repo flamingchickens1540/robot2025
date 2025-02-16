@@ -105,7 +105,8 @@ public class Arm extends SubsystemBase {
     }
 
     public Command commandToSetpoint(ArmState state) {
-        return Commands.run(() -> setPosition(state.position()), this).until(this::isAtSetpoint);
+        return (Commands.run(() -> setPosition(state.position()), this).until(this::isAtSetpoint))
+                .handleInterrupt(this::holdPosition);
     }
 
     public static Arm createReal() {

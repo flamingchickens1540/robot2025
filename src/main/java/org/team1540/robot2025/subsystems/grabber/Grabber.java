@@ -1,5 +1,6 @@
 package org.team1540.robot2025.subsystems.grabber;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,6 +18,8 @@ public class Grabber extends SubsystemBase {
             new Alert("Before sensor is disconnected", Alert.AlertType.kWarning);
     private final Alert afterSensorDisconnectedAlert =
             new Alert("After sensor is disconnected", Alert.AlertType.kWarning);
+    private final Debouncer algaeDebounce = new Debouncer(0.2);
+    private boolean hasAlgae = false;
 
     private Grabber(GrabberIO grabberIO, SensorIO sensorIO) {
         this.grabberIO = grabberIO;
@@ -34,6 +37,8 @@ public class Grabber extends SubsystemBase {
         motorDisconnectedAlert.set(!grabberInputs.motorConnected);
         beforeSensorDisconnectedAlert.set(!sensorInputs.beforeSensorConnected);
         afterSensorDisconnectedAlert.set(!sensorInputs.afterSensorConnected);
+        hasAlgae =
+                algaeDebounce.calculate(!hasCoral() && getStatorCurrent() > 20 && grabberInputs.motorVelocityRPM < 100);
 
         if (RobotState.isDisabled()) {
             stop();
@@ -50,7 +55,7 @@ public class Grabber extends SubsystemBase {
     }
 
     public boolean hasAlgae() {
-        return !hasCoral() && grabberInputs.motorSupplyCurrentAmps > 20;
+        return hasAlgae;
     }
 
     public void stop() {
@@ -70,7 +75,7 @@ public class Grabber extends SubsystemBase {
     }
 
     public static Grabber createReal() {
-        return new Grabber(new GrabberIOTalonFX(), new SensorIOCANdi());
+        return new Grabber(new GrabberIOTalonFX(), new SensorIOLaserCAN());
     }
 
     public static Grabber createSim() {
