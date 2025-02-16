@@ -2,9 +2,13 @@ package org.team1540.robot2025.subsystems.vision.apriltag;
 
 import static org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionConstants.*;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.littletonrobotics.junction.Logger;
+import org.team1540.robot2025.FieldConstants;
 import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO.PoseObservation;
 
@@ -14,6 +18,10 @@ public class AprilTagVision extends SubsystemBase {
 
     private final Alert[] disconnectedAlerts;
 
+    private final ArrayList<Pose3d> lastAcceptedPoses = new ArrayList<>();
+    private final ArrayList<Pose3d> lastRejectedPoses = new ArrayList<>();
+    private final ArrayList<Pose3d> lastSeenTagPoses = new ArrayList<>();
+
     private AprilTagVision(AprilTagVisionIO... visionIOs) {
         this.visionIOs = visionIOs;
 
@@ -21,24 +29,39 @@ public class AprilTagVision extends SubsystemBase {
         this.disconnectedAlerts = new Alert[visionIOs.length];
         for (int i = 0; i < cameraInputs.length; i++) {
             cameraInputs[i] = new AprilTagVisionIOInputsAutoLogged();
-            disconnectedAlerts[i] = new Alert(visionIOs[i].getName() + " is disconnected.", Alert.AlertType.kWarning);
+            disconnectedAlerts[i] = new Alert(visionIOs[i].name + " is disconnected.", Alert.AlertType.kWarning);
         }
     }
 
     public void periodic() {
         for (int i = 0; i < visionIOs.length; i++) {
             visionIOs[i].updateInputs(cameraInputs[i]);
-            Logger.processInputs("Vision/" + visionIOs[i].getName(), cameraInputs[i]);
+            Logger.processInputs("Vision/" + visionIOs[i].name, cameraInputs[i]);
         }
 
         RobotState robotState = RobotState.getInstance();
 
+        lastAcceptedPoses.clear();
+        lastRejectedPoses.clear();
+        lastSeenTagPoses.clear();
         for (int i = 0; i < visionIOs.length; i++) {
             disconnectedAlerts[i].set(!cameraInputs[i].connected);
             for (PoseObservation poseObservation : cameraInputs[i].poseObservations) {
-                robotState.addVisionMeasurement(poseObservation);
+                if (robotState.addVisionMeasurement(poseObservation)) {
+                    lastAcceptedPoses.add(poseObservation.estimatedPoseMeters());
+                } else {
+                    lastRejectedPoses.add(poseObservation.estimatedPoseMeters());
+                }
             }
+            lastSeenTagPoses.addAll(Arrays.stream(cameraInputs[i].seenTagIDs)
+                    .mapToObj(tagID ->
+                            FieldConstants.aprilTagLayout.getTagPose(tagID).orElse(Pose3d.kZero))
+                    .toList());
         }
+
+        Logger.recordOutput("Vision/AcceptedPoses", lastAcceptedPoses.toArray(new Pose3d[0]));
+        Logger.recordOutput("Vision/RejectedPoses", lastRejectedPoses.toArray(new Pose3d[0]));
+        Logger.recordOutput("Vision/SeenTagPoses", lastSeenTagPoses.toArray(new Pose3d[0]));
     }
 
     public static AprilTagVision createReal() {
@@ -59,9 +82,9 @@ public class AprilTagVision extends SubsystemBase {
 
     public static AprilTagVision createDummy() {
         return new AprilTagVision(
-                new AprilTagVisionIO() {},
-                new AprilTagVisionIO() {},
-                new AprilTagVisionIO() {},
-                new AprilTagVisionIO() {});
+                new AprilTagVisionIO(FL_CAMERA_NAME) {},
+                new AprilTagVisionIO(FR_CAMERA_NAME) {},
+                new AprilTagVisionIO(BL_CAMERA_NAME) {},
+                new AprilTagVisionIO(BR_CAMERA_NAME) {});
     }
 }
