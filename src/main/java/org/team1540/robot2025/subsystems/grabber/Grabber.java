@@ -45,7 +45,12 @@ public class Grabber extends SubsystemBase {
     }
 
     public boolean hasCoral() {
-        return sensorInputs.beforeSensorTripped && sensorInputs.afterSensorTripped;
+        //        return sensorInputs.beforeSensorTripped && sensorInputs.afterSensorTripped;
+        return sensorInputs.afterSensorTripped; // TODO: Make this work with both once we add another one
+    }
+
+    public boolean hasAlgae() {
+        return !hasCoral() && grabberInputs.motorSupplyCurrentAmps > 20;
     }
 
     public void stop() {

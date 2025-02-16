@@ -20,12 +20,19 @@ public class Arm extends SubsystemBase {
     private static boolean hasInstance = false;
 
     public enum ArmState {
-        STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 100)),
-        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 60)),
-        REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 0)),
-        SCORE(new LoggedTunableNumber("Arm/Setpoints/ScoreDegrees", 135)),
-        LOW_SCORE(new LoggedTunableNumber("Arm/Setpoints/LowScoreDegrees", 115)),
-        SCORE_REVERSE(new LoggedTunableNumber("Arm/Setpoints/ScoreReverseDegrees", 60));
+        STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
+        STOW_ALGAE(new LoggedTunableNumber("Arm/Setpoints/StowAlgaeDegrees", 142)),
+        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 54)),
+        SOURCE_INTAKE(new LoggedTunableNumber("Arm/Setpoints/SourceIntakeDegrees", 100)),
+        REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 180)),
+        FLOOR_ALGAE(new LoggedTunableNumber("Arm/Setpoints/FloorAlgaeDegrees", 220)),
+        L4_SCORE(new LoggedTunableNumber("Arm/Setpoints/L4ScoreDegrees", 113)),
+        SCORE(new LoggedTunableNumber("Arm/Setpoints/ScoreDegrees", 115)),
+        L4_SCORE_REVERSE(new LoggedTunableNumber("Arm/Setpoints/L4ScoreReverseDegrees", 80)),
+        SCORE_REVERSE(new LoggedTunableNumber("Arm/Setpoints/ScoreReverseDegrees", 65)),
+        L1_SCORE(new LoggedTunableNumber("Arm/Setpoints/L1ScoreDegrees", 250)),
+        PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/Processor", 150)),
+        ;
 
         private final DoubleSupplier positionDegrees;
 

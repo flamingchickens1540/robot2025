@@ -26,8 +26,8 @@ public class CoralIntake extends SubsystemBase {
                 new LoggedTunableNumber("CoralIntake/Setpoints/Stow/FunnelVoltage", 0.0)),
         INTAKE(
                 new LoggedTunableNumber("CoralIntake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/RollerVoltage", 12.0),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/FunnelVoltage", 12.0)),
+                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/RollerVoltage", 6),
+                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/FunnelVoltage", 6)),
         EJECT(
                 new LoggedTunableNumber("CoralIntake/Setpoints/Eject/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()),
                 new LoggedTunableNumber("CoralIntake/Setpoints/Eject/RollerVoltage", -12.0),
@@ -137,7 +137,11 @@ public class CoralIntake extends SubsystemBase {
                             setFunnelVoltage(state.funnelVoltage.getAsDouble());
                         },
                         this)
-                .until(this::isPivotAtSetpoint);
+                .until(this::isPivotAtSetpoint)
+                .andThen(Commands.runOnce(() -> {
+                    setPivotPosition(inputs.pivotPosition);
+                    setRollerVoltage(state.rollerVoltage.getAsDouble());
+                }));
     }
 
     public static CoralIntake createReal() {

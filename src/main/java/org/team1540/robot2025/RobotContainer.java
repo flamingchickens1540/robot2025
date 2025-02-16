@@ -42,17 +42,17 @@ public class RobotContainer {
         switch (Constants.CURRENT_MODE) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
-                drivetrain = Drivetrain.createDummy();
+                drivetrain = Drivetrain.createReal();
                 aprilTagVision = AprilTagVision.createDummy();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
-                coralIntake = CoralIntake.createDummy();
+                coralIntake = CoralIntake.createReal();
                 grabber = Grabber.createReal();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
-                aprilTagVision = AprilTagVision.createSim();
+                aprilTagVision = AprilTagVision.createDummy();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
                 coralIntake = CoralIntake.createSim();
@@ -79,9 +79,9 @@ public class RobotContainer {
     }
 
     private void configureButtonBindings() {
-        //        drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
-        //        driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
-        //        driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
+        drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
+        //                driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
+        //                driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
         copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
         copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
@@ -90,38 +90,64 @@ public class RobotContainer {
 
         //        copilot.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW));
         //        copilot.b().whileTrue(arm.commandToSetpoint(Arm.ArmState.INTAKE));
-        //        copilot.a().whileTrue(grabber.commandRun(0.5));
+        //                copilot.a().whileTrue(grabber.commandRun(0.5));
 
-        copilot.b()
-                .whileTrue(Commands.parallel(
-                        elevator.setpointCommand(Elevator.ElevatorState.L4),
-                        arm.commandToSetpoint(Arm.ArmState.SCORE)));
-        //                        Commands.waitUntil(() -> arm.getPosition().getDegrees()
-        //                                        > Arm.ArmState.SCORE.position().getDegrees() - 5)
-        //                                .andThen(grabber.commandRun(0.5))));
-        copilot.a()
-                .whileTrue(Commands.parallel(
-                        elevator.setpointCommand(Elevator.ElevatorState.L4),
-                        arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE)));
+        //        copilot.b()
+        //                .whileTrue(Commands.parallel(
+        //                        elevator.commandToSetpoint(Elevator.ElevatorState.L4),
+        //                        arm.commandToSetpoint(Arm.ArmState.L4_SCORE)));
+        //        //                        Commands.waitUntil(() -> arm.getPosition().getDegrees()
+        //        //                                        > Arm.ArmState.SCORE.position().getDegrees() - 5)
+        //        //                                .andThen(grabber.commandRun(0.5))));
+        //        copilot.a()
+        //                .whileTrue(Commands.parallel(
+        //                        elevator.commandToSetpoint(Elevator.ElevatorState.L4),
+        //                        arm.commandToSetpoint(Arm.ArmState.L4_SCORE_REVERSE)));
         //        copilot.b()
         //                .whileTrue(Commands.parallel(
         //                        elevator.setpointCommand(Elevator.ElevatorState.L2),
         //                        arm.commandToSetpoint(Arm.ArmState.LOW_SCORE)));
 
         copilot.rightBumper().whileTrue(grabber.commandRun(0.5));
-        copilot.leftBumper().whileTrue(grabber.commandRun(-0.5));
+        copilot.leftBumper().whileTrue(grabber.commandRun(-0.2));
         //        copilot.a()
         //                .whileTrue(Commands.sequence(
         //                        elevator.setpointCommand(Elevator.ElevatorState.L4),
         // arm.commandToSetpoint(Arm.ArmState.STOW)));
-        copilot.rightTrigger()
-                .whileTrue(Commands.parallel(
-                        Commands.sequence(
-                                arm.commandToSetpoint(Arm.ArmState.SCORE),
-                                elevator.setpointCommand(Elevator.ElevatorState.L4)),
-                        Commands.sequence(
-                                grabber.commandRun(0.25).until(() -> elevator.getPosition() > 1.25),
-                                grabber.commandRun(-1))));
+        //        copilot.rightTrigger()
+        //                .whileTrue(Commands.parallel(
+        //                        Commands.sequence(
+        //                                arm.commandToSetpoint(Arm.ArmState.L4_SCORE),
+        //                                elevator.commandToSetpoint(Elevator.ElevatorState.L4)),
+        //                        Commands.sequence(
+        //                                grabber.commandRun(0.25).until(() -> elevator.getPosition() > 1.25),
+        //                                grabber.commandRun(-1))));
+
+        //        driver.y().whileTrue(superstructure.L4(driver.rightTrigger()));
+        //        driver.x().whileTrue(superstructure.L3(driver.rightTrigger()));
+        //        driver.b().whileTrue(superstructure.L2(driver.rightTrigger()));
+        //                driver.a().whileTrue(superstructure.L1(driver.rightTrigger()));
+
+        //        driver.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.L1_SCORE));
+        //        driver.b().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE));
+        //        driver.b().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L2));
+        //        driver.y().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
+        //        driver.x().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW).andThen(elevator.zeroCommand()));
+
+        driver.a().whileTrue(coralIntake.commandToSetpoint(CoralIntake.CoralIntakeState.INTAKE));
+        driver.b().whileTrue(coralIntake.commandToSetpoint(CoralIntake.CoralIntakeState.STOW));
+        driver.x().whileTrue(Commands.runOnce(() -> coralIntake.setFunnelVoltage(6)));
+        driver.y().whileTrue(arm.commandToSetpoint(Arm.ArmState.INTAKE).andThen(grabber.commandRun(0.5)));
+
+        driver.leftTrigger().whileTrue(superstructure.net());
+        driver.leftBumper().whileTrue(superstructure.processor(driver.rightTrigger()));
+        driver.rightBumper().whileTrue(superstructure.dealgifyHigh());
+
+        driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
+        driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
+
+        driver.rightStick().whileTrue(superstructure.stow());
+        driver.leftStick().whileTrue(superstructure.coralGroundIntake());
     }
 
     private void configureAutoRoutines() {

@@ -12,7 +12,7 @@ public class ArmConstants {
 
     // arm parallel to floor is 0, min angle is 30
     public static final Rotation2d MIN_ANGLE = Rotation2d.fromDegrees(-60);
-    public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(240);
+    public static final Rotation2d MAX_ANGLE = Rotation2d.fromDegrees(250);
 
     // PID loop constants
     public static final double KP = 25;
