@@ -74,6 +74,17 @@ public class Grabber extends SubsystemBase {
         return Commands.startEnd(() -> this.setPercent(percent), () -> this.setPercent(0), this);
     }
 
+    public Command commandStartRun(double percent) {
+        return Commands.runOnce(() -> setPercent(percent));
+    }
+
+    public Command intakeCoral() {
+        return Commands.sequence(
+                commandRun(0.3).until(this::hasCoral),
+                commandRun(-0.1).until(() -> !this.hasCoral()),
+                commandRun(0.05).until(this::hasCoral));
+    }
+
     public static Grabber createReal() {
         return new Grabber(new GrabberIOTalonFX(), new SensorIOLaserCAN());
     }

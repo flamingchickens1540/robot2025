@@ -94,10 +94,16 @@ public class RobotContainer {
         // 0.1)));
         copilot.x().whileTrue(Commands.sequence(arm.commandToSetpoint(Arm.ArmState.STOW), elevator.zeroCommand()));
         copilot.b().whileTrue(coralIntake.zeroCommand());
-        copilot.a().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
-        copilot.leftBumper().whileTrue(arm.commandToSetpoint(Arm.ArmState.REEF_ALGAE));
-        copilot.rightBumper().whileTrue(arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE));
-
+        //        copilot.a().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
+        //        copilot.leftBumper().whileTrue(arm.commandToSetpoint(Arm.ArmState.REEF_ALGAE));
+        //        copilot.rightBumper().whileTrue(arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE));
+        copilot.rightBumper().whileTrue(grabber.commandRun(0.3).until(grabber::hasCoral));
+        copilot.leftBumper().onTrue(Commands.runOnce(() -> grabber.setPercent(0.15)));
+        copilot.rightTrigger().whileTrue(superstructure.netReverse());
+        copilot.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE));
+        copilot.y().whileTrue(grabber.intakeCoral());
+        //        copilot.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW));
+        //        copilot.y().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.SOURCE));
         //         Test Intake Zeroing
         //        driver.a().whileTrue(coralIntake.zeroCommand());
 

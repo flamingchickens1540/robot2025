@@ -161,28 +161,29 @@ public class Superstructure {
 
     public Command net() {
         return Commands.sequence(
+                arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
+                elevator.commandToSetpoint(Elevator.ElevatorState.L3),
+                arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE),
+                Commands.parallel(
+                        elevator.commandToSetpoint(Elevator.ElevatorState.BARGE),
                         arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
-                        elevator.commandToSetpoint(Elevator.ElevatorState.L3),
-                        arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE),
-                        Commands.parallel(
-                                elevator.commandToSetpoint(Elevator.ElevatorState.BARGE),
-                                arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
-                                grabber.commandRun(-0.5).withTimeout(1)),
-                        stow())
-                .onlyIf(grabber::hasAlgae);
+                        grabber.commandRun(-0.5).withTimeout(1)),
+                stow());
+        //                .onlyIf(grabber::hasAlgae);
     }
 
     public Command netReverse() {
         return Commands.sequence(
-                        arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
+                arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
+                Commands.parallel(
+                        elevator.commandToSetpoint(Elevator.ElevatorState.BARGE),
                         Commands.parallel(
-                                elevator.commandToSetpoint(Elevator.ElevatorState.BARGE),
-                                Commands.parallel(
-                                                arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
-                                                grabber.commandRun(-0.5).withTimeout(1))
-                                        .beforeStarting(Commands.waitUntil(() -> elevator.getPosition()
-                                                > Elevator.ElevatorState.L3.height.getAsDouble()))),
-                        stow())
-                .onlyIf(grabber::hasAlgae);
+                                        arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE),
+                                        grabber.commandRun(-0.5).withTimeout(1))
+                                .beforeStarting(Commands.waitSeconds(0.2))
+                                .beforeStarting(Commands.waitUntil(() ->
+                                        elevator.getPosition() > Elevator.ElevatorState.L3.height.getAsDouble()))),
+                stow());
+        //                .onlyIf(grabber::hasAlgae);
     }
 }

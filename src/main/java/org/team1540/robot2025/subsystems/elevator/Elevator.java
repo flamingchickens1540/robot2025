@@ -22,7 +22,7 @@ public class Elevator extends SubsystemBase {
 
     public enum ElevatorState {
         BASE(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
-        SOURCE(new LoggedTunableNumber("Elevator/Setpoints/Source", 0.25)),
+        SOURCE(new LoggedTunableNumber("Elevator/Setpoints/Source", 0.242)),
         L1(new LoggedTunableNumber("Elevator/Setpoints/L1", 0.7)),
         L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 0.55)),
         L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 0.92)),
