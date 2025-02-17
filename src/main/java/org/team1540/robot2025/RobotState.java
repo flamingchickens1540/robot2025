@@ -73,13 +73,15 @@ public class RobotState {
         field.setRobotPose(getEstimatedPose());
     }
 
-    public void addVisionMeasurement(AprilTagVisionIO.PoseObservation visionPose) {
+    public boolean addVisionMeasurement(AprilTagVisionIO.PoseObservation visionPose) {
         if (shouldAcceptVision(visionPose) && resetTimer.hasElapsed(0.1)) {
             poseEstimator.addVisionMeasurement(
                     visionPose.estimatedPoseMeters().toPose2d(),
                     visionPose.lastMeasurementTimestampSecs(),
                     getStdDevs(visionPose));
+            return true;
         }
+        return false;
     }
 
     private Matrix<N3, N1> getStdDevs(AprilTagVisionIO.PoseObservation poseObservation) {
@@ -97,9 +99,9 @@ public class RobotState {
         return poseObservation.numTagsSeen() >= MIN_ACCEPTED_NUM_TAGS // Must see sufficient tags
                 // Must be within field roughly
                 && estimatedPose.getX() >= -MAX_OUTSIDE_OF_FIELD_TOLERANCE
-                && estimatedPose.getX() <= APRIL_TAG_FIELD_LAYOUT.getFieldLength() + MAX_OUTSIDE_OF_FIELD_TOLERANCE
+                && estimatedPose.getX() <= FieldConstants.fieldLength + MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 && estimatedPose.getY() >= -MAX_OUTSIDE_OF_FIELD_TOLERANCE
-                && estimatedPose.getY() <= APRIL_TAG_FIELD_LAYOUT.getFieldWidth() + MAX_OUTSIDE_OF_FIELD_TOLERANCE
+                && estimatedPose.getY() <= FieldConstants.fieldWidth + MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 // Must not be actively flying
                 && estimatedPose.getZ() <= MAX_ROBOT_Z_TOLERANCE;
     }

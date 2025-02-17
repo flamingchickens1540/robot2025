@@ -7,7 +7,7 @@
     "mavenUrls": [
         "https://dev.studica.com/maven/release/2025/"
     ],
-    "jsonUrl": "https://dev.studica.com/releases/2025/Studica-2025.0.0.json",
+    "jsonUrl": "https://dev.studica.com/releases/2025/Studica-2025.0.1.json",
     "cppDependencies": [
         {
             "artifactId": "Studica-cpp",
