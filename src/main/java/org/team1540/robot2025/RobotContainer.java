@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -22,13 +23,14 @@ import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
+import org.team1540.robot2025.util.CopilotController;
 import org.team1540.robot2025.util.JoystickUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController copilot = new CommandXboxController(1);
-
+    private final CopilotController buttonBoard = new CopilotController(2);
     private final Drivetrain drivetrain;
     private final AprilTagVision aprilTagVision;
     private final Elevator elevator;
@@ -59,7 +61,7 @@ public class RobotContainer {
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
-                aprilTagVision = AprilTagVision.createSim();
+                aprilTagVision = AprilTagVision.createDummy();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
                 coralIntake = CoralIntake.createSim();
@@ -94,6 +96,19 @@ public class RobotContainer {
         copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
         copilot.a().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L1));
         copilot.b().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L3));
+
+        buttonBoard
+                .branchHeightAt(CopilotController.BranchHeight.L1)
+                .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kRed)));
+        buttonBoard
+                .branchHeightAt(CopilotController.BranchHeight.L2)
+                .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kYellow)));
+        buttonBoard
+                .branchHeightAt(CopilotController.BranchHeight.L3)
+                .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kGreen)));
+        buttonBoard
+                .branchHeightAt(CopilotController.BranchHeight.L4)
+                .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kBlue)));
     }
 
     private void configureAutoRoutines() {
