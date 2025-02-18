@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import org.team1540.robot2025.autos.Autos;
+import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.subsystems.Superstructure;
@@ -89,6 +90,7 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
+        driver.leftTrigger().whileTrue(AutoAlignCommands.alignToNearestBranch(drivetrain));
 
         copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
         copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));

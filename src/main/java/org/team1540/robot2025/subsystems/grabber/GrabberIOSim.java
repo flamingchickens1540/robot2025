@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 public class GrabberIOSim implements GrabberIO {
     private final DCMotorSim sim = new DCMotorSim(
-            LinearSystemId.createDCMotorSystem(DCMotor.getFalcon500Foc(1), GRABBER_MOI, GRABBER_GEAR_RATIO),
+            LinearSystemId.createDCMotorSystem(DCMotor.getFalcon500Foc(1), MOI, GEAR_RATIO),
             DCMotor.getFalcon500Foc(1));
 
     private double motorVoltage = 0.0;

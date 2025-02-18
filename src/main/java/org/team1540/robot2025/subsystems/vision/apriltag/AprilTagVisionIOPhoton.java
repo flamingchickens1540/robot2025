@@ -70,7 +70,8 @@ public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
                 }
             }
 
-            inputs.seenTagIDs = lastSeenTagIDs.stream().mapToInt(Integer::intValue).toArray();
+            inputs.seenTagIDs =
+                    lastSeenTagIDs.stream().mapToInt(Integer::intValue).toArray();
             inputs.poseObservations = poseObservations.toArray(new PoseObservation[0]);
         }
     }

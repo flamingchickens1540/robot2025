@@ -6,6 +6,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import java.util.*;
+import org.team1540.robot2025.subsystems.grabber.GrabberConstants;
 
 // NOTE this file is available at:
 // https://github.com/Mechanical-Advantage/RobotCode2025Public/blob/main/src/main/java/org/littletonrobotics/frc2025/FieldConstants.java
@@ -63,6 +64,7 @@ public class FieldConstants {
         }; // Starting facing the driver station in clockwise order
         public static final List<Map<ReefHeight, Pose3d>> branchPositions =
                 new ArrayList<>(); // Starting at the right branch facing the driver station in clockwise
+        public static final List<Pose2d> scorePositions = new ArrayList<>();
 
         static {
             // Initialize branch positions
@@ -107,6 +109,15 @@ public class FieldConstants {
                 }
                 branchPositions.add(fillRight);
                 branchPositions.add(fillLeft);
+
+                scorePositions.add(centerFaces[face].transformBy(new Transform2d(
+                        Constants.BUMPER_LENGTH_X_METERS / 2,
+                        GrabberConstants.Y_OFFSET_METERS + Units.inchesToMeters(6.469),
+                        Rotation2d.kZero)));
+                scorePositions.add(centerFaces[face].transformBy(new Transform2d(
+                        Constants.BUMPER_LENGTH_X_METERS / 2,
+                        GrabberConstants.Y_OFFSET_METERS - Units.inchesToMeters(6.469),
+                        Rotation2d.kZero)));
             }
         }
     }
