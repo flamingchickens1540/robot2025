@@ -11,6 +11,7 @@ public class CustomLEDPatterns {
     public static LEDPattern movingRainbow(Frequency velocity) {
         return movingRainbow(velocity, 255, 255);
     }
+
     public static LEDPattern movingRainbow(Frequency velocity, int saturation, int value) {
         final double periodMicros = velocity.asPeriod().in(Microseconds);
 

@@ -2,15 +2,11 @@ package org.team1540.robot2025.autos;
 
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
-import choreo.auto.AutoTrajectory;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import java.util.List;
-import org.ironmaple.simulation.SimulatedArena;
-import org.team1540.robot2025.Constants;
+import org.team1540.robot2025.FieldConstants.ReefHeight;
 import org.team1540.robot2025.RobotState;
+import org.team1540.robot2025.autos.AutoSequence.ReefPosition;
+import org.team1540.robot2025.autos.AutoSequence.SourcePosition;
+import org.team1540.robot2025.autos.AutoSequence.StartingPosition;
 import org.team1540.robot2025.subsystems.Superstructure;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.util.AllianceFlipUtil;
@@ -41,31 +37,16 @@ public class Autos {
                 });
     }
 
-    private void resetPoseInSim(AutoRoutine routine, AutoTrajectory startingTrajectory) {
-        if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
-            routine.active().onTrue(Commands.runOnce(() -> {
-                robotState.resetPose(startingTrajectory.getInitialPose().orElse(new Pose2d(3, 3, Rotation2d.kZero)));
-                SimulatedArena.getInstance().resetFieldForAuto();
-            }));
-        }
-    }
-
     public AutoRoutine testAuto() {
-        AutoRoutine routine = autoFactory.newRoutine("Test Auto");
-        List<AutoTrajectory> trajectories = List.of(
-                routine.trajectory("StartLtoI"),
-                routine.trajectory("IJtoSrcLL"),
-                routine.trajectory("SrcLLtoK"),
-                routine.trajectory("KLtoSrcLR"),
-                routine.trajectory("SrcLRtoL"),
-                routine.trajectory("KLtoSrcLR"),
-                routine.trajectory("SrcLRtoA"));
-        resetPoseInSim(routine, trajectories.get(0));
+        AutoSequence sequence = new AutoSequence(StartingPosition.LEFT)
+                .withReefSegment(ReefPosition.I, ReefHeight.L4)
+                .withSourceSegment(SourcePosition.LEFT_LEFT)
+                .withReefSegment(ReefPosition.K, ReefHeight.L4)
+                .withSourceSegment(SourcePosition.LEFT_LEFT)
+                .withReefSegment(ReefPosition.L, ReefHeight.L4)
+                .withSourceSegment(SourcePosition.RIGHT_LEFT)
+                .withReefSegment(ReefPosition.B, ReefHeight.L4);
 
-        routine.active()
-                .onTrue(Commands.sequence(trajectories.stream()
-                        .map(traj -> traj.cmd().andThen(Commands.waitSeconds(0.1)))
-                        .toArray(Command[]::new)));
-        return routine;
+        return sequence.build(autoFactory, "Test Auto");
     }
 }
