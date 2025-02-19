@@ -1,5 +1,7 @@
 package org.team1540.robot2025.subsystems;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.team1540.robot2025.subsystems.arm.Arm;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
@@ -64,6 +66,7 @@ public class Superstructure {
     private final Arm arm;
     private final CoralIntake coralIntake;
     private final Grabber grabber;
+    private final double funnelHeight = 1.0;
 
     private SuperstructureState goalState;
 
@@ -78,4 +81,22 @@ public class Superstructure {
     public SuperstructureState getGoalState() {
         return goalState;
     }
+
+    public Command commandToState(SuperstructureState goalState) {
+        this.goalState = goalState;
+        if (goalState == SuperstructureState.STOW || goalState == SuperstructureState.STOW_ALGAE) {
+            return Commands.sequence(
+                    arm.commandToSetpoint(goalState.armState),
+                    Commands.parallel(
+                            elevator.setpointCommand(goalState.elevatorState),
+                            coralIntake.commandToSetpoint(goalState.intakeState)));
+        } else {
+            return Commands.parallel(
+                    elevator.setpointCommand(goalState.elevatorState),
+                    coralIntake.commandToSetpoint(goalState.intakeState),
+                    Commands.waitUntil(() -> elevator.getPosition() > funnelHeight)
+                            .andThen(arm.commandToSetpoint(goalState.armState)));
+        } // Instead of current way:
+    } // very small risk: states exist where u need to have arm over funnel, then cancel, then go straight to intake
+    // speciallized intake case (like stow & algae stow)
 }
