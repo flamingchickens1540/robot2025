@@ -120,6 +120,7 @@ public class RobotContainer {
     private void configurePeriodicCallbacks() {
         addPeriodicCallback(AlertManager.getInstance()::update, "AlertManager update");
         addPeriodicCallback(MechanismVisualizer.getInstance()::update, "MechanismVisualizer update");
+        addPeriodicCallback(autoChooser::update, "Auto Chooser update");
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             addPeriodicCallback(SimState.getInstance()::update, "Simulation update");
         }
