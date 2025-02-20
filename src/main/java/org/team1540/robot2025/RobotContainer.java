@@ -94,7 +94,6 @@ public class RobotContainer {
         driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
         driver.leftTrigger().whileTrue(AutoAlignCommands.alignToNearestBranch(drivetrain));
 
-
         copilot.x().whileTrue(Commands.sequence(arm.commandToSetpoint(Arm.ArmState.STOW), elevator.zeroCommand()));
         copilot.b().whileTrue(coralIntake.zeroCommand());
         copilot.rightBumper().whileTrue(grabber.commandRun(0.3).until(grabber::hasCoral));

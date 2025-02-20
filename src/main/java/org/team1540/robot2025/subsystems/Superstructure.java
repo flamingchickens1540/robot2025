@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.team1540.robot2025.subsystems.arm.Arm;
-import org.team1540.robot2025.subsystems.climber.Climber;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
