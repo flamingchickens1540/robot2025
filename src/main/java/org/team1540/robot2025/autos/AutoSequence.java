@@ -26,14 +26,18 @@ public class AutoSequence {
         List<Command> commands = new ArrayList<>();
 
         for (int i = 0; i < positions.size() - 1; i++) {
+            Position startPosition = (Position) positions.get(i);
+            Position endPosition = (Position) positions.get(i + 1);
+
+            // Get trajectory name
             StringBuilder trajectoryName = new StringBuilder();
-            if (positions.get(i) instanceof ReefPosition) {
-                trajectoryName.append(((ReefPosition) positions.get(i)).side);
+            if (startPosition instanceof ReefPosition) {
+                trajectoryName.append(((ReefPosition) startPosition).side);
             } else {
-                trajectoryName.append(((Position) positions.get(i)).getTrajectoryName());
+                trajectoryName.append(startPosition.getTrajectoryName());
             }
             trajectoryName.append("to");
-            trajectoryName.append(((Position) positions.get(i + 1)).getTrajectoryName());
+            trajectoryName.append(endPosition.getTrajectoryName());
 
             AutoTrajectory trajectory = routine.trajectory(trajectoryName.toString());
             trajectories.add(trajectory);
@@ -54,6 +58,7 @@ public class AutoSequence {
         }
 
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
+            // Reset simulated game elements
             autoCommand = autoCommand.beforeStarting(
                     Commands.runOnce(() -> SimulatedArena.getInstance().resetFieldForAuto()));
         }
