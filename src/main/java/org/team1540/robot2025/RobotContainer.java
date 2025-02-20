@@ -89,14 +89,10 @@ public class RobotContainer {
 
     private void configureButtonBindings() {
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
-        //        copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
-        //        copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(),
-        // 0.1)));
+
+
         copilot.x().whileTrue(Commands.sequence(arm.commandToSetpoint(Arm.ArmState.STOW), elevator.zeroCommand()));
         copilot.b().whileTrue(coralIntake.zeroCommand());
-        //        copilot.a().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
-        //        copilot.leftBumper().whileTrue(arm.commandToSetpoint(Arm.ArmState.REEF_ALGAE));
-        //        copilot.rightBumper().whileTrue(arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE));
         copilot.rightBumper().whileTrue(grabber.commandRun(0.3).until(grabber::hasCoral));
         copilot.leftBumper().onTrue(Commands.runOnce(() -> grabber.setPercent(0.15)));
         copilot.rightTrigger().whileTrue(superstructure.netReverse());
