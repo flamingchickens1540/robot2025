@@ -19,18 +19,16 @@ public class Superstructure {
     private final Arm arm;
     private final CoralIntake coralIntake;
     private final Grabber grabber;
-    private final Climber climber;
 
     private SuperstructureState goalState;
 
-    public Superstructure(Elevator elevator, Arm arm, CoralIntake coralIntake, Grabber grabber, Climber climber) {
+    public Superstructure(Elevator elevator, Arm arm, CoralIntake coralIntake, Grabber grabber) {
         if (hasInstance) throw new IllegalStateException("Instance of arm already exists");
         hasInstance = true;
         this.elevator = elevator;
         this.arm = arm;
         this.coralIntake = coralIntake;
         this.grabber = grabber;
-        this.climber = climber;
     }
 
     @AutoLogOutput(key = "Superstructure/GoalState")

@@ -79,7 +79,7 @@ public class RobotContainer {
                 grabber = Grabber.createDummy();
                 climber = Climber.createDummy();
         }
-        superstructure = new Superstructure(elevator, arm, coralIntake, grabber, climber);
+        superstructure = new Superstructure(elevator, arm, coralIntake, grabber);
         autos = new Autos(drivetrain, superstructure);
 
         configureButtonBindings();
