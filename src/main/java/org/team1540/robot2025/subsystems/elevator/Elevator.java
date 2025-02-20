@@ -21,7 +21,7 @@ public class Elevator extends SubsystemBase {
     private static boolean hasInstance = false;
 
     public enum ElevatorState {
-        BASE(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
+        STOW(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
         FUNNEL(new LoggedTunableNumber("Elevator/Setpoints/Funnel", 0.25)),
         L1_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L1Front", 0.5)), // TODO: may not work
         L1_BACK(new LoggedTunableNumber("Elevator/Setpoints/L1Back", 0.7)),
@@ -132,7 +132,7 @@ public class Elevator extends SubsystemBase {
         io.resetPosition(positionMeters);
     }
 
-    public Command setpointCommand(ElevatorState state) {
+    public Command commandToSetpoint(ElevatorState state) {
         return Commands.run(() -> setPosition(state.height.getAsDouble()), this).until(this::isAtSetpoint);
     }
 

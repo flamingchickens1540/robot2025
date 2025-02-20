@@ -10,9 +10,9 @@ import org.team1540.robot2025.subsystems.intake.CoralIntake;
 
 public class Superstructure {
     public enum SuperstructureState {
-        STOW(Arm.ArmState.STOW, Elevator.ElevatorState.BASE, CoralIntake.CoralIntakeState.STOW),
+        STOW(Arm.ArmState.STOW, Elevator.ElevatorState.STOW, CoralIntake.CoralIntakeState.STOW),
         STOW_ALGAE(Arm.ArmState.STOW_ALGAE, Elevator.ElevatorState.STOW_ALGAE, CoralIntake.CoralIntakeState.STOW),
-        INTAKE_GROUND(Arm.ArmState.INTAKE, Elevator.ElevatorState.BASE, CoralIntake.CoralIntakeState.INTAKE),
+        INTAKE_GROUND(Arm.ArmState.INTAKE, Elevator.ElevatorState.STOW, CoralIntake.CoralIntakeState.INTAKE),
         INTAKE_FUNNEL(Arm.ArmState.FUNNEL, Elevator.ElevatorState.FUNNEL, CoralIntake.CoralIntakeState.STOW),
         INTAKE_ALGAE(Arm.ArmState.GROUND_ALGAE, Elevator.ElevatorState.GROUND_ALGAE, CoralIntake.CoralIntakeState.STOW),
 
@@ -88,15 +88,25 @@ public class Superstructure {
             return Commands.sequence(
                     arm.commandToSetpoint(goalState.armState),
                     Commands.parallel(
-                            elevator.setpointCommand(goalState.elevatorState),
+                            elevator.commandToSetpoint(goalState.elevatorState),
                             coralIntake.commandToSetpoint(goalState.intakeState)));
+        } else if (goalState == SuperstructureState.INTAKE_ALGAE || goalState == SuperstructureState.INTAKE_GROUND) {
+            return Commands.sequence(
+                    arm.commandToSetpoint(Arm.ArmState.STOW),
+                    Commands.parallel(
+                            elevator.commandToSetpoint(goalState.elevatorState),
+                            coralIntake.commandToSetpoint(goalState.intakeState),
+                            Commands.waitUntil(this::isArmClear).andThen(arm.commandToSetpoint(goalState.armState))));
         } else {
             return Commands.parallel(
-                    elevator.setpointCommand(goalState.elevatorState),
+                    elevator.commandToSetpoint(goalState.elevatorState),
                     coralIntake.commandToSetpoint(goalState.intakeState),
-                    Commands.waitUntil(() -> elevator.getPosition() > funnelHeight)
-                            .andThen(arm.commandToSetpoint(goalState.armState)));
-        } // Instead of current way:
-    } // very small risk: states exist where u need to have arm over funnel, then cancel, then go straight to intake
-    // speciallized intake case (like stow & algae stow)
+                    Commands.waitUntil(this::isArmClear).andThen(arm.commandToSetpoint(goalState.armState)));
+        }
+    }
+    // TODO: Simon's fun thing where you can start moving arm early
+
+    public boolean isArmClear() {
+        return elevator.getPosition() > funnelHeight;
+    }
 }
