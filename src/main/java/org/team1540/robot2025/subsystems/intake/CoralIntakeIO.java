@@ -32,6 +32,8 @@ public interface CoralIntakeIO {
 
     default void setPivotSetpoint(Rotation2d rotations) {}
 
+    default void resetPivotSetpoint(Rotation2d rotations) {}
+
     default void setPivotVoltage(double voltage) {}
 
     default void setPivotPID(double kP, double kI, double kD) {}

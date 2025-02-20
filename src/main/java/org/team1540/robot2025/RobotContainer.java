@@ -17,13 +17,13 @@ import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.subsystems.Superstructure;
 import org.team1540.robot2025.subsystems.arm.Arm;
+import org.team1540.robot2025.subsystems.climber.Climber;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
-import org.team1540.robot2025.util.JoystickUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
@@ -36,6 +36,7 @@ public class RobotContainer {
     private final Arm arm;
     private final CoralIntake coralIntake;
     private final Grabber grabber;
+    private final Climber climber;
     private final Leds leds = new Leds();
 
     private final Superstructure superstructure;
@@ -43,28 +44,28 @@ public class RobotContainer {
     private final Autos autos;
     private final LoggedAutoChooser autoChooser = new LoggedAutoChooser("Auto Chooser");
 
-    /**
-     * The container for the robot. Contains subsystems, IO devices, and commands.
-     */
+    /** The container for the robot. Contains subsystems, IO devices, and commands. */
     public RobotContainer() {
         switch (Constants.CURRENT_MODE) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
-                aprilTagVision = AprilTagVision.createReal();
+                aprilTagVision = AprilTagVision.createDummy();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
                 coralIntake = CoralIntake.createReal();
                 grabber = Grabber.createReal();
+                climber = Climber.createDummy();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
-                aprilTagVision = AprilTagVision.createSim();
+                aprilTagVision = AprilTagVision.createDummy();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
                 coralIntake = CoralIntake.createSim();
                 grabber = Grabber.createSim();
+                climber = Climber.createDummy();
 
                 RobotState.getInstance().resetPose(new Pose2d(3.0, 3.0, Rotation2d.kZero));
                 break;
@@ -76,8 +77,9 @@ public class RobotContainer {
                 arm = Arm.createDummy();
                 coralIntake = CoralIntake.createDummy();
                 grabber = Grabber.createDummy();
+                climber = Climber.createDummy();
         }
-        superstructure = new Superstructure(elevator, arm, coralIntake, grabber);
+        superstructure = new Superstructure(elevator, arm, coralIntake, grabber, climber);
         autos = new Autos(drivetrain, superstructure);
 
         configureButtonBindings();
@@ -92,10 +94,65 @@ public class RobotContainer {
         driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
         driver.leftTrigger().whileTrue(AutoAlignCommands.alignToNearestBranch(drivetrain));
 
-        copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
-        copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
-        copilot.a().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L1));
-        copilot.b().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L3));
+
+        copilot.x().whileTrue(Commands.sequence(arm.commandToSetpoint(Arm.ArmState.STOW), elevator.zeroCommand()));
+        copilot.b().whileTrue(coralIntake.zeroCommand());
+        copilot.rightBumper().whileTrue(grabber.commandRun(0.3).until(grabber::hasCoral));
+        copilot.leftBumper().onTrue(Commands.runOnce(() -> grabber.setPercent(0.15)));
+        copilot.rightTrigger().whileTrue(superstructure.netReverse());
+        copilot.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE));
+        copilot.y().whileTrue(grabber.intakeCoral());
+        //        copilot.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW));
+        //        copilot.y().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.SOURCE));
+        //         Test Intake Zeroing
+        //        driver.a().whileTrue(coralIntake.zeroCommand());
+
+        // Test Holding Algae
+        //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", 0.25);
+        //        driver.b().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE));
+        //        driver.a().whileTrue(Commands.runOnce(() -> grabber.setPercent(grabberPercent.getAsDouble())));
+
+        // Dealgify Setpoints
+        //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", 0.25);
+        //        driver.rightBumper().whileTrue(grabber.commandRun(grabberPercent.getAsDouble()));
+        //        driver.a().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.LOW_ALGAE));
+        //        driver.b().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.HIGH_ALGAE));
+        //        driver.y().whileTrue(arm.commandToSetpoint(Arm.ArmState.REEF_ALGAE));
+
+        // Ground Algae
+        //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", 0.25);
+        //        driver.a().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.FLOOR_ALGAE));
+        //        driver.b().whileTrue(arm.commandToSetpoint(Arm.ArmState.FLOOR_ALGAE));
+        //        driver.y().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
+        //        driver.rightBumper().whileTrue(grabber.commandRun(grabberPercent.getAsDouble()));
+
+        // Reverse Scoring Setpoints
+        //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", -0.5);
+        //        driver.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE));
+        //        driver.b().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L2));
+        //        driver.y().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
+        //        driver.rightBumper().whileTrue(grabber.commandRun(grabberPercent.getAsDouble()));
+
+        // Full Driver Controls
+
+        driver.leftTrigger().whileTrue(superstructure.coralGroundIntake());
+
+        driver.leftBumper().whileTrue(superstructure.dealgifyHigh());
+        driver.rightBumper().whileTrue(superstructure.dealgifyLow());
+        driver.leftStick().whileTrue(superstructure.algaeIntake());
+
+        driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
+        driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
+
+        driver.y().whileTrue(superstructure.L4(driver.rightTrigger()));
+        driver.x().whileTrue(superstructure.L3(driver.rightTrigger()));
+        driver.b().whileTrue(superstructure.L2(driver.rightTrigger()));
+        driver.a().whileTrue(superstructure.net());
+        driver.povRight().whileTrue(superstructure.L1(driver.rightTrigger()));
+
+        driver.povDown().whileTrue(superstructure.processor(driver.rightTrigger()));
+
+        driver.rightStick().whileTrue(superstructure.stow());
     }
 
     private void configureAutoRoutines() {

@@ -21,9 +21,18 @@ public class Arm extends SubsystemBase {
 
     public enum ArmState {
         STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
-        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 60)),
-        REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 0)),
-        SCORE(new LoggedTunableNumber("Arm/Setpoints/ScoreDegrees", 135));
+        STOW_ALGAE(new LoggedTunableNumber("Arm/Setpoints/StowAlgaeDegrees", 136)),
+        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 54)),
+        SOURCE_INTAKE(new LoggedTunableNumber("Arm/Setpoints/SourceIntakeDegrees", 100)),
+        REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 180)),
+        FLOOR_ALGAE(new LoggedTunableNumber("Arm/Setpoints/FloorAlgaeDegrees", 220)),
+        L4_SCORE(new LoggedTunableNumber("Arm/Setpoints/L4ScoreDegrees", 113)),
+        SCORE(new LoggedTunableNumber("Arm/Setpoints/ScoreDegrees", 115)),
+        L4_SCORE_REVERSE(new LoggedTunableNumber("Arm/Setpoints/L4ScoreReverseDegrees", 80)),
+        SCORE_REVERSE(new LoggedTunableNumber("Arm/Setpoints/ScoreReverseDegrees", 65)),
+        L1_SCORE(new LoggedTunableNumber("Arm/Setpoints/L1ScoreDegrees", 250)),
+        PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/Processor", 150)),
+        ;
 
         private final DoubleSupplier positionDegrees;
 
@@ -96,7 +105,8 @@ public class Arm extends SubsystemBase {
     }
 
     public Command commandToSetpoint(ArmState state) {
-        return Commands.run(() -> setPosition(state.position()), this).until(this::isAtSetpoint);
+        return (Commands.run(() -> setPosition(state.position()), this).until(this::isAtSetpoint))
+                .handleInterrupt(this::holdPosition);
     }
 
     public static Arm createReal() {

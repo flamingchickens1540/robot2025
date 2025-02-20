@@ -22,12 +22,16 @@ public class Elevator extends SubsystemBase {
 
     public enum ElevatorState {
         BASE(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
-        SOURCE(new LoggedTunableNumber("Elevator/Setpoints/Source", 0.25)),
-        L1(new LoggedTunableNumber("Elevator/Setpoints/L1", 0.5)),
-        L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 1.0)),
-        L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 1.5)),
+        SOURCE(new LoggedTunableNumber("Elevator/Setpoints/Source", 0.242)),
+        L1(new LoggedTunableNumber("Elevator/Setpoints/L1", 0.7)),
+        L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 0.55)),
+        L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 0.92)),
         L4(new LoggedTunableNumber("Elevator/Setpoints/L4", MAX_HEIGHT_M)),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
+        LOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/LowAlgae", 0.6)),
+        HIGH_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/HighAlgae", 0.98)),
+        FLOOR_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/FloorAlgae", 0.33)),
+        STOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/StowAlgae", 0.03)),
         ;
 
         public final DoubleSupplier height;
@@ -126,8 +130,10 @@ public class Elevator extends SubsystemBase {
         io.resetPosition(positionMeters);
     }
 
-    public Command setpointCommand(ElevatorState state) {
-        return Commands.run(() -> setPosition(state.height.getAsDouble()), this).until(this::isAtSetpoint);
+    public Command commandToSetpoint(ElevatorState state) {
+        return (Commands.run(() -> setPosition(state.height.getAsDouble()), this)
+                        .until(this::isAtSetpoint))
+                .handleInterrupt(this::holdPosition);
     }
 
     public Command manualCommand(DoubleSupplier input) {
@@ -136,6 +142,12 @@ public class Elevator extends SubsystemBase {
 
     public Command runSetpointCommand(ElevatorState state) {
         return Commands.run(() -> setPosition(state.height.getAsDouble()), this);
+    }
+
+    public Command zeroCommand() {
+        return manualCommand(() -> -0.5)
+                .until(() -> inputs.statorCurrentAmps[0] > 20)
+                .andThen(Commands.runOnce(() -> resetPosition(0)));
     }
 
     public Command feedforwardCharacterizationCommand() {

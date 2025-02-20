@@ -1,5 +1,6 @@
 package org.team1540.robot2025.subsystems.grabber;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,6 +18,8 @@ public class Grabber extends SubsystemBase {
             new Alert("Before sensor is disconnected", Alert.AlertType.kWarning);
     private final Alert afterSensorDisconnectedAlert =
             new Alert("After sensor is disconnected", Alert.AlertType.kWarning);
+    private final Debouncer algaeDebounce = new Debouncer(0.2);
+    private boolean hasAlgae = false;
 
     private Grabber(GrabberIO grabberIO, SensorIO sensorIO) {
         this.grabberIO = grabberIO;
@@ -34,6 +37,8 @@ public class Grabber extends SubsystemBase {
         motorDisconnectedAlert.set(!grabberInputs.motorConnected);
         beforeSensorDisconnectedAlert.set(!sensorInputs.beforeSensorConnected);
         afterSensorDisconnectedAlert.set(!sensorInputs.afterSensorConnected);
+        hasAlgae =
+                algaeDebounce.calculate(!hasCoral() && getStatorCurrent() > 20 && grabberInputs.motorVelocityRPM < 100);
 
         if (RobotState.isDisabled()) {
             stop();
@@ -45,7 +50,12 @@ public class Grabber extends SubsystemBase {
     }
 
     public boolean hasCoral() {
-        return sensorInputs.beforeSensorTripped && sensorInputs.afterSensorTripped;
+        //        return sensorInputs.beforeSensorTripped && sensorInputs.afterSensorTripped;
+        return sensorInputs.afterSensorTripped; // TODO: Make this work with both once we add another one
+    }
+
+    public boolean hasAlgae() {
+        return hasAlgae;
     }
 
     public void stop() {
@@ -64,8 +74,19 @@ public class Grabber extends SubsystemBase {
         return Commands.startEnd(() -> this.setPercent(percent), () -> this.setPercent(0), this);
     }
 
+    public Command commandStartRun(double percent) {
+        return Commands.runOnce(() -> setPercent(percent));
+    }
+
+    public Command intakeCoral() {
+        return Commands.sequence(
+                commandRun(0.3).until(this::hasCoral),
+                commandRun(-0.1).until(() -> !this.hasCoral()),
+                commandRun(0.05).until(this::hasCoral));
+    }
+
     public static Grabber createReal() {
-        return new Grabber(new GrabberIOTalonFX(), new SensorIOCANdi());
+        return new Grabber(new GrabberIOTalonFX(), new SensorIOLaserCAN());
     }
 
     public static Grabber createSim() {
