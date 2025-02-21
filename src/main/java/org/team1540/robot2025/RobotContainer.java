@@ -3,7 +3,7 @@ package org.team1540.robot2025;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -19,10 +19,12 @@ import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
-import org.team1540.robot2025.subsystems.leds.CustomLEDPatterns;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
+import org.team1540.robot2025.util.JoystickUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
+
+import static edu.wpi.first.units.Units.Seconds;
 
 public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
@@ -116,24 +118,10 @@ public class RobotContainer {
 
         // Full Driver Controls
 
-        driver.leftTrigger().whileTrue(superstructure.coralGroundIntake());
-
-        driver.leftBumper().whileTrue(superstructure.dealgifyHigh());
-        driver.rightBumper().whileTrue(superstructure.dealgifyLow());
-        driver.leftStick().whileTrue(superstructure.algaeIntake());
-
-        driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
-        driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
-
-        driver.y().onTrue(superstructure.L4(driver.rightTrigger()));
-        driver.x().onTrue(superstructure.L3(driver.rightTrigger()));
-        driver.b().onTrue(superstructure.L2(driver.rightTrigger()));
-        driver.a().onTrue(superstructure.net());
-        driver.povRight().onTrue(superstructure.L1(driver.rightTrigger()));
-
-        driver.povDown().whileTrue(superstructure.processor(driver.rightTrigger()));
-
-        driver.rightStick().whileTrue(superstructure.stow());
+        copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
+        copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
+        copilot.a().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L1_BACK));
+        copilot.b().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
     }
 
     private void configureAutoRoutines() {
@@ -145,13 +133,12 @@ public class RobotContainer {
     }
 
     private void configureRobotModeTriggers() {
-        RobotModeTriggers.disabled()
-                .whileFalse(leds.viewFull.commandShowPattern(() -> CustomLEDPatterns.drivetrainSpeed(Color.kYellow)));
-        //        RobotModeTriggers.autonomous()
-        //                .whileTrue(leds.viewTop.commandShowPattern(() -> LEDPattern.solid(Leds.getAllianceColor())));
-        //        RobotModeTriggers.teleop()
-        //                .whileTrue(leds.viewTop.commandShowPattern(
-        //                        () -> LEDPattern.solid(Leds.getAllianceColor()).breathe(Seconds.of(3))));
+        RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
+        RobotModeTriggers.autonomous()
+                .whileTrue(leds.viewTop.commandShowPattern(() -> LEDPattern.solid(Leds.getAllianceColor())));
+        RobotModeTriggers.teleop()
+                .whileTrue(leds.viewTop.commandShowPattern(
+                        () -> LEDPattern.solid(Leds.getAllianceColor()).breathe(Seconds.of(3))));
         RobotModeTriggers.teleop()
                 .and(DriverStation::isFMSAttached)
                 .onTrue(Commands.runOnce(drivetrain::zeroFieldOrientation));

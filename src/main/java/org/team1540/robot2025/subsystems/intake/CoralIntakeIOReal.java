@@ -134,7 +134,7 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
     }
 
     @Override
-    public void resetPivotSetpoint(Rotation2d rotations) {
+    public void resetPivotPosition(Rotation2d rotations) {
         pivotFalcon.setPosition(rotations.getRotations());
     }
 

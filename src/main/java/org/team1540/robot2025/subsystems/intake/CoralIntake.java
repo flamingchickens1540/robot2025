@@ -20,27 +20,14 @@ public class CoralIntake extends SubsystemBase {
     private static boolean hasInstance = false;
 
     public enum CoralIntakeState {
-        STOW(
-                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees()),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/RollerVoltage", 0.0),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/FunnelVoltage", 0.0)),
-        INTAKE(
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/RollerVoltage", 6),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/FunnelVoltage", 6)),
-        EJECT(
-                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/RollerVoltage", -12.0),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/FunnelVoltage", -12.0));
+        STOW(new LoggedTunableNumber("CoralIntake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees())),
+        INTAKE(new LoggedTunableNumber("CoralIntake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees())),
+        EJECT(new LoggedTunableNumber("CoralIntake/Setpoints/Eject/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()));
 
         private final DoubleSupplier pivotPosition;
-        public final DoubleSupplier rollerVoltage;
-        public final DoubleSupplier funnelVoltage;
 
-        CoralIntakeState(DoubleSupplier pivotPositionDeg, DoubleSupplier rollerVoltage, DoubleSupplier funnelVoltage) {
+        CoralIntakeState(DoubleSupplier pivotPositionDeg) {
             this.pivotPosition = pivotPositionDeg;
-            this.rollerVoltage = rollerVoltage;
-            this.funnelVoltage = funnelVoltage;
         }
 
         public Rotation2d pivotPosition() {
@@ -111,7 +98,7 @@ public class CoralIntake extends SubsystemBase {
     }
 
     public void resetPivotPosition(Rotation2d rotations) {
-        io.resetPivotSetpoint(rotations);
+        io.resetPivotPosition(rotations);
     }
 
     public void setPivotVoltage(double voltage) {
@@ -147,11 +134,11 @@ public class CoralIntake extends SubsystemBase {
         return Commands.startEnd(() -> this.setFunnelVoltage(percent * 12), () -> this.setFunnelVoltage(0), this);
     }
 
-    public Command commandRunRollerFunnel(double rollerPercent, double funnerlPercent) {
+    public Command commandRunIntake(double rollerPercent, double funnelPercent) {
         return Commands.startEnd(
                 () -> {
                     setRollerVoltage(rollerPercent * 12);
-                    setFunnelVoltage(rollerPercent * 12);
+                    setFunnelVoltage(funnelPercent * 12);
                 },
                 () -> {
                     setRollerVoltage(0);

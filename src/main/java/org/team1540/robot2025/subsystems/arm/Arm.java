@@ -22,16 +22,21 @@ public class Arm extends SubsystemBase {
     public enum ArmState {
         STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
         STOW_ALGAE(new LoggedTunableNumber("Arm/Setpoints/StowAlgaeDegrees", 136)),
+
         INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 49.5)),
-        SOURCE_INTAKE(new LoggedTunableNumber("Arm/Setpoints/SourceIntakeDegrees", 100)),
-        REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 180)),
-        FLOOR_ALGAE(new LoggedTunableNumber("Arm/Setpoints/FloorAlgaeDegrees", 220)),
-        L4_SCORE(new LoggedTunableNumber("Arm/Setpoints/L4ScoreDegrees", 113)),
-        SCORE(new LoggedTunableNumber("Arm/Setpoints/ScoreDegrees", 115)),
-        L4_SCORE_REVERSE(new LoggedTunableNumber("Arm/Setpoints/L4ScoreReverseDegrees", 80)),
-        SCORE_REVERSE(new LoggedTunableNumber("Arm/Setpoints/ScoreReverseDegrees", 65)),
-        L1_SCORE(new LoggedTunableNumber("Arm/Setpoints/L1ScoreDegrees", 250)),
+        FUNNEL(new LoggedTunableNumber("Arm/Setpoints/FunnelDegrees", 100)),
+
+        REEF_ALGAE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeFrontDegrees", 0)), // TODO: get value
+        REEF_ALGAE_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeBackDegrees", 180)),
+        GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 220)),
         PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/Processor", 150)),
+        SCORE_L1_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL1BackDegrees", 250)),
+        SCORE_L2_L3_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3FrontDegrees", 65)),
+        SCORE_L2_L3_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3BackDegrees", 115)),
+        SCORE_L4_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontDegrees", 80)),
+        SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 113)),
+        SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 90)),
+        SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 0)),
         ;
 
         private final DoubleSupplier positionDegrees;
@@ -105,8 +110,7 @@ public class Arm extends SubsystemBase {
     }
 
     public Command commandToSetpoint(ArmState state) {
-        return (Commands.run(() -> setPosition(state.position()), this).until(this::isAtSetpoint))
-                .handleInterrupt(this::holdPosition);
+        return Commands.run(() -> setPosition(state.position()), this).until(this::isAtSetpoint);
     }
 
     public static Arm createReal() {

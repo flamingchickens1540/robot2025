@@ -2,7 +2,6 @@ package org.team1540.robot2025.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.team1540.robot2025.subsystems.arm.Arm;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
@@ -10,20 +9,67 @@ import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
 
 public class Superstructure {
-    private static boolean hasInstance = false;
+    public enum SuperstructureState {
+        STOW(Arm.ArmState.STOW, Elevator.ElevatorState.STOW, CoralIntake.CoralIntakeState.STOW),
+        STOW_ALGAE(Arm.ArmState.STOW_ALGAE, Elevator.ElevatorState.STOW_ALGAE, CoralIntake.CoralIntakeState.STOW),
+        INTAKE_GROUND(Arm.ArmState.INTAKE, Elevator.ElevatorState.STOW, CoralIntake.CoralIntakeState.INTAKE),
+        INTAKE_FUNNEL(Arm.ArmState.FUNNEL, Elevator.ElevatorState.FUNNEL, CoralIntake.CoralIntakeState.STOW),
+        INTAKE_ALGAE(Arm.ArmState.GROUND_ALGAE, Elevator.ElevatorState.GROUND_ALGAE, CoralIntake.CoralIntakeState.STOW),
 
-    public enum SuperstructureState {}
+        L1_BACK(Arm.ArmState.SCORE_L1_BACK, Elevator.ElevatorState.L1_BACK, CoralIntake.CoralIntakeState.STOW),
+
+        L2_FRONT(Arm.ArmState.SCORE_L2_L3_FRONT, Elevator.ElevatorState.L2, CoralIntake.CoralIntakeState.STOW),
+        L2_BACK(Arm.ArmState.SCORE_L2_L3_BACK, Elevator.ElevatorState.L2, CoralIntake.CoralIntakeState.STOW),
+
+        L3_FRONT(Arm.ArmState.SCORE_L2_L3_FRONT, Elevator.ElevatorState.L3, CoralIntake.CoralIntakeState.STOW),
+        L3_BACK(Arm.ArmState.SCORE_L2_L3_BACK, Elevator.ElevatorState.L3, CoralIntake.CoralIntakeState.STOW),
+
+        L4_FRONT(Arm.ArmState.SCORE_L4_FRONT, Elevator.ElevatorState.L4, CoralIntake.CoralIntakeState.STOW),
+        L4_BACK(Arm.ArmState.SCORE_L4_BACK, Elevator.ElevatorState.L4, CoralIntake.CoralIntakeState.STOW),
+
+        // No dealgify low front
+        DEALGIFY_LOW_BACK(
+                Arm.ArmState.REEF_ALGAE_BACK, Elevator.ElevatorState.REEF_ALGAE_LOW, CoralIntake.CoralIntakeState.STOW),
+
+        DEALGIFY_HIGH_FRONT(
+                Arm.ArmState.REEF_ALGAE_FRONT,
+                Elevator.ElevatorState.REEF_ALGAE_HIGH,
+                CoralIntake.CoralIntakeState.STOW),
+        DEALGIFY_HIGH_BACK(
+                Arm.ArmState.REEF_ALGAE_BACK,
+                Elevator.ElevatorState.REEF_ALGAE_HIGH,
+                CoralIntake.CoralIntakeState.STOW),
+
+        // barge is same from both sides
+        SCORE_BARGE_FRONT(
+                Arm.ArmState.SCORE_BARGE_FRONT, Elevator.ElevatorState.BARGE, CoralIntake.CoralIntakeState.STOW),
+        SCORE_BARGE_BACK(
+                Arm.ArmState.SCORE_BARGE_BACK, Elevator.ElevatorState.BARGE, CoralIntake.CoralIntakeState.STOW),
+
+        // no processor front (?)
+        PROCESSOR_BACK(Arm.ArmState.PROCESSOR, Elevator.ElevatorState.PROCESSOR, CoralIntake.CoralIntakeState.STOW);
+
+        private Arm.ArmState armState;
+        private Elevator.ElevatorState elevatorState;
+        private CoralIntake.CoralIntakeState intakeState;
+
+        SuperstructureState(
+                Arm.ArmState armState, Elevator.ElevatorState elevatorState, CoralIntake.CoralIntakeState intakeState) {
+            this.armState = armState;
+            this.elevatorState = elevatorState;
+            this.intakeState = intakeState;
+        }
+    }
 
     private final Elevator elevator;
     private final Arm arm;
     private final CoralIntake coralIntake;
     private final Grabber grabber;
+    private final double funnelHeight = 1.0;
 
     private SuperstructureState goalState;
 
     public Superstructure(Elevator elevator, Arm arm, CoralIntake coralIntake, Grabber grabber) {
-        if (hasInstance) throw new IllegalStateException("Instance of arm already exists");
-        hasInstance = true;
         this.elevator = elevator;
         this.arm = arm;
         this.coralIntake = coralIntake;
@@ -35,151 +81,31 @@ public class Superstructure {
         return goalState;
     }
 
-    public Command stow() {
-        return Commands.either(
-                Commands.sequence(
-                        arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
-                        elevator.commandToSetpoint(Elevator.ElevatorState.STOW_ALGAE),
-                        coralIntake.commandToSetpoint(CoralIntake.CoralIntakeState.STOW)),
-                Commands.sequence(
-                        arm.commandToSetpoint(Arm.ArmState.STOW),
-                        elevator.commandToSetpoint(Elevator.ElevatorState.BASE),
-                        coralIntake.commandToSetpoint(CoralIntake.CoralIntakeState.STOW)),
-                grabber::hasAlgae);
+    public Command commandToState(SuperstructureState goalState) {
+        this.goalState = goalState;
+        if (goalState == SuperstructureState.STOW || goalState == SuperstructureState.STOW_ALGAE) {
+            return Commands.sequence(
+                    arm.commandToSetpoint(goalState.armState),
+                    Commands.parallel(
+                            elevator.commandToSetpoint(goalState.elevatorState),
+                            coralIntake.commandToSetpoint(goalState.intakeState)));
+        } else if (goalState == SuperstructureState.INTAKE_ALGAE || goalState == SuperstructureState.INTAKE_GROUND) {
+            return Commands.sequence(
+                    arm.commandToSetpoint(Arm.ArmState.STOW),
+                    Commands.parallel(
+                            elevator.commandToSetpoint(goalState.elevatorState),
+                            coralIntake.commandToSetpoint(goalState.intakeState),
+                            Commands.waitUntil(this::isArmClear).andThen(arm.commandToSetpoint(goalState.armState))));
+        } else {
+            return Commands.parallel(
+                    elevator.commandToSetpoint(goalState.elevatorState),
+                    coralIntake.commandToSetpoint(goalState.intakeState),
+                    Commands.waitUntil(this::isArmClear).andThen(arm.commandToSetpoint(goalState.armState)));
+        }
     }
+    // TODO: Simon's fun thing where you can start moving arm early
 
-    public Command scoreCoral(
-            Elevator.ElevatorState elevatorPosition,
-            Arm.ArmState armPosition,
-            double grabberPower,
-            BooleanSupplier confirm) {
-        return Commands.sequence(
-                        arm.commandToSetpoint(Arm.ArmState.STOW),
-                        elevator.commandToSetpoint(elevatorPosition),
-                        arm.commandToSetpoint(armPosition),
-                        Commands.waitUntil(confirm),
-                        grabber.commandRun(grabberPower).until(() -> !grabber.hasCoral()),
-                        grabber.commandRun(grabberPower).withTimeout(0.1),
-                        stow())
-                .unless(grabber::hasAlgae);
-    }
-
-    public Command L2(BooleanSupplier confirm) {
-        return scoreCoral(Elevator.ElevatorState.L2, Arm.ArmState.SCORE, 0.5, confirm);
-    }
-
-    public Command L3(BooleanSupplier confirm) {
-        return scoreCoral(Elevator.ElevatorState.L3, Arm.ArmState.SCORE, 0.5, confirm);
-    }
-
-    public Command L4(BooleanSupplier confirm) {
-        return scoreCoral(Elevator.ElevatorState.L4, Arm.ArmState.L4_SCORE, 0.5, confirm);
-    }
-
-    public Command L2Reverse(BooleanSupplier confirm) {
-        return scoreCoral(Elevator.ElevatorState.L2, Arm.ArmState.SCORE_REVERSE, -0.5, confirm);
-    }
-
-    public Command L3Reverse(BooleanSupplier confirm) {
-        return scoreCoral(Elevator.ElevatorState.L3, Arm.ArmState.SCORE_REVERSE, -0.5, confirm);
-    }
-
-    public Command L4Reverse(BooleanSupplier confirm) {
-        return scoreCoral(Elevator.ElevatorState.L4, Arm.ArmState.L4_SCORE_REVERSE, -0.5, confirm);
-    }
-
-    public Command L1(BooleanSupplier confirm) {
-        return scoreCoral(Elevator.ElevatorState.L1, Arm.ArmState.L1_SCORE, -0.2, confirm);
-    }
-
-    public Command dealgifyLow() {
-        return Commands.sequence(
-                        arm.commandToSetpoint(Arm.ArmState.STOW),
-                        elevator.commandToSetpoint(Elevator.ElevatorState.LOW_ALGAE),
-                        arm.commandToSetpoint(Arm.ArmState.REEF_ALGAE),
-                        Commands.runOnce(() -> grabber.setPercent(0.25)),
-                        Commands.waitUntil(grabber::hasAlgae),
-                        stow())
-                .unless(grabber::hasCoral);
-    }
-
-    public Command dealgifyHigh() {
-        return Commands.sequence(
-                        arm.commandToSetpoint(Arm.ArmState.STOW),
-                        elevator.commandToSetpoint(Elevator.ElevatorState.HIGH_ALGAE),
-                        arm.commandToSetpoint(Arm.ArmState.REEF_ALGAE),
-                        Commands.runOnce(() -> grabber.setPercent(0.25)),
-                        Commands.waitUntil(grabber::hasAlgae),
-                        stow())
-                .unless(grabber::hasCoral);
-    }
-
-    public Command coralGroundIntake() {
-        return Commands.sequence(
-                        stow(),
-                        coralIntake.commandToSetpoint(CoralIntake.CoralIntakeState.INTAKE),
-                        arm.commandToSetpoint(Arm.ArmState.INTAKE),
-                        grabber.commandRun(0.3).alongWith(coralIntake.commandRunRollerFunnel(0.5, 0.5)),
-                        stow().alongWith(grabber.centerCoral()))
-                .unless(grabber::hasAlgae);
-    }
-
-    public Command sourceIntake() {
-        return Commands.sequence(
-                        arm.commandToSetpoint(Arm.ArmState.STOW),
-                        elevator.commandToSetpoint(Elevator.ElevatorState.SOURCE),
-                        arm.commandToSetpoint(Arm.ArmState.SOURCE_INTAKE),
-                        grabber.commandRun(0.5).until(grabber::hasCoral),
-                        stow())
-                .unless(grabber::hasAlgae);
-    }
-
-    public Command algaeIntake() {
-        return Commands.sequence(
-                        arm.commandToSetpoint(Arm.ArmState.STOW),
-                        elevator.commandToSetpoint(Elevator.ElevatorState.FLOOR_ALGAE),
-                        arm.commandToSetpoint(Arm.ArmState.FLOOR_ALGAE),
-                        Commands.runOnce(() -> grabber.setPercent(0.25)),
-                        Commands.waitUntil(grabber::hasAlgae),
-                        stow())
-                .unless(grabber::hasCoral);
-    }
-
-    public Command processor(BooleanSupplier confirm) {
-        return Commands.sequence(
-                        stow(),
-                        arm.commandToSetpoint(Arm.ArmState.PROCESSOR),
-                        Commands.waitUntil(confirm),
-                        grabber.commandRun(-0.5).withTimeout(0.5),
-                        stow())
-                .onlyIf(grabber::hasAlgae);
-    }
-
-    public Command net() {
-        return Commands.sequence(
-                arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
-                elevator.commandToSetpoint(Elevator.ElevatorState.L3),
-                arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE),
-                Commands.parallel(
-                        elevator.commandToSetpoint(Elevator.ElevatorState.BARGE),
-                        arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
-                        grabber.commandRun(-0.5).withTimeout(1)),
-                stow());
-        //                .onlyIf(grabber::hasAlgae);
-    }
-
-    public Command netReverse() {
-        return Commands.sequence(
-                arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
-                Commands.parallel(
-                        elevator.commandToSetpoint(Elevator.ElevatorState.BARGE),
-                        Commands.parallel(
-                                        arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE),
-                                        grabber.commandRun(-0.5).withTimeout(1))
-                                .beforeStarting(Commands.waitSeconds(0.2))
-                                .beforeStarting(Commands.waitUntil(() ->
-                                        elevator.getPosition() > Elevator.ElevatorState.L3.height.getAsDouble()))),
-                stow());
-        //                .onlyIf(grabber::hasAlgae);
+    public boolean isArmClear() {
+        return elevator.getPosition() > funnelHeight;
     }
 }
