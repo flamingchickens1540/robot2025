@@ -13,14 +13,19 @@ import org.team1540.robot2025.FieldConstants.ReefHeight;
 import org.team1540.robot2025.RobotState;
 
 public class AutoSequence {
+    private final String name;
+    private final AutoFactory autoFactory;
+
     private final List<Enum<? extends Position>> positions = new ArrayList<>();
 
-    public AutoSequence(StartingPosition startingPosition) {
+    AutoSequence(String name, StartingPosition startingPosition, AutoFactory autoFactory) {
         positions.add(startingPosition);
+        this.name = name;
+        this.autoFactory = autoFactory;
     }
 
-    public AutoRoutine build(AutoFactory factory, String name, boolean resetPose) {
-        AutoRoutine routine = factory.newRoutine(name);
+    public AutoRoutine build(boolean resetPose) {
+        AutoRoutine routine = autoFactory.newRoutine(name);
         List<AutoTrajectory> trajectories = new ArrayList<>();
         List<Command> commands = new ArrayList<>();
 
@@ -66,8 +71,8 @@ public class AutoSequence {
         return routine;
     }
 
-    public AutoRoutine build(AutoFactory factory, String name) {
-        return build(factory, name, Constants.CURRENT_MODE == Constants.Mode.SIM);
+    public AutoRoutine build() {
+        return build(Constants.CURRENT_MODE == Constants.Mode.SIM);
     }
 
     public AutoSequence withReefSegment(ReefPosition position, ReefHeight height) {
@@ -110,10 +115,10 @@ public class AutoSequence {
     }
 
     public enum SourcePosition implements Position {
-        LEFT_LEFT("SrcLL"),
-        LEFT_RIGHT("SrcLR"),
-        RIGHT_LEFT("SrcRL"),
-        RIGHT_RIGHT("SrcRR");
+        LEFT_OUTER("SrcLOut"),
+        LEFT_INNER("SrcLIn"),
+        RIGHT_OUTER("SrcROut"),
+        RIGHT_INNER("SrcRIn");
 
         public final String name;
 

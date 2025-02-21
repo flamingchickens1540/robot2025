@@ -37,16 +37,19 @@ public class Autos {
                 });
     }
 
-    public AutoRoutine testAuto() {
-        AutoSequence sequence = new AutoSequence(StartingPosition.LEFT)
-                .withReefSegment(ReefPosition.I, ReefHeight.L4)
-                .withSourceSegment(SourcePosition.LEFT_LEFT)
-                .withReefSegment(ReefPosition.K, ReefHeight.L4)
-                .withSourceSegment(SourcePosition.LEFT_LEFT)
-                .withReefSegment(ReefPosition.L, ReefHeight.L4)
-                .withSourceSegment(SourcePosition.RIGHT_LEFT)
-                .withReefSegment(ReefPosition.B, ReefHeight.L4);
+    public AutoSequence sequence(String name, StartingPosition startingPosition) {
+        return new AutoSequence(name, startingPosition, autoFactory);
+    }
 
-        return sequence.build(autoFactory, "Test Auto");
+    public AutoRoutine testAuto() {
+        return sequence("Test Auto", StartingPosition.LEFT)
+                .withReefSegment(ReefPosition.H, ReefHeight.L4)
+                .withSourceSegment(SourcePosition.LEFT_OUTER)
+                .withReefSegment(ReefPosition.I, ReefHeight.L4)
+                .withSourceSegment(SourcePosition.LEFT_INNER)
+                .withReefSegment(ReefPosition.J, ReefHeight.L4)
+                .withSourceSegment(SourcePosition.RIGHT_INNER)
+                .withReefSegment(ReefPosition.K, ReefHeight.L4)
+                .build();
     }
 }
