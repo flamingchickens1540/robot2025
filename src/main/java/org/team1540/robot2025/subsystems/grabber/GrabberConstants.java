@@ -1,5 +1,7 @@
 package org.team1540.robot2025.subsystems.grabber;
 
+import edu.wpi.first.math.util.Units;
+
 public class GrabberConstants {
     // TODO: Fix this
     public static final int MOTOR_ID = 13;
@@ -10,4 +12,6 @@ public class GrabberConstants {
 
     public static final double GRABBER_MOI = 0.025;
     public static final double GRABBER_GEAR_RATIO = 24.0 / 36.0;
+
+    public static final double Y_OFFSET_METERS = Units.inchesToMeters(-2.900);
 }

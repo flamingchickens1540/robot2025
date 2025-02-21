@@ -14,7 +14,6 @@ import org.team1540.robot2025.RobotState;
 
 public class AutoSequence {
     private final List<Enum<? extends Position>> positions = new ArrayList<>();
-    private final List<ReefHeight> reefHeights = new ArrayList<>();
 
     public AutoSequence(StartingPosition startingPosition) {
         positions.add(startingPosition);
@@ -77,7 +76,6 @@ public class AutoSequence {
         }
 
         positions.add(position);
-        reefHeights.add(height);
         return this;
     }
 
