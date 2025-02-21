@@ -99,7 +99,7 @@ public class Climber extends SubsystemBase {
     }
 
     public Command manualCommand(DoubleSupplier input) {
-        return Commands.runEnd(() -> io.setVoltage(input.getAsDouble()), () -> io.setVoltage(0), this);
+        return Commands.runEnd(() -> io.setVoltage(input.getAsDouble() * 12.0), () -> io.setVoltage(0), this);
     }
 
     public static Climber createReal() {

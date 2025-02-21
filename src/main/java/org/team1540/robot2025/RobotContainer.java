@@ -1,5 +1,7 @@
 package org.team1540.robot2025;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -23,8 +25,6 @@ import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
 import org.team1540.robot2025.util.JoystickUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
-
-import static edu.wpi.first.units.Units.Seconds;
 
 public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
@@ -119,7 +119,8 @@ public class RobotContainer {
         // Full Driver Controls
 
         copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
-        copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
+        copilot.x()
+                .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
         copilot.a().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L1_BACK));
         copilot.b().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
     }

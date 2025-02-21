@@ -137,7 +137,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command manualCommand(DoubleSupplier input) {
-        return Commands.runEnd(() -> setVoltage(input.getAsDouble()), this::holdPosition, this);
+        return Commands.runEnd(() -> setVoltage(input.getAsDouble() * 12.0), this::holdPosition, this);
     }
 
     public Command runSetpointCommand(ElevatorState state) {
@@ -145,7 +145,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command zeroCommand() {
-        return manualCommand(() -> -0.5)
+        return manualCommand(() -> -0.1)
                 .until(() -> inputs.statorCurrentAmps[0] > 20)
                 .andThen(Commands.runOnce(() -> resetPosition(0)));
     }
