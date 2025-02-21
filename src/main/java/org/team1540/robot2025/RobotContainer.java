@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import org.team1540.robot2025.autos.Autos;
-import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.subsystems.Superstructure;
@@ -49,7 +48,7 @@ public class RobotContainer {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
-                aprilTagVision = AprilTagVision.createDummy();
+                aprilTagVision = AprilTagVision.createReal();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
                 coralIntake = CoralIntake.createReal();
@@ -89,33 +88,18 @@ public class RobotContainer {
 
     private void configureButtonBindings() {
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
-        driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
-        driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
-        driver.leftTrigger().whileTrue(AutoAlignCommands.alignToNearestBranch(drivetrain));
+        climber.setDefaultCommand(climber.manualCommand(()->-copilot.getRightY()));
+        driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
+        driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
         copilot.x().whileTrue(Commands.sequence(arm.commandToSetpoint(Arm.ArmState.STOW), elevator.zeroCommand()));
         copilot.b().whileTrue(coralIntake.zeroCommand());
-        copilot.rightBumper().whileTrue(grabber.commandRun(0.3).until(grabber::hasCoral));
-        copilot.leftBumper().onTrue(Commands.runOnce(() -> grabber.setPercent(0.15)));
-        copilot.rightTrigger().whileTrue(superstructure.netReverse());
-        copilot.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE));
-        copilot.y().whileTrue(grabber.intakeCoral());
-        //        copilot.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW));
-        //        copilot.y().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.SOURCE));
-        //         Test Intake Zeroing
-        //        driver.a().whileTrue(coralIntake.zeroCommand());
+
 
         // Test Holding Algae
         //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", 0.25);
         //        driver.b().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE));
         //        driver.a().whileTrue(Commands.runOnce(() -> grabber.setPercent(grabberPercent.getAsDouble())));
-
-        // Dealgify Setpoints
-        //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", 0.25);
-        //        driver.rightBumper().whileTrue(grabber.commandRun(grabberPercent.getAsDouble()));
-        //        driver.a().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.LOW_ALGAE));
-        //        driver.b().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.HIGH_ALGAE));
-        //        driver.y().whileTrue(arm.commandToSetpoint(Arm.ArmState.REEF_ALGAE));
 
         // Ground Algae
         //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", 0.25);
@@ -142,11 +126,11 @@ public class RobotContainer {
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
-        driver.y().whileTrue(superstructure.L4(driver.rightTrigger()));
-        driver.x().whileTrue(superstructure.L3(driver.rightTrigger()));
-        driver.b().whileTrue(superstructure.L2(driver.rightTrigger()));
-        driver.a().whileTrue(superstructure.net());
-        driver.povRight().whileTrue(superstructure.L1(driver.rightTrigger()));
+        driver.y().onTrue(superstructure.L4(driver.rightTrigger()));
+        driver.x().onTrue(superstructure.L3(driver.rightTrigger()));
+        driver.b().onTrue(superstructure.L2(driver.rightTrigger()));
+        driver.a().onTrue(superstructure.net());
+        driver.povRight().onTrue(superstructure.L1(driver.rightTrigger()));
 
         driver.povDown().whileTrue(superstructure.processor(driver.rightTrigger()));
 

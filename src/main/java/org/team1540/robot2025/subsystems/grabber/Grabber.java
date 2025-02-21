@@ -78,7 +78,7 @@ public class Grabber extends SubsystemBase {
         return Commands.runOnce(() -> setPercent(percent));
     }
 
-    public Command intakeCoral() {
+    public Command centerCoral() {
         return Commands.sequence(
                 commandRun(0.3).until(this::hasCoral),
                 commandRun(-0.1).until(() -> !this.hasCoral()),

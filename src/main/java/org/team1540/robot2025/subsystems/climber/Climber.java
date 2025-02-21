@@ -98,6 +98,10 @@ public class Climber extends SubsystemBase {
                 .handleInterrupt(this::holdPosition);
     }
 
+    public Command manualCommand(DoubleSupplier input) {
+        return Commands.runEnd(() -> io.setVoltage(input.getAsDouble()), ()->io.setVoltage(0), this);
+    }
+
     public static Climber createReal() {
         if (Constants.CURRENT_MODE != Constants.Mode.REAL) {
             DriverStation.reportWarning("Using real climber on simulated robot", false);

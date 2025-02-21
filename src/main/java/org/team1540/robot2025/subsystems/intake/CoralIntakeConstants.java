@@ -22,8 +22,8 @@ public class CoralIntakeConstants {
     public static final double PIVOT_CRUISE_VELOCITY_RPS = 1.5;
     public static final double PIVOT_ACCELERATION_RPS2 = 5.0;
 
-    public static final Rotation2d PIVOT_MIN_ANGLE = Rotation2d.fromDegrees(-2);
-    public static final Rotation2d PIVOT_MAX_ANGLE = Rotation2d.fromDegrees(82);
+    public static final Rotation2d PIVOT_MIN_ANGLE = Rotation2d.fromDegrees(2.5);
+    public static final Rotation2d PIVOT_MAX_ANGLE = Rotation2d.fromDegrees(86);
 
     public static final Translation3d ROTATIONAL_ORIGIN = new Translation3d(0.304800, 0.0, 0.1270000);
 }

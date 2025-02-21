@@ -31,7 +31,7 @@ public class ArmConstants {
     public static final int MOTOR_ID = 15;
     public static final double CANCODER_TO_PIVOT_RATIO = 1;
     public static final double MOTOR_TO_CANCODER = 28;
-    public static final double CANCODER_OFFSET_ROTS = -0.32421875; // TODO: get offset
+    public static final double CANCODER_OFFSET_ROTS = -0.1701660115625; // TODO: get offset
     public static final double DISCONTINUITY_POINT = 0.75;
 
     public static final double CRUISE_VELOCITY_RPS = 2.54;

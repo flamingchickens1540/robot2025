@@ -119,9 +119,8 @@ public class Superstructure {
                         stow(),
                         coralIntake.commandToSetpoint(CoralIntake.CoralIntakeState.INTAKE),
                         arm.commandToSetpoint(Arm.ArmState.INTAKE),
-                        Commands.parallel(grabber.commandRun(0.3), coralIntake.commandRunRollerFunnel(0.5, 0.5))
-                                .until(grabber::hasCoral),
-                        stow())
+                        grabber.commandRun(0.3).alongWith(coralIntake.commandRunRollerFunnel(0.5, 0.5)),
+                        stow().alongWith(grabber.centerCoral()))
                 .unless(grabber::hasAlgae);
     }
 

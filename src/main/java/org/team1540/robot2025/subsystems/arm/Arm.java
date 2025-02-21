@@ -22,7 +22,7 @@ public class Arm extends SubsystemBase {
     public enum ArmState {
         STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
         STOW_ALGAE(new LoggedTunableNumber("Arm/Setpoints/StowAlgaeDegrees", 136)),
-        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 54)),
+        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 49.5)),
         SOURCE_INTAKE(new LoggedTunableNumber("Arm/Setpoints/SourceIntakeDegrees", 100)),
         REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 180)),
         FLOOR_ALGAE(new LoggedTunableNumber("Arm/Setpoints/FloorAlgaeDegrees", 220)),
