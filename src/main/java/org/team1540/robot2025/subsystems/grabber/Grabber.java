@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Grabber extends SubsystemBase {
@@ -49,11 +50,13 @@ public class Grabber extends SubsystemBase {
         grabberIO.setVoltage(percent * 12.0);
     }
 
+    @AutoLogOutput
     public boolean hasCoral() {
         //        return sensorInputs.beforeSensorTripped && sensorInputs.afterSensorTripped;
         return sensorInputs.afterSensorTripped; // TODO: Make this work with both once we add another one
     }
 
+    @AutoLogOutput
     public boolean hasAlgae() {
         return hasAlgae;
     }

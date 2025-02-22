@@ -23,6 +23,7 @@ public class Elevator extends SubsystemBase {
     public enum ElevatorState {
         STOW(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
         FUNNEL(new LoggedTunableNumber("Elevator/Setpoints/Funnel", 0.242)),
+        GROUND_CORAL(new LoggedTunableNumber("Elevator/Setpoints/GroundCoral", 0)),
         L1_BACK(new LoggedTunableNumber("Elevator/Setpoints/L1Back", 0.7)),
         L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 0.55)),
         L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 0.92)),

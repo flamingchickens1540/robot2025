@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.team1540.robot2025.subsystems.arm.Arm;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
@@ -16,7 +15,7 @@ public class Superstructure {
     public enum SuperstructureState {
         STOW(Arm.ArmState.STOW, Elevator.ElevatorState.STOW, CoralIntake.CoralIntakeState.STOW),
         STOW_ALGAE(Arm.ArmState.STOW_ALGAE, Elevator.ElevatorState.STOW_ALGAE, CoralIntake.CoralIntakeState.STOW),
-        INTAKE_GROUND(Arm.ArmState.INTAKE, Elevator.ElevatorState.STOW, CoralIntake.CoralIntakeState.INTAKE),
+        INTAKE_GROUND(Arm.ArmState.INTAKE, Elevator.ElevatorState.GROUND_CORAL, CoralIntake.CoralIntakeState.INTAKE),
         INTAKE_FUNNEL(Arm.ArmState.FUNNEL, Elevator.ElevatorState.FUNNEL, CoralIntake.CoralIntakeState.STOW),
         INTAKE_ALGAE(Arm.ArmState.GROUND_ALGAE, Elevator.ElevatorState.GROUND_ALGAE, CoralIntake.CoralIntakeState.STOW),
 
@@ -101,10 +100,11 @@ public class Superstructure {
                                 Commands.parallel(
                                         elevator.commandToSetpoint(goalState.elevatorState),
                                         coralIntake.commandToSetpoint(goalState.intakeState),
-                                        Commands.waitUntil(()->coralIntake.getPivotPosition().getDegrees() < 30)
-                                                .andThen(arm.commandToSetpoint(goalState.armState))
-                                        )
-                        );
+                                        Commands.waitUntil(() -> coralIntake
+                                                                .getPivotPosition()
+                                                                .getDegrees()
+                                                        < 30)
+                                                .andThen(arm.commandToSetpoint(goalState.armState))));
                     } else {
                         return Commands.sequence(
                                 commandStowArm(),
@@ -112,6 +112,11 @@ public class Superstructure {
                                         elevator.commandToSetpoint(goalState.elevatorState),
                                         coralIntake.commandToSetpoint(goalState.intakeState),
                                         Commands.waitUntil(this::isArmClear)
+                                                .onlyIf(() -> goalState
+                                                                .armState
+                                                                .position()
+                                                                .getDegrees()
+                                                        < 100)
                                                 .andThen(arm.commandToSetpoint(goalState.armState))));
                     }
                 },
@@ -119,6 +124,7 @@ public class Superstructure {
     }
     // TODO: Simon's fun thing where you can start moving arm early
 
+    @AutoLogOutput(key = "Superstructure/ArmClear")
     public boolean isArmClear() {
         return elevator.getPosition() > funnelHeight;
     }
@@ -130,9 +136,7 @@ public class Superstructure {
                 grabber::hasAlgae);
     }
 
-    public Command scoreCoral(SuperstructureState superstructureState,
-            double grabberPower,
-            BooleanSupplier confirm) {
+    public Command scoreCoral(SuperstructureState superstructureState, double grabberPower, BooleanSupplier confirm) {
         return Commands.sequence(
                         commandToState(superstructureState),
                         Commands.waitUntil(confirm),
@@ -224,6 +228,7 @@ public class Superstructure {
 
     public Command net() {
         return Commands.sequence(
+                elevator.commandToSetpoint(Elevator.ElevatorState.L3),
                 arm.commandToSetpoint(Arm.ArmState.REEF_ALGAE_FRONT),
                 Commands.parallel(
                         elevator.commandToSetpoint(Elevator.ElevatorState.BARGE),

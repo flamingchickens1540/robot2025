@@ -97,7 +97,7 @@ public class CoralIntake extends SubsystemBase {
         io.setPivotSetpoint(rotations);
     }
 
-    public Rotation2d getPivotPosition(){
+    public Rotation2d getPivotPosition() {
         return inputs.pivotPosition;
     }
 
@@ -137,17 +137,17 @@ public class CoralIntake extends SubsystemBase {
     public Command commandRunFunnel(double percent) {
         return Commands.startEnd(() -> this.setFunnelVoltage(percent * 12), () -> this.setFunnelVoltage(0), this);
     }
-    public Command commandRunRollerFunnel(double rollerPercent, double funnelPercent){
+
+    public Command commandRunRollerFunnel(double rollerPercent, double funnelPercent) {
         return Commands.startEnd(
-                ()->{
+                () -> {
                     this.setRollerVoltage(rollerPercent * 12);
                     this.setFunnelVoltage(funnelPercent * 12);
                 },
-                ()->{
+                () -> {
                     this.setRollerVoltage(0);
                     this.setFunnelVoltage(0);
-                }
-        );
+                });
     }
 
     public Command commandRunIntake(double rollerPercent, double funnelPercent) {

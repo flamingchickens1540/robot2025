@@ -94,7 +94,6 @@ public class RobotContainer {
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
-
         // Test Holding Algae
         //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", 0.25);
         //        driver.b().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE));
@@ -113,7 +112,6 @@ public class RobotContainer {
         //        driver.b().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L2));
         //        driver.y().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
         //        driver.rightBumper().whileTrue(grabber.commandRun(grabberPercent.getAsDouble()));
-
 
         // Full Driver Controls
 
@@ -135,7 +133,6 @@ public class RobotContainer {
         driver.povDown().whileTrue(superstructure.processor(driver.rightTrigger()));
 
         driver.rightStick().whileTrue(superstructure.commandToState(Superstructure.SuperstructureState.STOW));
-
 
         copilot.x().whileTrue(Commands.sequence(arm.commandToSetpoint(Arm.ArmState.STOW), elevator.zeroCommand()));
         copilot.b().whileTrue(coralIntake.zeroCommand());
