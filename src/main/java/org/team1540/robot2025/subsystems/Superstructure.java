@@ -2,6 +2,8 @@ package org.team1540.robot2025.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import java.util.Set;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.team1540.robot2025.subsystems.arm.Arm;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
@@ -82,30 +84,37 @@ public class Superstructure {
     }
 
     public Command commandToState(SuperstructureState goalState) {
-        this.goalState = goalState;
-        if (goalState == SuperstructureState.STOW || goalState == SuperstructureState.STOW_ALGAE) {
-            return Commands.sequence(
-                    arm.commandToSetpoint(goalState.armState),
-                    Commands.parallel(
-                            elevator.commandToSetpoint(goalState.elevatorState),
-                            coralIntake.commandToSetpoint(goalState.intakeState)));
-        } else if (goalState == SuperstructureState.INTAKE_ALGAE || goalState == SuperstructureState.INTAKE_GROUND) {
-            return Commands.sequence(
-                    arm.commandToSetpoint(Arm.ArmState.STOW),
-                    Commands.parallel(
-                            elevator.commandToSetpoint(goalState.elevatorState),
-                            coralIntake.commandToSetpoint(goalState.intakeState),
-                            Commands.waitUntil(this::isArmClear).andThen(arm.commandToSetpoint(goalState.armState))));
-        } else {
-            return Commands.parallel(
-                    elevator.commandToSetpoint(goalState.elevatorState),
-                    coralIntake.commandToSetpoint(goalState.intakeState),
-                    Commands.waitUntil(this::isArmClear).andThen(arm.commandToSetpoint(goalState.armState)));
-        }
+        return Commands.defer(
+                () -> {
+                    this.goalState = goalState;
+                    if (goalState == SuperstructureState.STOW || goalState == SuperstructureState.STOW_ALGAE) {
+                        return Commands.sequence(
+                                commandStowArm(),
+                                Commands.parallel(
+                                        elevator.commandToSetpoint(goalState.elevatorState),
+                                        coralIntake.commandToSetpoint(goalState.intakeState)));
+                    } else {
+                        return Commands.sequence(
+                                commandStowArm(),
+                                Commands.parallel(
+                                        elevator.commandToSetpoint(goalState.elevatorState),
+                                        coralIntake.commandToSetpoint(goalState.intakeState),
+                                        Commands.waitUntil(this::isArmClear)
+                                                .andThen(arm.commandToSetpoint(goalState.armState))));
+                    }
+                },
+                Set.of(arm, elevator, coralIntake));
     }
     // TODO: Simon's fun thing where you can start moving arm early
 
     public boolean isArmClear() {
         return elevator.getPosition() > funnelHeight;
+    }
+
+    public Command commandStowArm() {
+        return new ConditionalCommand(
+                arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE),
+                arm.commandToSetpoint(Arm.ArmState.STOW),
+                grabber::hasAlgae);
     }
 }
