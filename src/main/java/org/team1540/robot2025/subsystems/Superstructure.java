@@ -94,9 +94,10 @@ public class Superstructure {
                                         elevator.commandToSetpoint(goalState.elevatorState),
                                         coralIntake.commandToSetpoint(goalState.intakeState),
                                         Commands.waitUntil(() -> coralIntake
-                                                                .getPivotPosition()
-                                                                .getDegrees()
-                                                        < 30)
+                                                                        .getPivotPosition()
+                                                                        .getDegrees()
+                                                                < 30
+                                                        && elevator.isAtSetpoint())
                                                 .andThen(arm.commandToSetpoint(goalState.armState))));
                     } else {
                         return Commands.sequence(

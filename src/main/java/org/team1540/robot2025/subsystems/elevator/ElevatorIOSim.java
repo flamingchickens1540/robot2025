@@ -47,6 +47,7 @@ public class ElevatorIOSim implements ElevatorIO {
         inputs.velocityMPS = new double[] {elevatorSim.getVelocityMetersPerSecond()};
         inputs.appliedVolts = new double[] {appliedVolts};
         inputs.supplyCurrentAmps = new double[] {elevatorSim.getCurrentDrawAmps()};
+        inputs.statorCurrentAmps = new double[] {elevatorSim.getCurrentDrawAmps()};
         inputs.atUpperLimit = elevatorSim.hasHitUpperLimit();
         inputs.atLowerLimit = elevatorSim.hasHitLowerLimit();
     }

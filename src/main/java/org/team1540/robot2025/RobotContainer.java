@@ -112,8 +112,8 @@ public class RobotContainer {
         driver.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
         driver.leftStick().whileTrue(AutoAlignCommands.alignToNearestBranch(drivetrain));
 
-        copilot.x().whileTrue(superstructure.zeroCommand());
-        copilot.y()
+        copilot.start().whileTrue(superstructure.zeroCommand());
+        copilot.back()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
         copilot.rightTrigger()
                 .whileTrue(superstructure.algaeIntake())
