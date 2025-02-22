@@ -252,4 +252,10 @@ public class Superstructure {
                 commandToState(SuperstructureState.STOW));
         //                .onlyIf(grabber::hasAlgae);
     }
+
+    public Command zeroCommand() {
+        return Commands.sequence(
+                arm.commandToSetpoint(Arm.ArmState.STOW),
+                Commands.parallel(elevator.zeroCommand(), coralIntake.zeroCommand()));
+    }
 }

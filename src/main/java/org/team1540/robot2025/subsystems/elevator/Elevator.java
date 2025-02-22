@@ -146,9 +146,12 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command zeroCommand() {
-        return manualCommand(() -> -0.1)
-                .until(() -> inputs.statorCurrentAmps[0] > 20)
-                .andThen(Commands.runOnce(() -> resetPosition(0)));
+        return Commands.runOnce(() -> setVoltage(-1.5), this)
+                .andThen(
+                        Commands.waitSeconds(0.5),
+                        Commands.waitUntil(() -> inputs.statorCurrentAmps[0] > 20),
+                        Commands.runOnce(() -> resetPosition(0)),
+                        commandToSetpoint(ElevatorState.STOW));
     }
 
     public Command feedforwardCharacterizationCommand() {

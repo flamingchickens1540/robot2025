@@ -44,7 +44,9 @@ public class RobotContainer {
     private final Autos autos;
     private final LoggedAutoChooser autoChooser = new LoggedAutoChooser("Auto Chooser");
 
-    /** The container for the robot. Contains subsystems, IO devices, and commands. */
+    /**
+     * The container for the robot. Contains subsystems, IO devices, and commands.
+     */
     public RobotContainer() {
         switch (Constants.CURRENT_MODE) {
             case REAL:
@@ -142,6 +144,7 @@ public class RobotContainer {
     }
 
     private void configureAutoRoutines() {
+        autoChooser.addCmd("Zero mechanisms", superstructure::zeroCommand);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);
