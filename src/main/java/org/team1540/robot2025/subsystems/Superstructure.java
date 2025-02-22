@@ -34,23 +34,14 @@ public class Superstructure {
         L4_BACK(ArmState.SCORE_L4_BACK, ElevatorState.L4, CoralIntakeState.STOW),
 
         // No dealgify low front
-        DEALGIFY_LOW_BACK(
-                ArmState.REEF_ALGAE_BACK, ElevatorState.REEF_ALGAE_LOW, CoralIntakeState.STOW),
+        DEALGIFY_LOW_BACK(ArmState.REEF_ALGAE_BACK, ElevatorState.REEF_ALGAE_LOW, CoralIntakeState.STOW),
 
-        DEALGIFY_HIGH_FRONT(
-                ArmState.REEF_ALGAE_FRONT,
-                ElevatorState.REEF_ALGAE_HIGH,
-                CoralIntakeState.STOW),
-        DEALGIFY_HIGH_BACK(
-                ArmState.REEF_ALGAE_BACK,
-                ElevatorState.REEF_ALGAE_HIGH,
-                CoralIntakeState.STOW),
+        DEALGIFY_HIGH_FRONT(ArmState.REEF_ALGAE_FRONT, ElevatorState.REEF_ALGAE_HIGH, CoralIntakeState.STOW),
+        DEALGIFY_HIGH_BACK(ArmState.REEF_ALGAE_BACK, ElevatorState.REEF_ALGAE_HIGH, CoralIntakeState.STOW),
 
         // barge is same from both sides
-        SCORE_BARGE_FRONT(
-                ArmState.SCORE_BARGE_FRONT, ElevatorState.BARGE, CoralIntakeState.STOW),
-        SCORE_BARGE_BACK(
-                ArmState.SCORE_BARGE_BACK, ElevatorState.BARGE, CoralIntakeState.STOW),
+        SCORE_BARGE_FRONT(ArmState.SCORE_BARGE_FRONT, ElevatorState.BARGE, CoralIntakeState.STOW),
+        SCORE_BARGE_BACK(ArmState.SCORE_BARGE_BACK, ElevatorState.BARGE, CoralIntakeState.STOW),
 
         // no processor front (?)
         PROCESSOR_BACK(ArmState.PROCESSOR, ElevatorState.PROCESSOR, CoralIntakeState.STOW);
@@ -59,8 +50,7 @@ public class Superstructure {
         public final ElevatorState elevatorState;
         public final CoralIntakeState intakeState;
 
-        SuperstructureState(
-                ArmState armState, ElevatorState elevatorState, CoralIntakeState intakeState) {
+        SuperstructureState(ArmState armState, ElevatorState elevatorState, CoralIntakeState intakeState) {
             this.armState = armState;
             this.elevatorState = elevatorState;
             this.intakeState = intakeState;
@@ -134,9 +124,7 @@ public class Superstructure {
 
     public Command commandStowArm() {
         return new ConditionalCommand(
-                arm.commandToSetpoint(ArmState.STOW_ALGAE),
-                arm.commandToSetpoint(ArmState.STOW),
-                grabber::hasAlgae);
+                arm.commandToSetpoint(ArmState.STOW_ALGAE), arm.commandToSetpoint(ArmState.STOW), grabber::hasAlgae);
     }
 
     public Command scoreCoral(SuperstructureState superstructureState, double grabberPower, BooleanSupplier confirm) {
@@ -235,28 +223,28 @@ public class Superstructure {
 
     public Command net() {
         return Commands.sequence(
-                elevator.commandToSetpoint(ElevatorState.L4),
-                arm.commandToSetpoint(ArmState.INTAKE),
-                Commands.parallel(
-                        elevator.commandToSetpoint(ElevatorState.BARGE),
-                        arm.commandToSetpoint(ArmState.STOW_ALGAE),
-                        grabber.commandRun(-0.5).withTimeout(1)),
-                commandToState(SuperstructureState.STOW))
+                        elevator.commandToSetpoint(ElevatorState.L4),
+                        arm.commandToSetpoint(ArmState.INTAKE),
+                        Commands.parallel(
+                                elevator.commandToSetpoint(ElevatorState.BARGE),
+                                arm.commandToSetpoint(ArmState.STOW_ALGAE),
+                                grabber.commandRun(-0.5).withTimeout(1)),
+                        commandToState(SuperstructureState.STOW))
                 .onlyIf(grabber::hasAlgae);
     }
 
     public Command netReverse() {
         return Commands.sequence(
-                arm.commandToSetpoint(ArmState.STOW_ALGAE),
-                Commands.parallel(
-                        elevator.commandToSetpoint(ElevatorState.BARGE),
+                        arm.commandToSetpoint(ArmState.STOW_ALGAE),
                         Commands.parallel(
-                                        arm.commandToSetpoint(ArmState.SCORE_L4_BACK),
-                                        grabber.commandRun(-0.5).withTimeout(1))
-                                .beforeStarting(Commands.waitSeconds(0.2))
-                                .beforeStarting(Commands.waitUntil(() ->
-                                        elevator.getPosition() > ElevatorState.L3.height.getAsDouble()))),
-                commandToState(SuperstructureState.STOW))
+                                elevator.commandToSetpoint(ElevatorState.BARGE),
+                                Commands.parallel(
+                                                arm.commandToSetpoint(ArmState.SCORE_L4_BACK),
+                                                grabber.commandRun(-0.5).withTimeout(1))
+                                        .beforeStarting(Commands.waitSeconds(0.2))
+                                        .beforeStarting(Commands.waitUntil(
+                                                () -> elevator.getPosition() > ElevatorState.L3.height.getAsDouble()))),
+                        commandToState(SuperstructureState.STOW))
                 .onlyIf(grabber::hasAlgae);
     }
 

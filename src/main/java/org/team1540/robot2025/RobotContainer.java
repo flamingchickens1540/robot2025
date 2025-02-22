@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import org.team1540.robot2025.autos.Autos;
+import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.subsystems.Superstructure;
@@ -62,7 +63,7 @@ public class RobotContainer {
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
-                aprilTagVision = AprilTagVision.createDummy();
+                aprilTagVision = AprilTagVision.createSim();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
                 coralIntake = CoralIntake.createSim();
@@ -92,55 +93,24 @@ public class RobotContainer {
 
     private void configureButtonBindings() {
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
-        climber.setDefaultCommand(climber.manualCommand(() -> -copilot.getRightY()));
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
-        // Test Holding Algae
-        //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", 0.25);
-        //        driver.b().whileTrue(arm.commandToSetpoint(Arm.ArmState.STOW_ALGAE));
-        //        driver.a().whileTrue(Commands.runOnce(() -> grabber.setPercent(grabberPercent.getAsDouble())));
-
-        // Ground Algae
-        //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", 0.25);
-        //        driver.a().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.FLOOR_ALGAE));
-        //        driver.b().whileTrue(arm.commandToSetpoint(Arm.ArmState.FLOOR_ALGAE));
-        //        driver.y().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
-        //        driver.rightBumper().whileTrue(grabber.commandRun(grabberPercent.getAsDouble()));
-
-        // Reverse Scoring Setpoints
-        //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", -0.5);
-        //        driver.a().whileTrue(arm.commandToSetpoint(Arm.ArmState.SCORE_REVERSE));
-        //        driver.b().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L2));
-        //        driver.y().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
-        //        driver.rightBumper().whileTrue(grabber.commandRun(grabberPercent.getAsDouble()));
-
-        // Full Driver Controls
-
-        driver.leftTrigger()
-                .whileTrue(superstructure.coralGroundIntake())
-                .onFalse(superstructure.commandToState(Superstructure.SuperstructureState.STOW));
-
-        driver.leftBumper().whileTrue(superstructure.dealgifyHigh());
-        driver.rightBumper().whileTrue(superstructure.dealgifyLow());
-        driver.leftStick().whileTrue(superstructure.algaeIntake());
-
-        driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
-        driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
+        driver.leftTrigger().onTrue(superstructure.coralGroundIntake());
+        driver.rightTrigger().onTrue(superstructure.algaeIntake());
 
         driver.y().onTrue(superstructure.L4(driver.rightTrigger()));
         driver.x().onTrue(superstructure.L3(driver.rightTrigger()));
         driver.b().onTrue(superstructure.L2(driver.rightTrigger()));
         driver.a().onTrue(superstructure.net());
-        driver.povRight().onTrue(superstructure.L1(driver.rightTrigger()));
 
-        driver.povDown().whileTrue(superstructure.processor(driver.rightTrigger()));
+        driver.povDown().onTrue(superstructure.L1(driver.rightTrigger()));
+        driver.povRight().onTrue(superstructure.processor(driver.rightTrigger()));
 
-        driver.rightStick().whileTrue(superstructure.commandToState(Superstructure.SuperstructureState.STOW));
+        driver.rightStick().onTrue(superstructure.commandToState(Superstructure.SuperstructureState.STOW));
+        driver.leftStick().whileTrue(AutoAlignCommands.alignToNearestBranch(drivetrain));
 
-        copilot.x().whileTrue(Commands.sequence(arm.commandToSetpoint(Arm.ArmState.STOW), elevator.zeroCommand()));
-        copilot.b().whileTrue(coralIntake.zeroCommand());
-
+        copilot.x().whileTrue(superstructure.zeroCommand());
         copilot.y()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
     }
