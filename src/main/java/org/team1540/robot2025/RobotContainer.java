@@ -94,8 +94,6 @@ public class RobotContainer {
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
-        copilot.x().whileTrue(Commands.sequence(arm.commandToSetpoint(Arm.ArmState.STOW), elevator.zeroCommand()));
-        copilot.b().whileTrue(coralIntake.zeroCommand());
 
         // Test Holding Algae
         //        LoggedTunableNumber grabberPercent = new LoggedTunableNumber("Grabber/Percent", 0.25);
@@ -116,13 +114,34 @@ public class RobotContainer {
         //        driver.y().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
         //        driver.rightBumper().whileTrue(grabber.commandRun(grabberPercent.getAsDouble()));
 
+
         // Full Driver Controls
 
-        copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
-        copilot.x()
+        driver.leftTrigger().whileTrue(superstructure.coralGroundIntake());
+
+        driver.leftBumper().whileTrue(superstructure.dealgifyHigh());
+        driver.rightBumper().whileTrue(superstructure.dealgifyLow());
+        driver.leftStick().whileTrue(superstructure.algaeIntake());
+
+        driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
+        driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
+
+        driver.y().onTrue(superstructure.L4(driver.rightTrigger()));
+        driver.x().onTrue(superstructure.L3(driver.rightTrigger()));
+        driver.b().onTrue(superstructure.L2(driver.rightTrigger()));
+        driver.a().onTrue(superstructure.net());
+        driver.povRight().onTrue(superstructure.L1(driver.rightTrigger()));
+
+        driver.povDown().whileTrue(superstructure.processor(driver.rightTrigger()));
+
+        driver.rightStick().whileTrue(superstructure.commandToState(Superstructure.SuperstructureState.STOW));
+
+
+        copilot.x().whileTrue(Commands.sequence(arm.commandToSetpoint(Arm.ArmState.STOW), elevator.zeroCommand()));
+        copilot.b().whileTrue(coralIntake.zeroCommand());
+
+        copilot.y()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
-        copilot.a().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L1_BACK));
-        copilot.b().whileTrue(elevator.commandToSetpoint(Elevator.ElevatorState.L3));
     }
 
     private void configureAutoRoutines() {
