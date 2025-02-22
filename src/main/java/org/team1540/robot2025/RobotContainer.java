@@ -117,7 +117,9 @@ public class RobotContainer {
 
         // Full Driver Controls
 
-        driver.leftTrigger().whileTrue(superstructure.coralGroundIntake());
+        driver.leftTrigger()
+                .whileTrue(superstructure.coralGroundIntake())
+                .onFalse(superstructure.commandToState(Superstructure.SuperstructureState.STOW));
 
         driver.leftBumper().whileTrue(superstructure.dealgifyHigh());
         driver.rightBumper().whileTrue(superstructure.dealgifyLow());

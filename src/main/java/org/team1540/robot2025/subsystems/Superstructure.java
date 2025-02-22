@@ -140,7 +140,7 @@ public class Superstructure {
         return Commands.sequence(
                         commandToState(superstructureState),
                         Commands.waitUntil(confirm),
-                        grabber.commandRun(grabberPower).until(() -> !grabber.hasCoral()),
+                        grabber.commandRun(grabberPower).until(() -> !grabber.reverseSensorTripped()),
                         grabber.commandRun(grabberPower).withTimeout(0.1),
                         commandToState(SuperstructureState.STOW))
                 .unless(grabber::hasAlgae);
@@ -180,7 +180,7 @@ public class Superstructure {
                         Commands.runOnce(() -> grabber.setPercent(0.25)),
                         Commands.waitUntil(grabber::hasAlgae),
                         commandToState(SuperstructureState.STOW))
-                .unless(grabber::hasCoral);
+                .unless(grabber::reverseSensorTripped);
     }
 
     public Command dealgifyHigh() {
@@ -189,21 +189,24 @@ public class Superstructure {
                         Commands.runOnce(() -> grabber.setPercent(0.25)),
                         Commands.waitUntil(grabber::hasAlgae),
                         commandToState(SuperstructureState.STOW))
-                .unless(grabber::hasCoral);
+                .unless(grabber::reverseSensorTripped);
     }
 
     public Command coralGroundIntake() {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_GROUND),
-                        grabber.commandRun(0.3).alongWith(coralIntake.commandRunRollerFunnel(0.5, 0.5)),
-                        commandToState(SuperstructureState.STOW).alongWith(grabber.centerCoral()))
+                        grabber.commandRun(0.3)
+                                .until(grabber::forwardSensorTripped)
+                                .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
+                                .deadlineFor(coralIntake.commandRunRollerFunnel(0.5, 0.5)),
+                        commandToState(SuperstructureState.STOW).alongWith(grabber.commandRun(0.0)))
                 .unless(grabber::hasAlgae);
     }
 
     public Command sourceIntake() {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_FUNNEL),
-                        grabber.commandRun(0.3).until(grabber::hasCoral),
+                        grabber.commandRun(0.3).until(grabber::reverseSensorTripped),
                         commandToState(SuperstructureState.STOW))
                 .unless(grabber::hasAlgae);
     }
@@ -214,7 +217,7 @@ public class Superstructure {
                         Commands.runOnce(() -> grabber.setPercent(0.25)),
                         Commands.waitUntil(grabber::hasAlgae),
                         commandToState(SuperstructureState.STOW))
-                .unless(grabber::hasCoral);
+                .unless(grabber::reverseSensorTripped);
     }
 
     public Command processor(BooleanSupplier confirm) {

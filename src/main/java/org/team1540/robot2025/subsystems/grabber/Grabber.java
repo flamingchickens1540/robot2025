@@ -38,8 +38,8 @@ public class Grabber extends SubsystemBase {
         motorDisconnectedAlert.set(!grabberInputs.motorConnected);
         beforeSensorDisconnectedAlert.set(!sensorInputs.beforeSensorConnected);
         afterSensorDisconnectedAlert.set(!sensorInputs.afterSensorConnected);
-        hasAlgae =
-                algaeDebounce.calculate(!hasCoral() && getStatorCurrent() > 20 && grabberInputs.motorVelocityRPM < 100);
+        hasAlgae = algaeDebounce.calculate(
+                !reverseSensorTripped() && getStatorCurrent() > 20 && grabberInputs.motorVelocityRPM < 100);
 
         if (RobotState.isDisabled()) {
             stop();
@@ -51,9 +51,13 @@ public class Grabber extends SubsystemBase {
     }
 
     @AutoLogOutput
-    public boolean hasCoral() {
-        //        return sensorInputs.beforeSensorTripped && sensorInputs.afterSensorTripped;
-        return sensorInputs.afterSensorTripped; // TODO: Make this work with both once we add another one
+    public boolean forwardSensorTripped() {
+        return sensorInputs.beforeSensorTripped;
+    }
+
+    @AutoLogOutput
+    public boolean reverseSensorTripped() {
+        return sensorInputs.afterSensorTripped;
     }
 
     @AutoLogOutput
@@ -83,9 +87,9 @@ public class Grabber extends SubsystemBase {
 
     public Command centerCoral() {
         return Commands.sequence(
-                commandRun(0.3).until(this::hasCoral),
-                commandRun(-0.1).until(() -> !this.hasCoral()),
-                commandRun(0.05).until(this::hasCoral));
+                commandRun(0.3).until(this::reverseSensorTripped),
+                commandRun(-0.1).until(() -> !this.reverseSensorTripped()),
+                commandRun(0.05).until(this::reverseSensorTripped));
     }
 
     public static Grabber createReal() {
