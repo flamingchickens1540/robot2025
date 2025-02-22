@@ -29,7 +29,7 @@ public class Arm extends SubsystemBase {
         REEF_ALGAE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeFrontDegrees", 0)), // TODO: get value
         REEF_ALGAE_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeBackDegrees", 180)),
         GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 220)),
-        PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/Processor", 150)),
+        PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/Processor", 210)),
         SCORE_L1_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL1BackDegrees", 250)),
         SCORE_L2_L3_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3FrontDegrees", 65)),
         SCORE_L2_L3_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3BackDegrees", 115)),

@@ -32,7 +32,7 @@ public class Elevator extends SubsystemBase {
         GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.47)),
         REEF_ALGAE_LOW(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLow", 0.6)),
         REEF_ALGAE_HIGH(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHigh", 0.98)),
-        PROCESSOR(new LoggedTunableNumber("Elevator/Setpoints/Processor", 0)), // TODO: get value
+        PROCESSOR(new LoggedTunableNumber("Elevator/Setpoints/Processor", 0.47)), // TODO: get value
         STOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/StowAlgae", 0.03));
 
         public final DoubleSupplier height;

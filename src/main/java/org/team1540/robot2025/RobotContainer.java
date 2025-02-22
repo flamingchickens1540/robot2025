@@ -16,6 +16,7 @@ import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.subsystems.Superstructure;
+import org.team1540.robot2025.subsystems.Superstructure.SuperstructureState;
 import org.team1540.robot2025.subsystems.arm.Arm;
 import org.team1540.robot2025.subsystems.climber.Climber;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
@@ -96,8 +97,9 @@ public class RobotContainer {
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
-        driver.leftTrigger().onTrue(superstructure.coralGroundIntake());
-        driver.rightTrigger().onTrue(superstructure.algaeIntake());
+        driver.leftTrigger()
+                .whileTrue(superstructure.coralGroundIntake())
+                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
 
         driver.y().onTrue(superstructure.L4(driver.rightTrigger()));
         driver.x().onTrue(superstructure.L3(driver.rightTrigger()));
@@ -107,12 +109,25 @@ public class RobotContainer {
         driver.povDown().onTrue(superstructure.L1(driver.rightTrigger()));
         driver.povRight().onTrue(superstructure.processor(driver.rightTrigger()));
 
-        driver.rightStick().onTrue(superstructure.commandToState(Superstructure.SuperstructureState.STOW));
+        driver.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
         driver.leftStick().whileTrue(AutoAlignCommands.alignToNearestBranch(drivetrain));
 
         copilot.x().whileTrue(superstructure.zeroCommand());
         copilot.y()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
+        copilot.rightTrigger()
+                .whileTrue(superstructure.algaeIntake())
+                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+        copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
+        copilot.rightBumper().onTrue(superstructure.dealgifyLow());
+
+        copilot.y().onTrue(superstructure.L4(driver.rightTrigger()));
+        copilot.x().onTrue(superstructure.L3(driver.rightTrigger()));
+        copilot.b().onTrue(superstructure.L2(driver.rightTrigger()));
+        copilot.a().onTrue(superstructure.net());
+
+        copilot.povDown().onTrue(superstructure.L1(driver.rightTrigger()));
+        copilot.povRight().onTrue(superstructure.processor(driver.rightTrigger()));
     }
 
     private void configureAutoRoutines() {

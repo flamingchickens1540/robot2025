@@ -171,7 +171,8 @@ public class Superstructure {
                         Commands.runOnce(() -> grabber.setPercent(0.25)),
                         Commands.waitUntil(grabber::hasAlgae),
                         commandToState(SuperstructureState.STOW))
-                .unless(grabber::reverseSensorTripped);
+                .unless(grabber::reverseSensorTripped)
+                .handleInterrupt(grabber::stop);
     }
 
     public Command dealgifyHigh() {
@@ -180,7 +181,8 @@ public class Superstructure {
                         Commands.runOnce(() -> grabber.setPercent(0.25)),
                         Commands.waitUntil(grabber::hasAlgae),
                         commandToState(SuperstructureState.STOW))
-                .unless(grabber::reverseSensorTripped);
+                .unless(grabber::reverseSensorTripped)
+                .handleInterrupt(grabber::stop);
     }
 
     public Command coralGroundIntake() {
@@ -214,38 +216,38 @@ public class Superstructure {
 
     public Command processor(BooleanSupplier confirm) {
         return Commands.sequence(
-                        commandToState(SuperstructureState.PROCESSOR_BACK),
-                        Commands.waitUntil(confirm),
-                        grabber.commandRun(-0.5).withTimeout(0.5),
-                        commandToState(SuperstructureState.STOW))
-                .onlyIf(grabber::hasAlgae);
+                commandToState(SuperstructureState.PROCESSOR_BACK),
+                Commands.waitUntil(confirm),
+                grabber.commandRun(-0.5).withTimeout(0.5),
+                commandToState(SuperstructureState.STOW));
+        //                .onlyIf(grabber::hasAlgae);
     }
 
     public Command net() {
         return Commands.sequence(
-                        elevator.commandToSetpoint(ElevatorState.L4),
-                        arm.commandToSetpoint(ArmState.INTAKE),
-                        Commands.parallel(
-                                elevator.commandToSetpoint(ElevatorState.BARGE),
-                                arm.commandToSetpoint(ArmState.STOW_ALGAE),
-                                grabber.commandRun(-0.5).withTimeout(1)),
-                        commandToState(SuperstructureState.STOW))
-                .onlyIf(grabber::hasAlgae);
+                elevator.commandToSetpoint(ElevatorState.L4),
+                arm.commandToSetpoint(ArmState.INTAKE),
+                Commands.parallel(
+                        elevator.commandToSetpoint(ElevatorState.BARGE),
+                        arm.commandToSetpoint(ArmState.STOW_ALGAE),
+                        grabber.commandRun(-0.5).withTimeout(1)),
+                commandToState(SuperstructureState.STOW));
+        //                .onlyIf(grabber::hasAlgae);
     }
 
     public Command netReverse() {
         return Commands.sequence(
-                        arm.commandToSetpoint(ArmState.STOW_ALGAE),
+                arm.commandToSetpoint(ArmState.STOW_ALGAE),
+                Commands.parallel(
+                        elevator.commandToSetpoint(ElevatorState.BARGE),
                         Commands.parallel(
-                                elevator.commandToSetpoint(ElevatorState.BARGE),
-                                Commands.parallel(
-                                                arm.commandToSetpoint(ArmState.SCORE_L4_BACK),
-                                                grabber.commandRun(-0.5).withTimeout(1))
-                                        .beforeStarting(Commands.waitSeconds(0.2))
-                                        .beforeStarting(Commands.waitUntil(
-                                                () -> elevator.getPosition() > ElevatorState.L3.height.getAsDouble()))),
-                        commandToState(SuperstructureState.STOW))
-                .onlyIf(grabber::hasAlgae);
+                                        arm.commandToSetpoint(ArmState.SCORE_L4_BACK),
+                                        grabber.commandRun(-0.5).withTimeout(1))
+                                .beforeStarting(Commands.waitSeconds(0.2))
+                                .beforeStarting(Commands.waitUntil(
+                                        () -> elevator.getPosition() > ElevatorState.L3.height.getAsDouble()))),
+                commandToState(SuperstructureState.STOW));
+        //                .onlyIf(grabber::hasAlgae);
     }
 
     public Command zeroCommand() {
