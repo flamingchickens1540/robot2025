@@ -39,7 +39,7 @@ public class Grabber extends SubsystemBase {
         beforeSensorDisconnectedAlert.set(!sensorInputs.beforeSensorConnected);
         afterSensorDisconnectedAlert.set(!sensorInputs.afterSensorConnected);
         hasAlgae = algaeDebounce.calculate(
-                !reverseSensorTripped() && getStatorCurrent() > 20 && grabberInputs.motorVelocityRPM < 100);
+                !reverseSensorTripped() && getStatorCurrent() > 30 && grabberInputs.motorVelocityRPM < 100);
 
         if (RobotState.isDisabled()) {
             stop();

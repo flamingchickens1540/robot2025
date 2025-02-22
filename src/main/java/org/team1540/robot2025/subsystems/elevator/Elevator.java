@@ -29,7 +29,7 @@ public class Elevator extends SubsystemBase {
         L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 0.92)),
         L4(new LoggedTunableNumber("Elevator/Setpoints/L4", MAX_HEIGHT_M)),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
-        GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.33)),
+        GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.47)),
         REEF_ALGAE_LOW(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLow", 0.6)),
         REEF_ALGAE_HIGH(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHigh", 0.98)),
         PROCESSOR(new LoggedTunableNumber("Elevator/Setpoints/Processor", 0)), // TODO: get value
@@ -149,7 +149,7 @@ public class Elevator extends SubsystemBase {
         return Commands.runOnce(() -> setVoltage(-1.5), this)
                 .andThen(
                         Commands.waitSeconds(0.5),
-                        Commands.waitUntil(() -> inputs.statorCurrentAmps[0] > 20),
+                        Commands.waitUntil(() -> inputs.statorCurrentAmps[0] > 40),
                         Commands.runOnce(() -> resetPosition(0)),
                         commandToSetpoint(ElevatorState.STOW));
     }
