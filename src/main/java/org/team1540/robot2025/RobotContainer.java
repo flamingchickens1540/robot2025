@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.services.AlertManager;
@@ -133,51 +132,63 @@ public class RobotContainer {
         buttonBoard
                 .branchFaceAt(ReefButton.A)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.A, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.A, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.B)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.B, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.B, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.C)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.C, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.C, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.D)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.D, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.D, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.E)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.E, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.E, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.F)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.F, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.F, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.G)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.G, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.G, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.H)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.H, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.H, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.I)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.I, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.I, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.J)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.J, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.J, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.K)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.K, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.K, drivetrain));
         buttonBoard
                 .branchFaceAt(ReefButton.L)
                 .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.L, drivetrain));
+                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.L, drivetrain));
+        //        buttonBoard.branchFaceAt(ReefButton.A).onTrue(Commands.print("A"));
+        //        buttonBoard.branchFaceAt(ReefButton.B).onTrue(Commands.print("B"));
+        //        buttonBoard.branchFaceAt(ReefButton.C).onTrue(Commands.print("C"));
+        //        buttonBoard.branchFaceAt(ReefButton.D).onTrue(Commands.print("D"));
+        //        buttonBoard.branchFaceAt(ReefButton.E).onTrue(Commands.print("E"));
+        //        buttonBoard.branchFaceAt(ReefButton.F).onTrue(Commands.print("F"));
+        //        buttonBoard.branchFaceAt(ReefButton.G).onTrue(Commands.print("G"));
+        //        buttonBoard.branchFaceAt(ReefButton.H).onTrue(Commands.print("H"));
+        //        buttonBoard.branchFaceAt(ReefButton.I).onTrue(Commands.print("I"));
+        //        buttonBoard.branchFaceAt(ReefButton.J).onTrue(Commands.print("J"));
+        //        buttonBoard.branchFaceAt(ReefButton.K).onTrue(Commands.print("K"));
+        //        buttonBoard.branchFaceAt(ReefButton.L).onTrue(Commands.print("L"));
     }
 
     private void configureAutoRoutines() {

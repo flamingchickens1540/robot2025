@@ -36,7 +36,7 @@ public class ButtonBoard {
     }
 
     private int getAxisState(int axis) {
-        return ((int) ((hid.getHID().getRawAxis(axis) + 1) * 128)) / AXIS_STEP;
+        return (((int) Math.ceil(((hid.getHID().getRawAxis(axis) + 1) * 128))) / AXIS_STEP);
     }
 
     public final CommandGenericHID hid;
