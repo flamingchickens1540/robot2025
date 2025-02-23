@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import org.team1540.robot2025.FieldConstants;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.RobotState;
@@ -15,26 +16,28 @@ import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 import org.team1540.robot2025.util.AllianceFlipUtil;
 
 public class AutoAlignCommands {
-    public static Command alignToPose(Pose2d pose, Drivetrain drivetrain) {
-        return AutoBuilder.pathfindToPose(
-                        pose,
-                        new PathConstraints(
-                                DrivetrainConstants.MAX_LINEAR_SPEED_MPS * 0.75,
-                                DrivetrainConstants.MAX_LINEAR_ACCEL_MPS2 * 0.75,
-                                DrivetrainConstants.MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.75,
-                                DrivetrainConstants.MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.75),
-                        DrivetrainConstants.MAX_LINEAR_SPEED_MPS * 0.25)
-                .until(() -> RobotState.getInstance()
-                                .getEstimatedPose()
-                                .minus(pose)
-                                .getTranslation()
-                                .getNorm()
-                        < 0.4)
-                .andThen(drivetrain.alignToPoseCommand(pose));
+    public static Command alignToPose(Supplier<Pose2d> pose, Drivetrain drivetrain) {
+        return Commands.defer(
+                () -> AutoBuilder.pathfindToPose(
+                                pose.get(),
+                                new PathConstraints(
+                                        DrivetrainConstants.MAX_LINEAR_SPEED_MPS * 0.75,
+                                        DrivetrainConstants.MAX_LINEAR_ACCEL_MPS2 * 0.75,
+                                        DrivetrainConstants.MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.75,
+                                        DrivetrainConstants.MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.75),
+                                DrivetrainConstants.MAX_LINEAR_SPEED_MPS * 0.25)
+                        .until(() -> RobotState.getInstance()
+                                        .getEstimatedPose()
+                                        .minus(pose.get())
+                                        .getTranslation()
+                                        .getNorm()
+                                < 0.4)
+                        .andThen(drivetrain.alignToPoseCommand(pose.get())),
+                Set.of(drivetrain));
     }
 
     public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain) {
-        return alignToPose(branch.scorePosition, drivetrain);
+        return alignToPose(() -> AllianceFlipUtil.maybeFlipPose(branch.scorePosition), drivetrain);
     }
 
     public static Command alignToNearestBranch(Drivetrain drivetrain) {
@@ -57,7 +60,7 @@ public class AutoAlignCommands {
                     }
 
                     Pose2d finalClosestBranch = closestBranch;
-                    return alignToPose(finalClosestBranch, drivetrain);
+                    return alignToPose(() -> finalClosestBranch, drivetrain);
                 },
                 Set.of(drivetrain));
     }
@@ -84,7 +87,7 @@ public class AutoAlignCommands {
                     }
 
                     Pose2d finalClosestBranch = closestBranch;
-                    return alignToPose(finalClosestBranch, drivetrain);
+                    return alignToPose(() -> finalClosestBranch, drivetrain);
                 },
                 Set.of(drivetrain));
     }

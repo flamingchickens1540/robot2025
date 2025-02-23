@@ -61,6 +61,10 @@ public class ButtonBoard {
                 () -> this.getAxisState(BRANCH_FACE_AXIS_ID) == face.ordinal() && hid.isConnected());
     }
 
+    public Trigger flexFalse() {
+        return new Trigger(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> getAxisState(4) == 1 && hid.isConnected());
+    }
+
     public ReefButton getSelectedBranchFace() {
         return ReefButton.fromOrdinal(this.getAxisState(BRANCH_FACE_AXIS_ID));
     }
