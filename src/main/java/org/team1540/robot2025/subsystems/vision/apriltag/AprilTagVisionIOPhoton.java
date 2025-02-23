@@ -2,21 +2,21 @@ package org.team1540.robot2025.subsystems.vision.apriltag;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.team1540.robot2025.FieldConstants;
 
-public class AprilTagVisionIOPhoton implements AprilTagVisionIO {
+public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
     protected final PhotonCamera camera;
-
     protected final Transform3d cameraTransformMeters;
 
+    private final Set<Integer> lastSeenTagIDs = new HashSet<>();
+
     public AprilTagVisionIOPhoton(String cameraName, Transform3d cameraTransformMeters) {
+        super(cameraName);
         this.camera = new PhotonCamera(cameraName);
         this.cameraTransformMeters = cameraTransformMeters;
     }
@@ -39,14 +39,14 @@ public class AprilTagVisionIOPhoton implements AprilTagVisionIO {
                             target.getBestCameraToTarget().getTranslation().getNorm();
                 }
 
+                lastSeenTagIDs.addAll(multitagResult.fiducialIDsUsed.stream()
+                        .map(Short::intValue)
+                        .toList());
                 poseObservations.add(new PoseObservation(
                         robotPose,
                         multitagResult.fiducialIDsUsed.size(),
                         totalDistance / result.targets.size(),
                         result.getTimestampSeconds(),
-                        multitagResult.fiducialIDsUsed.stream()
-                                .mapToInt(Short::intValue)
-                                .toArray(),
                         multitagResult.estimatedPose.ambiguity));
             } else if (!result.targets.isEmpty()) {
                 PhotonTrackedTarget target = result.targets.get(0);
@@ -60,21 +60,19 @@ public class AprilTagVisionIOPhoton implements AprilTagVisionIO {
                     Transform3d fieldToRobot = fieldToCamera.plus(cameraTransformMeters.inverse());
                     Pose3d robotPose = new Pose3d(fieldToRobot.getTranslation(), fieldToRobot.getRotation());
 
+                    lastSeenTagIDs.add(target.fiducialId);
                     poseObservations.add(new PoseObservation(
                             robotPose,
                             1,
                             cameraToTarget.getTranslation().getNorm(),
                             result.getTimestampSeconds(),
-                            new int[] {target.fiducialId},
                             target.poseAmbiguity));
                 }
             }
 
+            inputs.seenTagIDs =
+                    lastSeenTagIDs.stream().mapToInt(Integer::intValue).toArray();
             inputs.poseObservations = poseObservations.toArray(new PoseObservation[0]);
         }
-    }
-
-    public String getName() {
-        return camera.getName();
     }
 }
