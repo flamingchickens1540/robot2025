@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.subsystems.arm.ArmConstants;
+import org.team1540.robot2025.subsystems.climber.ClimberConstants;
 import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
 import org.team1540.robot2025.subsystems.intake.CoralIntakeConstants;
 
@@ -19,6 +20,7 @@ public class MechanismVisualizer {
 
     private Rotation2d armPosition = Rotation2d.kZero;
     private Rotation2d intakePosition = Rotation2d.kZero;
+    private Rotation2d climberPosition = Rotation2d.kZero;
     private double elevatorPositionMeters = 0.0;
 
     public void update() {
@@ -34,7 +36,11 @@ public class MechanismVisualizer {
                 CoralIntakeConstants.ROTATIONAL_ORIGIN,
                 new Rotation3d(0.0, Math.toRadians(90) - intakePosition.getRadians(), 0.0));
 
-        Logger.recordOutput("Mechanisms", elevatorCarriage, elevatorStage1, arm, intake);
+        Pose3d climber = new Pose3d(
+                ClimberConstants.ROTATIONAL_ORIGIN,
+                new Rotation3d(0.0, Math.toRadians(90) - climberPosition.getRadians(), 0.0));
+
+        Logger.recordOutput("Mechanisms", elevatorCarriage, elevatorStage1, arm, intake, climber);
     }
 
     public void setElevatorPosition(double positionMeters) {
@@ -47,5 +53,9 @@ public class MechanismVisualizer {
 
     public void setIntakeRotation(Rotation2d rotation) {
         intakePosition = rotation;
+    }
+
+    public void setClimberRotation(Rotation2d rotation) {
+        climberPosition = rotation;
     }
 }

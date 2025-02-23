@@ -21,14 +21,19 @@ public class Elevator extends SubsystemBase {
     private static boolean hasInstance = false;
 
     public enum ElevatorState {
-        BASE(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
-        SOURCE(new LoggedTunableNumber("Elevator/Setpoints/Source", 0.25)),
-        L1(new LoggedTunableNumber("Elevator/Setpoints/L1", 0.5)),
-        L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 1.0)),
-        L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 1.5)),
+        STOW(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
+        FUNNEL(new LoggedTunableNumber("Elevator/Setpoints/Funnel", 0.242)),
+        GROUND_CORAL(new LoggedTunableNumber("Elevator/Setpoints/GroundCoral", 0)),
+        L1_BACK(new LoggedTunableNumber("Elevator/Setpoints/L1Back", 0.7)),
+        L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 0.55)),
+        L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 0.92)),
         L4(new LoggedTunableNumber("Elevator/Setpoints/L4", MAX_HEIGHT_M)),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
-        ;
+        GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.47)),
+        REEF_ALGAE_LOW(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLow", 0.6)),
+        REEF_ALGAE_HIGH(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHigh", 0.98)),
+        PROCESSOR(new LoggedTunableNumber("Elevator/Setpoints/Processor", 0.47)), // TODO: get value
+        STOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/StowAlgae", 0.03));
 
         public final DoubleSupplier height;
 
@@ -74,7 +79,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public void setPosition(double positionMeters) {
-        positionMeters = MathUtil.clamp(positionMeters, MIN_HEIGHT_M, MAX_HEIGHT_M);
+        positionMeters = MathUtil.clamp(positionMeters, 0.0, MAX_HEIGHT_M);
         setpointMeters = positionMeters;
         io.setSetpoint(setpointMeters);
     }
@@ -126,16 +131,27 @@ public class Elevator extends SubsystemBase {
         io.resetPosition(positionMeters);
     }
 
-    public Command setpointCommand(ElevatorState state) {
-        return Commands.run(() -> setPosition(state.height.getAsDouble()), this).until(this::isAtSetpoint);
+    public Command commandToSetpoint(ElevatorState state) {
+        return (Commands.run(() -> setPosition(state.height.getAsDouble()), this)
+                        .until(this::isAtSetpoint))
+                .handleInterrupt(this::holdPosition);
     }
 
     public Command manualCommand(DoubleSupplier input) {
-        return Commands.runEnd(() -> setVoltage(input.getAsDouble()), this::holdPosition, this);
+        return Commands.runEnd(() -> setVoltage(input.getAsDouble() * 12.0), this::holdPosition, this);
     }
 
     public Command runSetpointCommand(ElevatorState state) {
         return Commands.run(() -> setPosition(state.height.getAsDouble()), this);
+    }
+
+    public Command zeroCommand() {
+        return Commands.runOnce(() -> setVoltage(-1.5), this)
+                .andThen(
+                        Commands.waitSeconds(0.5),
+                        Commands.waitUntil(() -> inputs.statorCurrentAmps[0] > 40),
+                        Commands.runOnce(() -> resetPosition(0)),
+                        commandToSetpoint(ElevatorState.STOW));
     }
 
     public Command feedforwardCharacterizationCommand() {

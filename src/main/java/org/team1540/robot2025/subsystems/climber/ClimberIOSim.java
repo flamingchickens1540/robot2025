@@ -1,7 +1,7 @@
-package org.team1540.robot2025.subsystems.arm;
+package org.team1540.robot2025.subsystems.climber;
 
 import static org.team1540.robot2025.Constants.LOOP_PERIOD_SECS;
-import static org.team1540.robot2025.subsystems.arm.ArmConstants.*;
+import static org.team1540.robot2025.subsystems.climber.ClimberConstants.*;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -10,8 +10,9 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import org.team1540.robot2025.subsystems.arm.Arm;
 
-public class ArmIOSim implements ArmIO {
+public class ClimberIOSim implements ClimberIO {
     private static final double SIM_KP = 300;
     private static final double SIM_KI = 50;
     private static final double SIM_KD = 1;
@@ -21,7 +22,7 @@ public class ArmIOSim implements ArmIO {
 
     // fields
     private final SingleJointedArmSim armSim = new SingleJointedArmSim(
-            DCMotor.getKrakenX60(1),
+            DCMotor.getFalcon500(1),
             GEAR_RATIO,
             ARM_MOMENT_OF_INERTIA_KGM2,
             ARM_LENGTH_METERS,
@@ -37,7 +38,7 @@ public class ArmIOSim implements ArmIO {
     private boolean isClosedLoop;
 
     @Override
-    public void updateInputs(ArmIOInputs inputs) {
+    public void updateInputs(ClimberIOInputs inputs) {
         if (isClosedLoop) {
             armAppliedVolts = controller.calculate(Units.radiansToRotations(armSim.getAngleRads()))
                     + feedforward.calculate(

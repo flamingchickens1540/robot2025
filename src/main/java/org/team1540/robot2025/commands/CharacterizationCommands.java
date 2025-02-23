@@ -83,13 +83,15 @@ public class CharacterizationCommands {
             Subsystem... requirements) {
         WheelRadiusCharacterizationState state = new WheelRadiusCharacterizationState();
 
-        var command = Commands.parallel(
+        return Commands.parallel(
                         Commands.sequence(
                                 Commands.runOnce(() -> state.limiter = new SlewRateLimiter(wheelRadiusRampRate.get())),
-                                Commands.run(() -> {
-                                    double omega = state.limiter.calculate(wheelRadiusSpeedRadsPerSec.get());
-                                    omegaConsumer.accept(omega);
-                                })),
+                                Commands.run(
+                                        () -> {
+                                            double omega = state.limiter.calculate(wheelRadiusSpeedRadsPerSec.get());
+                                            omegaConsumer.accept(omega);
+                                        },
+                                        requirements)),
                         Commands.sequence(
                                 Commands.waitSeconds(START_DELAY_SECS),
                                 Commands.runOnce(() -> {
@@ -123,8 +125,6 @@ public class CharacterizationCommands {
                     Logger.recordOutput("Characterization/WheelRadius/AccumGyroYaw", state.accumGyroYawRads);
                     Logger.recordOutput("Characterization/WheelRadius/EffectiveRadiusInches", effectiveRadius);
                 });
-        command.addRequirements(requirements);
-        return command;
     }
 
     private static class WheelRadiusCharacterizationState {

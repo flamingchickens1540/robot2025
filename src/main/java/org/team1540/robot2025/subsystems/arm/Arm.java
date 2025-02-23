@@ -21,9 +21,22 @@ public class Arm extends SubsystemBase {
 
     public enum ArmState {
         STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
-        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 60)),
-        REEF_ALGAE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeDegrees", 0)),
-        SCORE(new LoggedTunableNumber("Arm/Setpoints/ScoreDegrees", 135));
+        STOW_ALGAE(new LoggedTunableNumber("Arm/Setpoints/StowAlgaeDegrees", 136)),
+
+        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 49.5)),
+        FUNNEL(new LoggedTunableNumber("Arm/Setpoints/FunnelDegrees", 100)),
+
+        REEF_ALGAE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeFrontDegrees", 0)), // TODO: get value
+        REEF_ALGAE_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeBackDegrees", 180)),
+        GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 220)),
+        PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/Processor", 210)),
+        SCORE_L1_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL1BackDegrees", 250)),
+        SCORE_L2_L3_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3FrontDegrees", 65)),
+        SCORE_L2_L3_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3BackDegrees", 115)),
+        SCORE_L4_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontDegrees", 80)),
+        SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 113)),
+        SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 90)),
+        SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 0));
 
         private final DoubleSupplier positionDegrees;
 

@@ -12,10 +12,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import org.team1540.robot2025.autos.Autos;
+import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.subsystems.Superstructure;
+import org.team1540.robot2025.subsystems.Superstructure.SuperstructureState;
 import org.team1540.robot2025.subsystems.arm.Arm;
+import org.team1540.robot2025.subsystems.climber.Climber;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
@@ -36,6 +39,7 @@ public class RobotContainer {
     private final Arm arm;
     private final CoralIntake coralIntake;
     private final Grabber grabber;
+    private final Climber climber;
     private final Leds leds = new Leds();
 
     private final Superstructure superstructure;
@@ -56,6 +60,7 @@ public class RobotContainer {
                 arm = Arm.createReal();
                 coralIntake = CoralIntake.createReal();
                 grabber = Grabber.createReal();
+                climber = Climber.createDummy();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
@@ -65,6 +70,7 @@ public class RobotContainer {
                 arm = Arm.createSim();
                 coralIntake = CoralIntake.createSim();
                 grabber = Grabber.createSim();
+                climber = Climber.createDummy();
 
                 RobotState.getInstance().resetPose(new Pose2d(3.0, 3.0, Rotation2d.kZero));
                 break;
@@ -76,6 +82,7 @@ public class RobotContainer {
                 arm = Arm.createDummy();
                 coralIntake = CoralIntake.createDummy();
                 grabber = Grabber.createDummy();
+                climber = Climber.createDummy();
         }
         superstructure = new Superstructure(elevator, arm, coralIntake, grabber);
         autos = new Autos(drivetrain, superstructure);
@@ -88,17 +95,40 @@ public class RobotContainer {
 
     private void configureButtonBindings() {
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
-        driver.x().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
-        driver.y().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
+        driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
+        driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
-        copilot.y().onTrue(Commands.runOnce(() -> elevator.resetPosition(0.0)));
-        copilot.x().toggleOnTrue(elevator.manualCommand(() -> -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
-        copilot.a().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L1));
-        copilot.b().whileTrue(elevator.setpointCommand(Elevator.ElevatorState.L3));
+        driver.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
+        driver.leftStick()
+                .and(driver.leftBumper())
+                .whileTrue(AutoAlignCommands.alignToNearestFace(drivetrain, () -> false));
+        driver.leftStick()
+                .and(driver.rightBumper())
+                .whileTrue(AutoAlignCommands.alignToNearestFace(drivetrain, () -> true));
 
+        copilot.start().whileTrue(superstructure.zeroCommand());
+        copilot.back()
+                .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
+        copilot.leftTrigger()
+                .whileTrue(superstructure.coralGroundIntake())
+                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+        copilot.rightTrigger()
+                .whileTrue(superstructure.algaeIntake())
+                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+        copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
+        copilot.rightBumper().onTrue(superstructure.dealgifyLow());
+
+        copilot.y().onTrue(superstructure.L4(driver.rightTrigger()));
+        copilot.x().onTrue(superstructure.L3(driver.rightTrigger()));
+        copilot.b().onTrue(superstructure.L2(driver.rightTrigger()));
+        copilot.a().onTrue(superstructure.net());
+
+        copilot.povDown().onTrue(superstructure.L1(driver.rightTrigger()));
+        copilot.povRight().onTrue(superstructure.processor(driver.rightTrigger()));
     }
 
     private void configureAutoRoutines() {
+        autoChooser.addCmd("Zero mechanisms", superstructure::zeroCommand);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);

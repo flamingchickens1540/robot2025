@@ -6,6 +6,7 @@ import choreo.trajectory.SwerveSample;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
@@ -42,13 +43,14 @@ import org.team1540.robot2025.SimState;
 import org.team1540.robot2025.commands.CharacterizationCommands;
 import org.team1540.robot2025.generated.TunerConstants;
 import org.team1540.robot2025.util.*;
+import org.team1540.robot2025.util.swerve.AutoAlignController;
 import org.team1540.robot2025.util.swerve.TrajectoryController;
 
 public class Drivetrain extends SubsystemBase {
     private static boolean hasInstance;
     static final Lock odometryLock = new ReentrantLock();
 
-    private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 4.0);
+    private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 3.5);
     private static final LoggedTunableNumber translationKI = new LoggedTunableNumber("Drivetrain/Translation/kI", 0.0);
     private static final LoggedTunableNumber translationKD = new LoggedTunableNumber("Drivetrain/Translation/kD", 0.0);
 
@@ -84,6 +86,18 @@ public class Drivetrain extends SubsystemBase {
             headingKP.get(),
             headingKI.get(),
             headingKD.get());
+
+    private final AutoAlignController autoAlignController = new AutoAlignController(
+            translationKP.get(),
+            translationKI.get(),
+            translationKD.get(),
+            headingKP.get(),
+            headingKI.get(),
+            headingKD.get(),
+            MAX_LINEAR_SPEED_MPS * 0.5,
+            MAX_LINEAR_ACCEL_MPS2 * 0.5,
+            MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.5,
+            MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.5);
 
     private final ProfiledPIDController headingController = new ProfiledPIDController(
             headingKP.get(),
@@ -122,6 +136,7 @@ public class Drivetrain extends SubsystemBase {
                 ROBOT_CONFIG,
                 AllianceFlipUtil::shouldFlip,
                 this);
+        Pathfinding.setPathfinder(new LocalADStarAK());
         PathPlannerLogging.setLogActivePathCallback(
                 poseList -> RobotState.getInstance().setActiveTrajectory(poseList.toArray(new Pose2d[0])));
         PathPlannerLogging.setLogTargetPoseCallback(RobotState.getInstance()::setTrajectoryTarget);
@@ -234,16 +249,21 @@ public class Drivetrain extends SubsystemBase {
         // Update tunable numbers
         LoggedTunableNumber.ifChanged(
                 hashCode(),
-                () -> trajectoryController.setTranslationPID(
-                        translationKP.get(), translationKI.get(), translationKD.get()),
+                () -> {
+                    trajectoryController.setTranslationPID(
+                            translationKP.get(), translationKI.get(), translationKD.get());
+                    autoAlignController.setTranslationPID(
+                            translationKP.get(), translationKI.get(), translationKD.get());
+                },
                 translationKP,
                 translationKI,
                 translationKD);
         LoggedTunableNumber.ifChanged(
                 hashCode(),
                 () -> {
-                    headingController.setPID(headingKP.get(), headingKI.get(), headingKD.get());
                     trajectoryController.setHeadingPID(headingKP.get(), headingKI.get(), headingKD.get());
+                    autoAlignController.setHeadingPID(headingKP.get(), headingKI.get(), headingKD.get());
+                    headingController.setPID(headingKP.get(), headingKI.get(), headingKD.get());
                 },
                 headingKP,
                 headingKI,
@@ -375,6 +395,17 @@ public class Drivetrain extends SubsystemBase {
                         RobotState.getInstance().getRobotVelocity().omegaRadiansPerSecond))
                 .alongWith(Commands.run(() -> Logger.recordOutput("Drivetrain/HeadingGoal", heading.get())))
                 .until(() -> Math.abs(controller.getRightX()) >= 0.1);
+    }
+
+    public Command alignToPoseCommand(Pose2d pose) {
+        return Commands.startRun(
+                        () -> autoAlignController.setGoal(pose),
+                        () -> runVelocity(autoAlignController.calculate(
+                                RobotState.getInstance().getEstimatedPose(),
+                                RobotState.getInstance().getRobotVelocity())),
+                        this)
+                .until(() -> autoAlignController.atGoal(0.01, Rotation2d.fromDegrees(1.0)))
+                .finallyDo(this::stop);
     }
 
     public Command feedforwardCharacterization() {

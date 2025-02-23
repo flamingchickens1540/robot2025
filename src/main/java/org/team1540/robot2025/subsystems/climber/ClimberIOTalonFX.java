@@ -1,28 +1,24 @@
-package org.team1540.robot2025.subsystems.arm;
+package org.team1540.robot2025.subsystems.climber;
 
-import static org.team1540.robot2025.subsystems.arm.ArmConstants.*;
+import static org.team1540.robot2025.subsystems.climber.ClimberConstants.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.*;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 
-public class ArmIOTalonFX implements ArmIO {
+public class ClimberIOTalonFX implements ClimberIO {
     private final TalonFX motor = new TalonFX(MOTOR_ID);
-    private final CANcoder cancoder = new CANcoder(CANCODER_ID);
 
     private final StatusSignal<Angle> motorPosition = motor.getPosition();
-    private final StatusSignal<Angle> cancoderPosition = cancoder.getPosition();
     private final StatusSignal<AngularVelocity> velocity = motor.getVelocity();
     private final StatusSignal<Voltage> appliedVoltage = motor.getMotorVoltage();
     private final StatusSignal<Current> statorCurrentAmps = motor.getStatorCurrent();
@@ -34,17 +30,13 @@ public class ArmIOTalonFX implements ArmIO {
     private final TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
     private final Debouncer motorConnectedDebounce = new Debouncer(0.5);
-    private final Debouncer encoderConnectedDebounce = new Debouncer(0.5);
 
     // constructor
-    public ArmIOTalonFX() {
+    public ClimberIOTalonFX() {
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
-        motorConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
-        motorConfig.Feedback.FeedbackRemoteSensorID = CANCODER_ID;
-        motorConfig.Feedback.SensorToMechanismRatio = CANCODER_TO_PIVOT_RATIO;
-        motorConfig.Feedback.RotorToSensorRatio = MOTOR_TO_CANCODER;
+        motorConfig.Feedback.SensorToMechanismRatio = GEAR_RATIO;
 
         motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
         motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = MAX_ANGLE.getRotations();
@@ -80,38 +72,22 @@ public class ArmIOTalonFX implements ArmIO {
         motorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = MIN_ANGLE.getRotations();
         motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-        CANcoderConfiguration cancoderConfig = new CANcoderConfiguration();
-        cancoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.CounterClockwise_Positive;
-        cancoderConfig.MagnetSensor.MagnetOffset = CANCODER_OFFSET_ROTS;
-        cancoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = DISCONTINUITY_POINT;
-
-        cancoder.getConfigurator().apply(cancoderConfig);
         motor.getConfigurator().apply(motorConfig);
         BaseStatusSignal.setUpdateFrequencyForAll(
-                50,
-                motorPosition,
-                cancoderPosition,
-                velocity,
-                appliedVoltage,
-                supplyCurrentAmps,
-                statorCurrentAmps,
-                temp);
+                50, motorPosition, velocity, appliedVoltage, supplyCurrentAmps, statorCurrentAmps, temp);
 
         motor.optimizeBusUtilization();
-        cancoder.optimizeBusUtilization();
     }
 
     @Override
-    public void updateInputs(ArmIOInputs inputs) {
+    public void updateInputs(ClimberIOInputs inputs) {
         StatusCode motorStatus = BaseStatusSignal.refreshAll(
                 motorPosition, velocity, appliedVoltage, supplyCurrentAmps, statorCurrentAmps, temp);
-        StatusCode cancoderStatus = BaseStatusSignal.refreshAll(cancoderPosition);
 
         inputs.motorConnected = motorConnectedDebounce.calculate(motorStatus.isOK());
-        inputs.encoderConnected = encoderConnectedDebounce.calculate(cancoderStatus.isOK());
 
         inputs.position = Rotation2d.fromRotations(motorPosition.getValueAsDouble());
-        inputs.absolutePosition = Rotation2d.fromRotations(cancoderPosition.getValueAsDouble());
+
         inputs.velocityRPM = velocity.getValueAsDouble() * 60; // converting from rps to rpm
         inputs.appliedVolts = appliedVoltage.getValueAsDouble();
         inputs.supplyCurrentAmps = supplyCurrentAmps.getValueAsDouble();
