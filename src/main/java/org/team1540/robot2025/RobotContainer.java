@@ -119,10 +119,10 @@ public class RobotContainer {
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
-        buttonBoard.branchHeightAt(L4).or(copilot.x()).onTrue(superstructure.L4(driver.rightTrigger()));
-        buttonBoard.branchHeightAt(L3).or(copilot.x()).onTrue(superstructure.L3(driver.rightTrigger()));
-        buttonBoard.branchHeightAt(L2).or(copilot.b()).onTrue(superstructure.L2(driver.rightTrigger()));
-        buttonBoard.branchHeightAt(L1).or(copilot.povRight()).onTrue(superstructure.L1(driver.rightTrigger()));
+        copilot.x().onTrue(superstructure.L4(driver.rightTrigger()));
+        copilot.x().onTrue(superstructure.L3(driver.rightTrigger()));
+        copilot.b().onTrue(superstructure.L2(driver.rightTrigger()));
+        copilot.povRight().onTrue(superstructure.L1(driver.rightTrigger()));
         copilot.a().onTrue(superstructure.net());
 
         copilot.povLeft().onTrue(superstructure.processor(driver.rightTrigger()));
