@@ -21,11 +21,10 @@ public class AutoAlignCommands {
                 () -> AutoBuilder.pathfindToPose(
                                 pose.get(),
                                 new PathConstraints(
-                                        DrivetrainConstants.MAX_LINEAR_SPEED_MPS * 0.75,
-                                        DrivetrainConstants.MAX_LINEAR_ACCEL_MPS2 * 0.75,
-                                        DrivetrainConstants.MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.75,
-                                        DrivetrainConstants.MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.75),
-                                DrivetrainConstants.MAX_LINEAR_SPEED_MPS * 0.25)
+                                        DrivetrainConstants.MAX_LINEAR_SPEED_MPS * 0.5,
+                                        DrivetrainConstants.MAX_LINEAR_ACCEL_MPS2 * 0.5,
+                                        DrivetrainConstants.MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.5,
+                                        DrivetrainConstants.MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.5))
                         .until(() -> RobotState.getInstance()
                                         .getEstimatedPose()
                                         .minus(pose.get())

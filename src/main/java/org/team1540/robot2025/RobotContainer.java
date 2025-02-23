@@ -127,6 +127,7 @@ public class RobotContainer {
         copilot.povDown()
                 .whileTrue(superstructure.coralIntakeEject())
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+        copilot.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
 
         buttonBoard
                 .branchFaceAt(ReefButton.A)

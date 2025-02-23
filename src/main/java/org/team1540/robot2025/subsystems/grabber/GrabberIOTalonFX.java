@@ -34,9 +34,9 @@ public class GrabberIOTalonFX implements GrabberIO {
         motorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         // TODO: Change all this maybe
         motorConfig.CurrentLimits.SupplyCurrentLimit = 70;
-        motorConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
+        motorConfig.CurrentLimits.SupplyCurrentLowerLimit = 30;
         motorConfig.CurrentLimits.SupplyCurrentLowerTime = 1.0;
-        motorConfig.CurrentLimits.StatorCurrentLimit = 120;
+        motorConfig.CurrentLimits.StatorCurrentLimit = 100;
 
         motor.getConfigurator().apply(motorConfig);
 

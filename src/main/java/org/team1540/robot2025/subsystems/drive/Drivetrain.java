@@ -50,7 +50,7 @@ public class Drivetrain extends SubsystemBase {
     private static boolean hasInstance;
     static final Lock odometryLock = new ReentrantLock();
 
-    private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 3.5);
+    private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 4.0);
     private static final LoggedTunableNumber translationKI = new LoggedTunableNumber("Drivetrain/Translation/kI", 0.0);
     private static final LoggedTunableNumber translationKD = new LoggedTunableNumber("Drivetrain/Translation/kD", 0.0);
 
@@ -373,8 +373,9 @@ public class Drivetrain extends SubsystemBase {
 
     public Command teleopDriveCommand(XboxController controller, BooleanSupplier fieldRelative) {
         return percentDriveCommand(
-                () -> JoystickUtil.deadzonedJoystickTranslation(-controller.getLeftY(), -controller.getLeftX(), 0.1),
-                () -> JoystickUtil.smartDeadzone(-controller.getRightX(), 0.1),
+                () -> JoystickUtil.squareDeadzonedJoystickTranslation(
+                        -controller.getLeftY(), -controller.getLeftX(), 0.1),
+                () -> JoystickUtil.squaredSmartDeadzone(-controller.getRightX(), 0.1),
                 fieldRelative);
     }
 

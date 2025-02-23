@@ -150,7 +150,7 @@ public class Superstructure {
     }
 
     public Command L4(BooleanSupplier confirm) {
-        return scoreCoral(SuperstructureState.L4_BACK, 0.5, confirm);
+        return scoreCoral(SuperstructureState.L4_BACK, 0.3, confirm);
     }
 
     public Command L2Front(BooleanSupplier confirm) {
@@ -173,8 +173,7 @@ public class Superstructure {
         return Commands.sequence(
                         commandToState(SuperstructureState.DEALGIFY_LOW_BACK),
                         Commands.runOnce(() -> grabber.setPercent(0.25)),
-                        Commands.waitUntil(grabber::hasAlgae),
-                        commandToState(SuperstructureState.STOW))
+                        Commands.waitUntil(grabber::hasAlgae))
                 .unless(grabber::reverseSensorTripped)
                 .handleInterrupt(grabber::stop);
     }
@@ -183,8 +182,8 @@ public class Superstructure {
         return Commands.sequence(
                         commandToState(SuperstructureState.DEALGIFY_HIGH_BACK),
                         Commands.runOnce(() -> grabber.setPercent(0.25)),
-                        Commands.waitUntil(grabber::hasAlgae),
-                        commandToState(SuperstructureState.STOW))
+                        Commands.waitUntil(grabber::hasAlgae))
+                //                        commandToState(SuperstructureState.STOW))
                 .unless(grabber::reverseSensorTripped)
                 .handleInterrupt(grabber::stop);
     }

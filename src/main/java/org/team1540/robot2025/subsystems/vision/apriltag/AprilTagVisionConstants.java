@@ -32,12 +32,12 @@ public class AprilTagVisionConstants {
             Units.inchesToMeters(8.281),
             new Rotation3d(0.0, Math.toRadians(-19), Math.toRadians(-180 + 26)));
 
-    public static final double XY_STD_DEV_COEFF = 0.1;
-    public static final double ROT_STD_DEV_COEFF = 0.5;
+    public static final double XY_STD_DEV_COEFF = 0.3;
+    public static final double ROT_STD_DEV_COEFF = 0.25;
 
     public static final double MIN_ACCEPTED_NUM_TAGS = 1;
     public static final double MAX_OUTSIDE_OF_FIELD_TOLERANCE = 1;
-    public static final double MAX_ROBOT_Z_TOLERANCE = 1;
+    public static final double MAX_ROBOT_Z_TOLERANCE = 0.5;
 
     public static final int SIM_RES_WIDTH = 1280;
     public static final int SIM_RES_HEIGHT = 800;

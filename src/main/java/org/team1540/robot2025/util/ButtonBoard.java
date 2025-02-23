@@ -62,7 +62,8 @@ public class ButtonBoard {
     }
 
     public Trigger flexFalse() {
-        return new Trigger(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> getAxisState(4) == 1 && hid.isConnected());
+        return new Trigger(
+                CommandScheduler.getInstance().getDefaultButtonLoop(), () -> getAxisState(4) == 1 && hid.isConnected());
     }
 
     public ReefButton getSelectedBranchFace() {
