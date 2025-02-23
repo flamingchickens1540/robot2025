@@ -1,6 +1,7 @@
 package org.team1540.robot2025;
 
 import au.grapplerobotics.CanBridge;
+import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.wpilibj.Threads;
@@ -28,6 +29,8 @@ public class Robot extends LoggedRobot {
     public Robot() {
         Pathfinding.setPathfinder(new LocalADStarAK());
         PathfindingCommand.warmupCommand().schedule();
+        FollowPathCommand.warmupCommand().schedule();
+
         if (Constants.isTuningMode()) {
             CanBridge.runTCP();
         }
