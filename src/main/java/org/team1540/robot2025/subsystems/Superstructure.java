@@ -200,8 +200,7 @@ public class Superstructure {
     public Command coralIntakeEject() {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_GROUND),
-                        grabber.commandRun(-0.3)
-                                .alongWith(coralIntake.commandRunRollerFunnel(-0.5, -0.5)))
+                        grabber.commandRun(-0.3).alongWith(coralIntake.commandRunRollerFunnel(-0.5, -0.5)))
                 .unless(grabber::hasAlgae);
     }
 

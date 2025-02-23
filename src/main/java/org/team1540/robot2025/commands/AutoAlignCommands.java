@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import org.team1540.robot2025.FieldConstants;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.RobotState;
@@ -22,7 +23,7 @@ public class AutoAlignCommands {
                                 DrivetrainConstants.MAX_LINEAR_ACCEL_MPS2 * 0.75,
                                 DrivetrainConstants.MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.75,
                                 DrivetrainConstants.MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.75),
-                        DrivetrainConstants.MAX_LINEAR_SPEED_MPS * 0.5)
+                        DrivetrainConstants.MAX_LINEAR_SPEED_MPS * 0.25)
                 .until(() -> RobotState.getInstance()
                                 .getEstimatedPose()
                                 .minus(pose)
@@ -44,6 +45,33 @@ public class AutoAlignCommands {
 
                     for (Pose2d pose : FieldConstants.Reef.scorePositions) {
                         pose = AllianceFlipUtil.maybeFlipPose(pose);
+                        double distance = RobotState.getInstance()
+                                .getEstimatedPose()
+                                .minus(pose)
+                                .getTranslation()
+                                .getNorm();
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestBranch = pose;
+                        }
+                    }
+
+                    Pose2d finalClosestBranch = closestBranch;
+                    return alignToPose(finalClosestBranch, drivetrain);
+                },
+                Set.of(drivetrain));
+    }
+
+    public static Command alignToNearestFace(Drivetrain drivetrain, BooleanSupplier isRight) {
+        return Commands.defer(
+                () -> {
+                    Pose2d closestBranch = new Pose2d();
+                    double closestDistance = Double.MAX_VALUE;
+
+                    for (int i = isRight.getAsBoolean() ? 1 : 0;
+                            i < FieldConstants.Reef.scorePositions.size();
+                            i += 2) {
+                        Pose2d pose = AllianceFlipUtil.maybeFlipPose(FieldConstants.Reef.scorePositions.get(i));
                         double distance = RobotState.getInstance()
                                 .getEstimatedPose()
                                 .minus(pose)

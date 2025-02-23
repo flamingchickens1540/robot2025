@@ -50,7 +50,7 @@ public class Drivetrain extends SubsystemBase {
     private static boolean hasInstance;
     static final Lock odometryLock = new ReentrantLock();
 
-    private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 4.0);
+    private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 3.5);
     private static final LoggedTunableNumber translationKI = new LoggedTunableNumber("Drivetrain/Translation/kI", 0.0);
     private static final LoggedTunableNumber translationKD = new LoggedTunableNumber("Drivetrain/Translation/kD", 0.0);
 
@@ -94,10 +94,10 @@ public class Drivetrain extends SubsystemBase {
             headingKP.get(),
             headingKI.get(),
             headingKD.get(),
-            MAX_LINEAR_SPEED_MPS * 0.75,
-            MAX_LINEAR_ACCEL_MPS2 * 0.75,
-            MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.75,
-            MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.75);
+            MAX_LINEAR_SPEED_MPS * 0.5,
+            MAX_LINEAR_ACCEL_MPS2 * 0.5,
+            MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.5,
+            MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.5);
 
     private final ProfiledPIDController headingController = new ProfiledPIDController(
             headingKP.get(),

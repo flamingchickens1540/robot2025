@@ -98,7 +98,12 @@ public class RobotContainer {
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
         driver.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
-        driver.leftStick().whileTrue(AutoAlignCommands.alignToNearestBranch(drivetrain));
+        driver.leftStick()
+                .and(driver.leftBumper())
+                .whileTrue(AutoAlignCommands.alignToNearestFace(drivetrain, () -> false));
+        driver.leftStick()
+                .and(driver.rightBumper())
+                .whileTrue(AutoAlignCommands.alignToNearestFace(drivetrain, () -> true));
 
         copilot.start().whileTrue(superstructure.zeroCommand());
         copilot.back()
