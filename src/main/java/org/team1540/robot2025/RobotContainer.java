@@ -97,24 +97,15 @@ public class RobotContainer {
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
-        driver.leftTrigger()
-                .whileTrue(superstructure.coralGroundIntake())
-                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
-
-        driver.y().onTrue(superstructure.L4(driver.rightTrigger()));
-        driver.x().onTrue(superstructure.L3(driver.rightTrigger()));
-        driver.b().onTrue(superstructure.L2(driver.rightTrigger()));
-        driver.a().onTrue(superstructure.net());
-
-        driver.povDown().onTrue(superstructure.L1(driver.rightTrigger()));
-        driver.povRight().onTrue(superstructure.processor(driver.rightTrigger()));
-
         driver.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
         driver.leftStick().whileTrue(AutoAlignCommands.alignToNearestBranch(drivetrain));
 
         copilot.start().whileTrue(superstructure.zeroCommand());
         copilot.back()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
+        copilot.leftTrigger()
+                .whileTrue(superstructure.coralGroundIntake())
+                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
         copilot.rightTrigger()
                 .whileTrue(superstructure.algaeIntake())
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
