@@ -110,20 +110,20 @@ public class RobotContainer {
         copilot.start().whileTrue(superstructure.zeroCommand());
         copilot.back()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
-        copilot.leftTrigger()
+        copilot.rightTrigger()
                 .whileTrue(superstructure.coralGroundIntake())
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
-        copilot.rightTrigger()
+        copilot.leftTrigger()
                 .whileTrue(superstructure.algaeIntake())
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
-        copilot.x().onTrue(superstructure.L4(driver.rightTrigger()));
+        copilot.y().onTrue(superstructure.L4(driver.rightTrigger()));
         copilot.x().onTrue(superstructure.L3(driver.rightTrigger()));
-        copilot.b().onTrue(superstructure.L2(driver.rightTrigger()));
+        copilot.a().onTrue(superstructure.L2(driver.rightTrigger()));
         copilot.povRight().onTrue(superstructure.L1(driver.rightTrigger()));
-        copilot.a().onTrue(superstructure.net());
+        copilot.b().onTrue(superstructure.net());
 
         copilot.povLeft().onTrue(superstructure.processor(driver.rightTrigger()));
         copilot.povDown()
