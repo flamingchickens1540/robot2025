@@ -25,13 +25,14 @@ import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
+import org.team1540.robot2025.util.CopilotController;
 import org.team1540.robot2025.util.JoystickUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController copilot = new CommandXboxController(1);
-
+    private final CopilotController buttonBoard = new CopilotController(2);
     private final Drivetrain drivetrain;
     private final AprilTagVision aprilTagVision;
     private final Elevator elevator;
@@ -64,7 +65,7 @@ public class RobotContainer {
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
-                aprilTagVision = AprilTagVision.createSim();
+                aprilTagVision = AprilTagVision.createDummy();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
                 coralIntake = CoralIntake.createSim();
