@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-public class CopilotController {
+public class ButtonBoard {
     private static final int AXIS_STEP = 20;
     private static final int BRANCH_FACE_AXIS_ID = 0;
     private static final int BRANCH_HEIGHT_AXIS_ID = 1;
@@ -16,7 +16,7 @@ public class CopilotController {
     private static final int ALGAE_REEF_ACTION_AXIS_ID = 3;
     private static final int ALGAE_SCORE_ACTION_AXIS_ID = 4;
 
-    public enum ReefFace {
+    public enum ReefButton {
         H,
         G,
         F,
@@ -30,7 +30,7 @@ public class CopilotController {
         J,
         I;
 
-        private static ReefFace fromOrdinal(int value) {
+        private static ReefButton fromOrdinal(int value) {
             return values()[value];
         }
     }
@@ -41,25 +41,27 @@ public class CopilotController {
 
     public final CommandGenericHID hid;
 
-    public CopilotController(int port) {
+    public ButtonBoard(int port) {
         hid = new CommandGenericHID(port);
     }
 
     public Trigger branchHeightAt(ReefHeight level) {
         return new Trigger(
                 CommandScheduler.getInstance().getDefaultButtonLoop(),
-                () -> this.getAxisState(BRANCH_HEIGHT_AXIS_ID) == level.ordinal());
+                () -> this.getAxisState(BRANCH_HEIGHT_AXIS_ID) == level.ordinal() && hid.isConnected());
     }
 
     public ReefHeight getSelectedBranchHeight() {
         return ReefHeight.fromLevel(this.getAxisState(BRANCH_HEIGHT_AXIS_ID) + 1);
     }
 
-    public Trigger branchFaceAt(ReefFace face) {
-        return new Trigger(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> this.getAxisState(BRANCH_FACE_AXIS_ID) == face.ordinal());
+    public Trigger branchFaceAt(ReefButton face) {
+        return new Trigger(
+                CommandScheduler.getInstance().getDefaultButtonLoop(),
+                () -> this.getAxisState(BRANCH_FACE_AXIS_ID) == face.ordinal() && hid.isConnected());
     }
 
-    public ReefFace getSelectedBranchFace() {
-        return ReefFace.fromOrdinal(this.getAxisState(BRANCH_FACE_AXIS_ID));
+    public ReefButton getSelectedBranchFace() {
+        return ReefButton.fromOrdinal(this.getAxisState(BRANCH_FACE_AXIS_ID));
     }
 }

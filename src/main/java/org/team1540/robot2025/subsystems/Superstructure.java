@@ -21,6 +21,7 @@ public class Superstructure {
         INTAKE_GROUND(ArmState.INTAKE, ElevatorState.GROUND_CORAL, CoralIntakeState.INTAKE),
         INTAKE_FUNNEL(ArmState.FUNNEL, ElevatorState.FUNNEL, CoralIntakeState.STOW),
         INTAKE_ALGAE(ArmState.GROUND_ALGAE, ElevatorState.GROUND_ALGAE, CoralIntakeState.STOW),
+        CORAL_EJECT(ArmState.STOW, ElevatorState.STOW, CoralIntakeState.EJECT),
 
         L1_BACK(ArmState.SCORE_L1_BACK, ElevatorState.L1_BACK, CoralIntakeState.STOW),
 
@@ -81,7 +82,9 @@ public class Superstructure {
         return Commands.defer(
                 () -> {
                     this.goalState = goalState;
-                    if (goalState == SuperstructureState.STOW || goalState == SuperstructureState.STOW_ALGAE) {
+                    if (goalState == SuperstructureState.STOW
+                            || goalState == SuperstructureState.STOW_ALGAE
+                            || goalState == SuperstructureState.CORAL_EJECT) {
                         return Commands.sequence(
                                 commandStowArm(),
                                 Commands.parallel(
@@ -199,8 +202,7 @@ public class Superstructure {
 
     public Command coralIntakeEject() {
         return Commands.sequence(
-                        commandToState(SuperstructureState.INTAKE_GROUND),
-                        grabber.commandRun(-0.3).alongWith(coralIntake.commandRunRollerFunnel(-0.5, -0.5)))
+                        commandToState(SuperstructureState.CORAL_EJECT), coralIntake.commandRunRollerFunnel(-0.5, -0.5))
                 .unless(grabber::hasAlgae);
     }
 

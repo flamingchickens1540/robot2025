@@ -1,6 +1,7 @@
 package org.team1540.robot2025;
 
 import static edu.wpi.first.units.Units.Seconds;
+import static org.team1540.robot2025.FieldConstants.ReefHeight.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -11,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.services.AlertManager;
@@ -25,14 +27,16 @@ import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
-import org.team1540.robot2025.util.CopilotController;
+import org.team1540.robot2025.util.ButtonBoard;
+import org.team1540.robot2025.util.ButtonBoard.ReefButton;
 import org.team1540.robot2025.util.JoystickUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController copilot = new CommandXboxController(1);
-    private final CopilotController buttonBoard = new CopilotController(2);
+    private final ButtonBoard buttonBoard = new ButtonBoard(2);
+
     private final Drivetrain drivetrain;
     private final AprilTagVision aprilTagVision;
     private final Elevator elevator;
@@ -65,7 +69,7 @@ public class RobotContainer {
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
-                aprilTagVision = AprilTagVision.createDummy();
+                aprilTagVision = AprilTagVision.createSim();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
                 coralIntake = CoralIntake.createSim();
@@ -100,11 +104,8 @@ public class RobotContainer {
 
         driver.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
         driver.leftStick()
-                .and(driver.leftBumper())
-                .whileTrue(AutoAlignCommands.alignToNearestFace(drivetrain, () -> false));
-        driver.leftStick()
-                .and(driver.rightBumper())
-                .whileTrue(AutoAlignCommands.alignToNearestFace(drivetrain, () -> true));
+                .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
+                        .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
 
         copilot.start().whileTrue(superstructure.zeroCommand());
         copilot.back()
@@ -118,13 +119,65 @@ public class RobotContainer {
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
-        copilot.y().onTrue(superstructure.L4(driver.rightTrigger()));
-        copilot.x().onTrue(superstructure.L3(driver.rightTrigger()));
-        copilot.b().onTrue(superstructure.L2(driver.rightTrigger()));
+        buttonBoard.branchHeightAt(L4).or(copilot.x()).onTrue(superstructure.L4(driver.rightTrigger()));
+        buttonBoard.branchHeightAt(L3).or(copilot.x()).onTrue(superstructure.L3(driver.rightTrigger()));
+        buttonBoard.branchHeightAt(L2).or(copilot.b()).onTrue(superstructure.L2(driver.rightTrigger()));
+        buttonBoard.branchHeightAt(L1).or(copilot.povRight()).onTrue(superstructure.L1(driver.rightTrigger()));
         copilot.a().onTrue(superstructure.net());
 
-        copilot.povDown().onTrue(superstructure.L1(driver.rightTrigger()));
-        copilot.povRight().onTrue(superstructure.processor(driver.rightTrigger()));
+        copilot.povLeft().onTrue(superstructure.processor(driver.rightTrigger()));
+        copilot.povDown()
+                .whileTrue(superstructure.coralIntakeEject())
+                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+
+        buttonBoard
+                .branchFaceAt(ReefButton.A)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.A, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.B)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.B, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.C)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.C, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.D)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.D, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.E)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.E, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.F)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.F, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.G)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.G, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.H)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.H, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.I)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.I, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.J)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.J, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.K)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.K, drivetrain));
+        buttonBoard
+                .branchFaceAt(ReefButton.L)
+                .and(driver.leftStick())
+                .whileTrue(AutoAlignCommands.alignToBranch(ReefBranch.L, drivetrain));
     }
 
     private void configureAutoRoutines() {

@@ -22,7 +22,7 @@ public class CoralIntake extends SubsystemBase {
     public enum CoralIntakeState {
         STOW(new LoggedTunableNumber("CoralIntake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees())),
         INTAKE(new LoggedTunableNumber("CoralIntake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees())),
-        EJECT(new LoggedTunableNumber("CoralIntake/Setpoints/Eject/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()));
+        EJECT(new LoggedTunableNumber("CoralIntake/Setpoints/Eject/AngleDegrees", 60));
 
         private final DoubleSupplier pivotPosition;
 
@@ -147,18 +147,6 @@ public class CoralIntake extends SubsystemBase {
                 () -> {
                     this.setRollerVoltage(0);
                     this.setFunnelVoltage(0);
-                });
-    }
-
-    public Command commandRunIntake(double rollerPercent, double funnelPercent) {
-        return Commands.startEnd(
-                () -> {
-                    setRollerVoltage(rollerPercent * 12);
-                    setFunnelVoltage(funnelPercent * 12);
-                },
-                () -> {
-                    setRollerVoltage(0);
-                    setFunnelVoltage(0);
                 });
     }
 
