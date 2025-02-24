@@ -15,17 +15,27 @@ import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 import org.team1540.robot2025.util.AllianceFlipUtil;
+import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class AutoAlignCommands {
+    private static final LoggedTunableNumber linearSpeedFactor =
+            new LoggedTunableNumber("AutoAlign/LinearSpeedFactor", 0.5);
+    private static final LoggedTunableNumber linearAccelFactor =
+            new LoggedTunableNumber("AutoAlign/LinearAccelFactor", 0.5);
+    private static final LoggedTunableNumber rotationSpeedFactor =
+            new LoggedTunableNumber("AutoAlign/RotationSpeedFactor", 0.5);
+    private static final LoggedTunableNumber rotationAccelFactor =
+            new LoggedTunableNumber("AutoAlign/RotationAccelFactor", 0.5);
+
     public static Command alignToPose(Supplier<Pose2d> pose, Drivetrain drivetrain) {
         return Commands.defer(
                 () -> AutoBuilder.pathfindToPose(
                                 pose.get(),
                                 new PathConstraints(
-                                        DrivetrainConstants.MAX_LINEAR_SPEED_MPS * 0.5,
-                                        DrivetrainConstants.MAX_LINEAR_ACCEL_MPS2 * 0.5,
-                                        DrivetrainConstants.MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.5,
-                                        DrivetrainConstants.MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.5))
+                                        DrivetrainConstants.MAX_LINEAR_SPEED_MPS * linearSpeedFactor.get(),
+                                        DrivetrainConstants.MAX_LINEAR_ACCEL_MPS2 * linearAccelFactor.get(),
+                                        DrivetrainConstants.MAX_ANGULAR_SPEED_RAD_PER_SEC * rotationSpeedFactor.get(),
+                                        DrivetrainConstants.MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * rotationAccelFactor.get()))
                         .until(() -> RobotState.getInstance()
                                         .getEstimatedPose()
                                         .minus(pose.get())
