@@ -69,6 +69,48 @@ public class FieldConstants {
                 new ArrayList<>(); // Starting at the right branch facing the driver station in clockwise
         public static final List<Pose2d> scorePositions = new ArrayList<>();
 
+        public static Supplier<Pose2d> closestBranch() {
+            return () -> {
+                Pose2d closestBranch = new Pose2d();
+                double closestDistance = Double.MAX_VALUE;
+
+                for (Pose2d pose : FieldConstants.Reef.scorePositions) {
+                    pose = AllianceFlipUtil.maybeFlipPose(pose);
+                    double distance = RobotState.getInstance()
+                            .getEstimatedPose()
+                            .minus(pose)
+                            .getTranslation()
+                            .getNorm();
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestBranch = pose;
+                    }
+                }
+                return closestBranch;
+            };
+        }
+
+        public static Supplier<Pose2d> closestFace() {
+            return () -> {
+                Pose2d closestFace = new Pose2d();
+                double closestDistance = Double.MAX_VALUE;
+
+                for (Pose2d pose : Reef.centerFaces) {
+                    pose = AllianceFlipUtil.maybeFlipPose(pose);
+                    double distance = RobotState.getInstance()
+                            .getEstimatedPose()
+                            .minus(pose)
+                            .getTranslation()
+                            .getNorm();
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestFace = pose;
+                    }
+                }
+                return closestFace;
+            };
+        }
+
         static {
             // Initialize branch positions
             for (int face = 0; face < 6; face++) {
@@ -183,46 +225,4 @@ public class FieldConstants {
     public static final int aprilTagCount = 22;
     public static final AprilTagFieldLayout aprilTagLayout =
             AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
-
-    public static Supplier<Pose2d> closestBranch() {
-        return () -> {
-            Pose2d closestBranch = new Pose2d();
-            double closestDistance = Double.MAX_VALUE;
-
-            for (Pose2d pose : FieldConstants.Reef.scorePositions) {
-                pose = AllianceFlipUtil.maybeFlipPose(pose);
-                double distance = RobotState.getInstance()
-                        .getEstimatedPose()
-                        .minus(pose)
-                        .getTranslation()
-                        .getNorm();
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestBranch = pose;
-                }
-            }
-            return closestBranch;
-        };
-    }
-
-    public static Supplier<Pose2d> closestFace() {
-        return () -> {
-            Pose2d closestFace = new Pose2d();
-            double closestDistance = Double.MAX_VALUE;
-
-            for (Pose2d pose : Reef.centerFaces) {
-                pose = AllianceFlipUtil.maybeFlipPose(pose);
-                double distance = RobotState.getInstance()
-                        .getEstimatedPose()
-                        .minus(pose)
-                        .getTranslation()
-                        .getNorm();
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestFace = pose;
-                }
-            }
-            return closestFace;
-        };
-    }
 }

@@ -110,7 +110,6 @@ public class RobotContainer {
 
         climber.setDefaultCommand(climber.manualCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
 
-
         copilot.start().whileTrue(superstructure.zeroCommand());
         copilot.back()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
@@ -135,7 +134,6 @@ public class RobotContainer {
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
         copilot.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
 
-
         for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {
             for (FieldConstants.ReefHeight height : FieldConstants.ReefHeight.values()) {
                 buttonBoard
@@ -144,13 +142,13 @@ public class RobotContainer {
                         .and(buttonBoard.flexFalse())
                         .and(driver.leftStick())
                         .whileTrue(AutoAlignCommands.alignToBranch(
-                                        FieldConstants.ReefBranch.fromOrdinal(buttonBoard.reefButtonToReefBranchIndex(button)),
+                                        FieldConstants.ReefBranch.fromOrdinal(
+                                                buttonBoard.reefButtonToReefBranchIndex(button)),
                                         drivetrain)
                                 .asProxy()
                                 .andThen(superstructure.scoreCoral(height, driver.rightTrigger())));
             }
         }
-
     }
 
     private void configureAutoRoutines() {

@@ -40,7 +40,7 @@ public class AutoAlignCommands {
     }
 
     public static Command alignToNearestBranch(Drivetrain drivetrain) {
-        return Commands.defer(() -> alignToPose(FieldConstants.closestBranch(), drivetrain), Set.of(drivetrain));
+        return Commands.defer(() -> alignToPose(FieldConstants.Reef.closestBranch(), drivetrain), Set.of(drivetrain));
     }
 
     public static Command alignToNearestFace(Drivetrain drivetrain, BooleanSupplier isRight) {
