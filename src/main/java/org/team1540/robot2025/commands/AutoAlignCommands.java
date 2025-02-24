@@ -8,8 +8,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import org.team1540.robot2025.FieldConstants;
+import org.team1540.robot2025.FieldConstants.Reef;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
+import org.team1540.robot2025.FieldConstants.ReefFace;
 import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
@@ -40,32 +41,40 @@ public class AutoAlignCommands {
     }
 
     public static Command alignToNearestBranch(Drivetrain drivetrain) {
-        return Commands.defer(() -> alignToPose(FieldConstants.Reef.closestBranch(), drivetrain), Set.of(drivetrain));
+        return Commands.defer(() -> alignToPose(Reef.closestBranch(), drivetrain), Set.of(drivetrain));
     }
 
     public static Command alignToNearestFace(Drivetrain drivetrain, BooleanSupplier isRight) {
         return Commands.defer(
                 () -> {
-                    Pose2d closestBranch = new Pose2d();
+                    ReefFace closestFace = Reef.faces.get(0);
                     double closestDistance = Double.MAX_VALUE;
+                    boolean flipDirection = false;
 
-                    for (int i = isRight.getAsBoolean() ? 1 : 0;
-                            i < FieldConstants.Reef.scorePositions.size();
-                            i += 2) {
-                        Pose2d pose = AllianceFlipUtil.maybeFlipPose(FieldConstants.Reef.scorePositions.get(i));
+                    for (int i = 0; i < Reef.faces.size(); i++) {
+                        Pose2d facePose =
+                                AllianceFlipUtil.maybeFlipPose(Reef.faces.get(i).pose());
                         double distance = RobotState.getInstance()
                                 .getEstimatedPose()
-                                .minus(pose)
+                                .minus(facePose)
                                 .getTranslation()
                                 .getNorm();
                         if (distance < closestDistance) {
                             closestDistance = distance;
-                            closestBranch = pose;
+                            closestFace = Reef.faces.get(i);
+                            if (i >= 3) flipDirection = true;
                         }
                     }
 
-                    Pose2d finalClosestBranch = closestBranch;
-                    return alignToPose(() -> finalClosestBranch, drivetrain);
+                    if (isRight.getAsBoolean()) {
+                        return alignToPose(
+                                flipDirection ? closestFace::leftBranchScore : closestFace::rightBranchScore,
+                                drivetrain);
+                    } else {
+                        return alignToPose(
+                                flipDirection ? closestFace::rightBranchScore : closestFace::leftBranchScore,
+                                drivetrain);
+                    }
                 },
                 Set.of(drivetrain));
     }
