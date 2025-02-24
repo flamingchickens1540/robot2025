@@ -58,6 +58,15 @@ public class Drivetrain extends SubsystemBase {
     private static final LoggedTunableNumber headingKI = new LoggedTunableNumber("Drivetrain/Heading/kI", 0.0);
     private static final LoggedTunableNumber headingKD = new LoggedTunableNumber("Drivetrain/Heading/kD", 0.0);
 
+    private static final LoggedTunableNumber autoAlignLinearSpeedFactor =
+            new LoggedTunableNumber("Drivetrain/AutoAlign/LinearSpeedFactor", 0.5);
+    private static final LoggedTunableNumber autoAlignLinearAccelFactor =
+            new LoggedTunableNumber("Drivetrain/AutoAlign/LinearAccelFactor", 0.5);
+    private static final LoggedTunableNumber autoAlignRotationSpeedFactor =
+            new LoggedTunableNumber("Drivetrain/AutoAlign/RotationSpeedFactor", 0.5);
+    private static final LoggedTunableNumber autoAlignRotationAccelFactor =
+            new LoggedTunableNumber("Drivetrain/AutoAlign/RotationAccelFactor", 0.5);
+
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
     private final Module[] modules = new Module[4]; // FL, FR, BL, BR
@@ -268,6 +277,20 @@ public class Drivetrain extends SubsystemBase {
                 headingKP,
                 headingKI,
                 headingKD);
+        LoggedTunableNumber.ifChanged(
+                hashCode(),
+                () -> {
+                    autoAlignController.setTranslationConstraints(
+                            autoAlignLinearSpeedFactor.get() * MAX_LINEAR_SPEED_MPS,
+                            autoAlignLinearAccelFactor.get() * MAX_LINEAR_ACCEL_MPS2);
+                    autoAlignController.setRotationConstraints(
+                            autoAlignRotationSpeedFactor.get() * MAX_ANGULAR_SPEED_RAD_PER_SEC,
+                            autoAlignRotationAccelFactor.get() * MAX_ANGULAR_ACCEL_RAD_PER_SEC2);
+                },
+                autoAlignLinearSpeedFactor,
+                autoAlignLinearAccelFactor,
+                autoAlignRotationSpeedFactor,
+                autoAlignRotationAccelFactor);
     }
 
     /**

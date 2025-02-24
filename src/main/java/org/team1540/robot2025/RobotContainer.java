@@ -100,7 +100,7 @@ public class RobotContainer {
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
         driver.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
-        driver.leftStick()
+        driver.x()
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
                         .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
 
