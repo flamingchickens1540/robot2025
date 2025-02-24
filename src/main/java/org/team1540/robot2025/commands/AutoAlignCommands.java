@@ -40,28 +40,7 @@ public class AutoAlignCommands {
     }
 
     public static Command alignToNearestBranch(Drivetrain drivetrain) {
-        return Commands.defer(
-                () -> {
-                    Pose2d closestBranch = new Pose2d();
-                    double closestDistance = Double.MAX_VALUE;
-
-                    for (Pose2d pose : FieldConstants.Reef.scorePositions) {
-                        pose = AllianceFlipUtil.maybeFlipPose(pose);
-                        double distance = RobotState.getInstance()
-                                .getEstimatedPose()
-                                .minus(pose)
-                                .getTranslation()
-                                .getNorm();
-                        if (distance < closestDistance) {
-                            closestDistance = distance;
-                            closestBranch = pose;
-                        }
-                    }
-
-                    Pose2d finalClosestBranch = closestBranch;
-                    return alignToPose(() -> finalClosestBranch, drivetrain);
-                },
-                Set.of(drivetrain));
+        return Commands.defer(() -> alignToPose(FieldConstants.closestBranch(), drivetrain), Set.of(drivetrain));
     }
 
     public static Command alignToNearestFace(Drivetrain drivetrain, BooleanSupplier isRight) {

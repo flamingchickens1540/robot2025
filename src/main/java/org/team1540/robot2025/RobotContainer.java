@@ -26,7 +26,6 @@ import org.team1540.robot2025.subsystems.intake.CoralIntake;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
 import org.team1540.robot2025.util.ButtonBoard;
-import org.team1540.robot2025.util.ButtonBoard.ReefButton;
 import org.team1540.robot2025.util.JoystickUtil;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
@@ -104,11 +103,13 @@ public class RobotContainer {
         driver.leftStick()
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
                         .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
+
         driver.leftTrigger()
                 .whileTrue(superstructure.coralGroundIntake())
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
 
         climber.setDefaultCommand(climber.manualCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
+
 
         copilot.start().whileTrue(superstructure.zeroCommand());
         copilot.back()
@@ -134,65 +135,22 @@ public class RobotContainer {
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
         copilot.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
 
-        buttonBoard
-                .branchFaceAt(ReefButton.A)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.A, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.B)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.B, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.C)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.C, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.D)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.D, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.E)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.E, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.F)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.F, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.G)
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.G, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.H)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.H, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.I)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.I, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.J)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.J, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.K)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.K, drivetrain));
-        buttonBoard
-                .branchFaceAt(ReefButton.L)
-                .and(buttonBoard.flexFalse())
-                .and(driver.leftStick())
-                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.L, drivetrain));
+
+        for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {
+            for (FieldConstants.ReefHeight height : FieldConstants.ReefHeight.values()) {
+                buttonBoard
+                        .branchFaceAt(button)
+                        .and(buttonBoard.branchHeightAt(height))
+                        .and(buttonBoard.flexFalse())
+                        .and(driver.leftStick())
+                        .whileTrue(AutoAlignCommands.alignToBranch(
+                                        FieldConstants.ReefBranch.fromOrdinal(buttonBoard.reefButtonToReefBranchIndex(button)),
+                                        drivetrain)
+                                .asProxy()
+                                .andThen(superstructure.scoreCoral(height, driver.rightTrigger())));
+            }
+        }
+
     }
 
     private void configureAutoRoutines() {
