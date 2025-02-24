@@ -6,7 +6,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import java.util.*;
+import java.util.function.Supplier;
 import org.team1540.robot2025.subsystems.grabber.GrabberConstants;
+import org.team1540.robot2025.util.AllianceFlipUtil;
 
 // NOTE this file is available at:
 // https://github.com/Mechanical-Advantage/RobotCode2025Public/blob/main/src/main/java/org/littletonrobotics/frc2025/FieldConstants.java
@@ -171,10 +173,56 @@ public class FieldConstants {
         ReefBranch() {
             scorePosition = Reef.scorePositions.get(ordinal());
         }
+
+        public static ReefBranch fromOrdinal(int value) {
+            return values()[value];
+        }
     }
 
     public static final double aprilTagWidth = Units.inchesToMeters(6.50);
     public static final int aprilTagCount = 22;
     public static final AprilTagFieldLayout aprilTagLayout =
             AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+
+    public static Supplier<Pose2d> closestBranch() {
+        return () -> {
+            Pose2d closestBranch = new Pose2d();
+            double closestDistance = Double.MAX_VALUE;
+
+            for (Pose2d pose : FieldConstants.Reef.scorePositions) {
+                pose = AllianceFlipUtil.maybeFlipPose(pose);
+                double distance = RobotState.getInstance()
+                        .getEstimatedPose()
+                        .minus(pose)
+                        .getTranslation()
+                        .getNorm();
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestBranch = pose;
+                }
+            }
+            return closestBranch;
+        };
+    }
+
+    public static Supplier<Pose2d> closestFace() {
+        return () -> {
+            Pose2d closestFace = new Pose2d();
+            double closestDistance = Double.MAX_VALUE;
+
+            for (Pose2d pose : Reef.centerFaces) {
+                pose = AllianceFlipUtil.maybeFlipPose(pose);
+                double distance = RobotState.getInstance()
+                        .getEstimatedPose()
+                        .minus(pose)
+                        .getTranslation()
+                        .getNorm();
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestFace = pose;
+                }
+            }
+            return closestFace;
+        };
+    }
 }

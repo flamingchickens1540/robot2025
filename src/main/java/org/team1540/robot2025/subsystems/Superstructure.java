@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.team1540.robot2025.FieldConstants;
+import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.arm.Arm;
 import org.team1540.robot2025.subsystems.arm.Arm.ArmState;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
@@ -62,7 +64,7 @@ public class Superstructure {
     private final Arm arm;
     private final CoralIntake coralIntake;
     private final Grabber grabber;
-    private final double funnelHeight = 1.0;
+    private final double funnelHeight = 0.75;
 
     private SuperstructureState goalState;
 
@@ -131,7 +133,7 @@ public class Superstructure {
                 arm.commandToSetpoint(ArmState.STOW_ALGAE), arm.commandToSetpoint(ArmState.STOW), grabber::hasAlgae);
     }
 
-    public Command scoreCoral(SuperstructureState superstructureState, double grabberPower, BooleanSupplier confirm) {
+    private Command scoreCoral(SuperstructureState superstructureState, double grabberPower, BooleanSupplier confirm) {
         return Commands.sequence(
                         commandToState(superstructureState),
                         Commands.waitUntil(confirm),
@@ -141,16 +143,41 @@ public class Superstructure {
                 .unless(grabber::hasAlgae);
     }
 
+    public Command scoreCoral(FieldConstants.ReefHeight height, BooleanSupplier confirm) {
+        return switch (height) {
+            case L1 -> L1(confirm);
+            case L2 -> L2(confirm);
+            case L3 -> L3(confirm);
+            case L4 -> L4(confirm);
+        };
+    }
+
     public Command L2(BooleanSupplier confirm) {
         return scoreCoral(SuperstructureState.L2_BACK, 0.5, confirm);
     }
 
     public Command L3(BooleanSupplier confirm) {
-        return scoreCoral(SuperstructureState.L3_BACK, 0.5, confirm);
+        return Commands.deferredProxy(() -> {
+            if (Math.abs(FieldConstants.closestFace()
+                            .get()
+                            .getRotation()
+                            .minus(RobotState.getInstance().getRobotRotation())
+                            .getDegrees())
+                    < 90) return scoreCoral(SuperstructureState.L3_BACK, 0.5, confirm);
+            else return scoreCoral(SuperstructureState.L3_FRONT, 0.5, confirm);
+        });
     }
 
     public Command L4(BooleanSupplier confirm) {
-        return scoreCoral(SuperstructureState.L4_BACK, 0.3, confirm);
+        return Commands.deferredProxy(() -> {
+            if (Math.abs(FieldConstants.closestFace()
+                            .get()
+                            .getRotation()
+                            .minus(RobotState.getInstance().getRobotRotation())
+                            .getDegrees())
+                    < 90) return scoreCoral(SuperstructureState.L4_BACK, 0.3, confirm);
+            else return scoreCoral(SuperstructureState.L4_FRONT, 0.5, confirm);
+        });
     }
 
     public Command L2Front(BooleanSupplier confirm) {
@@ -186,6 +213,29 @@ public class Superstructure {
                 //                        commandToState(SuperstructureState.STOW))
                 .unless(grabber::reverseSensorTripped)
                 .handleInterrupt(grabber::stop);
+    }
+
+    public Command dealgifyHighFront() {
+        return Commands.sequence(
+                        commandToState(SuperstructureState.DEALGIFY_HIGH_FRONT),
+                        Commands.runOnce(() -> grabber.setPercent(0.25)),
+                        Commands.waitUntil(grabber::hasAlgae))
+                //                        commandToState(SuperstructureState.STOW))
+                .unless(grabber::reverseSensorTripped)
+                .handleInterrupt(grabber::stop);
+    }
+
+    public Command dealgify() {
+        return Commands.deferredProxy(() -> {
+            int degrees = (int)
+                    Math.round(FieldConstants.closestFace().get().getRotation().getDegrees());
+            if (degrees == 180 || degrees == 60 || degrees == -60) {
+                return dealgifyLow();
+            } else if (Math.abs(degrees
+                            - RobotState.getInstance().getRobotRotation().getDegrees())
+                    < 90) return dealgifyHigh();
+            else return dealgifyHighFront();
+        });
     }
 
     public Command coralGroundIntake() {
