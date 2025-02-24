@@ -19,10 +19,6 @@ public class ArmConstants {
     public static final double KI = 0;
     public static final double KD = 0.2;
 
-    //    public static final double KS = 0.03;
-    //    public static final double KG = 0.37;
-    //    public static final double KV = 0.8;
-
     public static final double KS = 0.03;
     public static final double KG = 0.5;
     public static final double KV = 0.55;
