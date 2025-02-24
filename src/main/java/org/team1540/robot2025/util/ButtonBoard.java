@@ -70,7 +70,7 @@ public class ButtonBoard {
         return ReefButton.fromOrdinal(this.getAxisState(BRANCH_FACE_AXIS_ID));
     }
 
-    public int reefButtonToReal(ReefButton button) {
+    public int reefButtonToReefBranchIndex(ReefButton button) {
         return 12 - ((button.ordinal() + 4) % 12) - 1;
     }
 }

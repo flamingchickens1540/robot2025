@@ -137,7 +137,7 @@ public class RobotContainer {
                         .and(buttonBoard.flexFalse())
                         .and(driver.leftStick())
                         .whileTrue(AutoAlignCommands.alignToBranch(
-                                        FieldConstants.ReefBranch.fromOrdinal(buttonBoard.reefButtonToReal(button)),
+                                        FieldConstants.ReefBranch.fromOrdinal(buttonBoard.reefButtonToReefBranchIndex(button)),
                                         drivetrain)
                                 .asProxy()
                                 .andThen(superstructure.scoreCoral(height, driver.rightTrigger())));

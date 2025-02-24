@@ -46,7 +46,7 @@ public class AutoAlignCommands {
     public static Command alignToNearestFace(Drivetrain drivetrain, BooleanSupplier isRight) {
         return Commands.defer(
                 () -> {
-                    Pose2d closestFace = new Pose2d();
+                    Pose2d closestBranch = new Pose2d();
                     double closestDistance = Double.MAX_VALUE;
 
                     for (int i = isRight.getAsBoolean() ? 1 : 0;
@@ -60,11 +60,11 @@ public class AutoAlignCommands {
                                 .getNorm();
                         if (distance < closestDistance) {
                             closestDistance = distance;
-                            closestFace = pose;
+                            closestBranch = pose;
                         }
                     }
 
-                    Pose2d finalClosestBranch = closestFace;
+                    Pose2d finalClosestBranch = closestBranch;
                     return alignToPose(() -> finalClosestBranch, drivetrain);
                 },
                 Set.of(drivetrain));
