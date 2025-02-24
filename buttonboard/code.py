@@ -65,34 +65,34 @@ pixels.show()
 
 
 class Selector:
-    keys: tuple
+    indexToKey: tuple
     active: int
 
-    def __init__(self, axis: int, step: float, onColor, offColor, keys: tuple) -> None:
-        self.active = 0;
+    def __init__(self, axis: int, step: float, onColor, offColor, keyNums: tuple) -> None:
+        self.active = 0
         self.axis = axis
         self.step = step
-        self.keys = keys
-        self.keymap = {}
+        self.indexToKey = keyNums
+        self.keyToIndex = {}
         self.onColor = onColor
         self.offColor = offColor
-        for i, key in enumerate(keys):
-            self.keymap[key] = i
-            pixels[ids_to_pixels[self.keys[i]]] = self.offColor
-        pixels[ids_to_pixels[self.keys[self.active]]] = self.onColor
+        for i, key in enumerate(keyNums):
+            self.keyToIndex[key] = i
+            pixels[ids_to_pixels[self.indexToKey[i]]] = self.offColor
+        pixels[ids_to_pixels[self.indexToKey[self.active]]] = self.onColor
 
     def update(self, event: keypad.Event):
-        index = self.keymap.get(event.key_number)
+        index = self.keyToIndex.get(event.key_number)
         if index is not None:
             if not self.active == -1:
-                pixels[ids_to_pixels[self.keys[self.active]]] = self.offColor
+                pixels[ids_to_pixels[self.indexToKey[self.active]]] = self.offColor
 
             if index == self.active:
                 self.active = -1
                 js.update_axis((self.axis, 0))
             else:
                 self.active = index
-                pixels[ids_to_pixels[self.keys[self.active]]] = self.onColor
+                pixels[ids_to_pixels[self.indexToKey[self.active]]] = self.onColor
                 js.update_axis((self.axis, self.step * (index + 1)))
             return True
         return False
