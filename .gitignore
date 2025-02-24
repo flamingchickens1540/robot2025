@@ -178,3 +178,5 @@ ctre_sim/
 *.wpilog
 networktables.json
 /logs/
+
+/buttonboard/joystick_xl/
