@@ -62,7 +62,7 @@ public class RobotContainer {
                 arm = Arm.createReal();
                 coralIntake = CoralIntake.createReal();
                 grabber = Grabber.createReal();
-                climber = Climber.createDummy();
+                climber = Climber.createReal();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
@@ -104,6 +104,11 @@ public class RobotContainer {
         driver.leftStick()
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
                         .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
+        driver.leftTrigger()
+                .whileTrue(superstructure.coralGroundIntake())
+                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+
+        climber.setDefaultCommand(climber.manualCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
 
         copilot.start().whileTrue(superstructure.zeroCommand());
         copilot.back()
@@ -188,19 +193,6 @@ public class RobotContainer {
                 .and(buttonBoard.flexFalse())
                 .and(driver.leftStick())
                 .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.L, drivetrain));
-        //        buttonBoard.branchFaceAt(ReefButton.A).onTrue(Commands.print("A"));
-        //        buttonBoard.branchFaceAt(ReefButton.B).onTrue(Commands.print("B"));
-        //        buttonBoard.branchFaceAt(ReefButton.C).onTrue(Commands.print("C"));
-        //        buttonBoard.branchFaceAt(ReefButton.D).onTrue(Commands.print("D"));
-        //        buttonBoard.branchFaceAt(ReefButton.E).onTrue(Commands.print("E"));
-        //        buttonBoard.branchFaceAt(ReefButton.F).onTrue(Commands.print("F"));
-        //        buttonBoard.branchFaceAt(ReefButton.G).onTrue(Commands.print("G"));
-        //        buttonBoard.branchFaceAt(ReefButton.H).onTrue(Commands.print("H"));
-        //        buttonBoard.branchFaceAt(ReefButton.I).onTrue(Commands.print("I"));
-        //        buttonBoard.branchFaceAt(ReefButton.J).onTrue(Commands.print("J"));
-        //        buttonBoard.branchFaceAt(ReefButton.K).onTrue(Commands.print("K"));
-        //        buttonBoard.branchFaceAt(ReefButton.L).onTrue(Commands.print("L"));
-        //        buttonBoard.flexFalse().onTrue(Commands.print("True")).onFalse(Commands.print("False"));
     }
 
     private void configureAutoRoutines() {
