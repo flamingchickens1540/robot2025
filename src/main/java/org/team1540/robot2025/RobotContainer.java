@@ -61,7 +61,7 @@ public class RobotContainer {
                 arm = Arm.createReal();
                 coralIntake = CoralIntake.createReal();
                 grabber = Grabber.createReal();
-                climber = Climber.createDummy();
+                climber = Climber.createReal();
                 break;
             case SIM:
                 // Simulation, instantiate physics sim IO implementations
@@ -103,7 +103,13 @@ public class RobotContainer {
         driver.leftStick()
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
                         .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
-        driver.a().onTrue(superstructure.dealgify());
+
+        driver.leftTrigger()
+                .whileTrue(superstructure.coralGroundIntake())
+                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+
+        climber.setDefaultCommand(climber.manualCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
+
 
         copilot.start().whileTrue(superstructure.zeroCommand());
         copilot.back()
@@ -129,6 +135,7 @@ public class RobotContainer {
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
         copilot.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
 
+
         for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {
             for (FieldConstants.ReefHeight height : FieldConstants.ReefHeight.values()) {
                 buttonBoard
@@ -144,78 +151,6 @@ public class RobotContainer {
             }
         }
 
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.A)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.A, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.B)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.B, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.C)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.C, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.D)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.D, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.E)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.E, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.F)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.F, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.G)
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.G, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.H)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.H, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.I)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.I, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.J)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.J, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.K)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.K, drivetrain));
-        //        buttonBoard
-        //                .branchFaceAt(ReefButton.L)
-        //                .and(buttonBoard.flexFalse())
-        //                .and(driver.leftStick())
-        //                .whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.L, drivetrain));
-        //        buttonBoard.branchFaceAt(ReefButton.A).onTrue(Commands.print("A"));
-        //        buttonBoard.branchFaceAt(ReefButton.B).onTrue(Commands.print("B"));
-        //        buttonBoard.branchFaceAt(ReefButton.C).onTrue(Commands.print("C"));
-        //        buttonBoard.branchFaceAt(ReefButton.D).onTrue(Commands.print("D"));
-        //        buttonBoard.branchFaceAt(ReefButton.E).onTrue(Commands.print("E"));
-        //        buttonBoard.branchFaceAt(ReefButton.F).onTrue(Commands.print("F"));
-        //        buttonBoard.branchFaceAt(ReefButton.G).onTrue(Commands.print("G"));
-        //        buttonBoard.branchFaceAt(ReefButton.H).onTrue(Commands.print("H"));
-        //        buttonBoard.branchFaceAt(ReefButton.I).onTrue(Commands.print("I"));
-        //        buttonBoard.branchFaceAt(ReefButton.J).onTrue(Commands.print("J"));
-        //        buttonBoard.branchFaceAt(ReefButton.K).onTrue(Commands.print("K"));
-        //        buttonBoard.branchFaceAt(ReefButton.L).onTrue(Commands.print("L"));
-        //        buttonBoard.flexFalse().onTrue(Commands.print("True")).onFalse(Commands.print("False"));
     }
 
     private void configureAutoRoutines() {

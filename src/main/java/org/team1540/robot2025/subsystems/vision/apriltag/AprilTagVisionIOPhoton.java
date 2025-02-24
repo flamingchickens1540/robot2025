@@ -26,6 +26,7 @@ public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
         inputs.connected = camera.isConnected();
 
         List<PoseObservation> poseObservations = new ArrayList<>();
+        lastSeenTagIDs.clear();
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
             if (result.getMultiTagResult().isPresent()) {
                 MultiTargetPNPResult multitagResult = result.getMultiTagResult().get();
