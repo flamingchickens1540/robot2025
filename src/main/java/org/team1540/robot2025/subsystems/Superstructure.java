@@ -157,7 +157,7 @@ public class Superstructure {
     }
 
     public Command L3(BooleanSupplier confirm) {
-        return Commands.deferredProxy(() -> {
+        return Commands.defer(() -> {
             if (Math.abs(FieldConstants.closestFace()
                             .get()
                             .getRotation()
@@ -165,11 +165,11 @@ public class Superstructure {
                             .getDegrees())
                     < 90) return scoreCoral(SuperstructureState.L3_BACK, 0.5, confirm);
             else return scoreCoral(SuperstructureState.L3_FRONT, 0.5, confirm);
-        });
+        }, Set.of(elevator, arm, coralIntake, grabber));
     }
 
     public Command L4(BooleanSupplier confirm) {
-        return Commands.deferredProxy(() -> {
+        return Commands.defer(() -> {
             if (Math.abs(FieldConstants.closestFace()
                             .get()
                             .getRotation()
@@ -177,7 +177,7 @@ public class Superstructure {
                             .getDegrees())
                     < 90) return scoreCoral(SuperstructureState.L4_BACK, 0.3, confirm);
             else return scoreCoral(SuperstructureState.L4_FRONT, 0.5, confirm);
-        });
+        }, Set.of(elevator, arm, coralIntake, grabber));
     }
 
     public Command L2Front(BooleanSupplier confirm) {
@@ -226,16 +226,18 @@ public class Superstructure {
     }
 
     public Command dealgify() {
-        return Commands.deferredProxy(() -> {
+        return Commands.defer(() -> {
             int degrees = (int)
                     Math.round(FieldConstants.closestFace().get().getRotation().getDegrees());
             if (degrees == 180 || degrees == 60 || degrees == -60) {
                 return dealgifyLow();
-            } else if (Math.abs(degrees
-                            - RobotState.getInstance().getRobotRotation().getDegrees())
-                    < 90) return dealgifyHigh();
-            else return dealgifyHighFront();
-        });
+            } else {
+                if (Math.abs(degrees
+                        - RobotState.getInstance().getRobotRotation().getDegrees())
+                        < 90) return dealgifyHigh();
+                else return dealgifyHighFront();
+            }
+        }, Set.of(elevator, arm, coralIntake, grabber));
     }
 
     public Command coralGroundIntake() {
