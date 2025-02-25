@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
-import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.FieldConstants.Reef;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefFace;
@@ -20,34 +19,45 @@ import org.team1540.robot2025.util.LoggedTunableNumber;
 public class AutoAlignCommands {
     private static final LoggedTunableNumber reefAvoidanceRadiusMeters = new LoggedTunableNumber(
             "AutoAlign/ReefAvoidanceRadiusMeters", Reef.faceLength + DrivetrainConstants.DRIVEBASE_RADIUS + 0.5);
-    private static final LoggedTunableNumber reefAvoidanceSpeedDegPerSec =
-            new LoggedTunableNumber("AutoAlign/ReefAvoidanceSpeedDegPerSec", 1540);
+    private static final LoggedTunableNumber reefAvoidanceLookaheadDeg =
+            new LoggedTunableNumber("AutoAlign/ReefAvoidanceLookaheadDeg", 20);
+    private static final LoggedTunableNumber finalAlignLookaheadMeters =
+            new LoggedTunableNumber("AutoAlign/FinalAlignLookaheadMeters", 0.25);
+    private static final LoggedTunableNumber finalAlignDistanceMeters =
+            new LoggedTunableNumber("AutoAlign/FinalAlignDistanceMeters", 1.0);
 
     private static Pose2d getReefDriveTarget(Pose2d robotPose, Pose2d goalPose) {
         Pose2d reefCenter = AllianceFlipUtil.maybeFlipPose(new Pose2d(Reef.center, Rotation2d.kZero));
         Pose2d goalFromReef = goalPose.relativeTo(reefCenter);
         Pose2d robotFromReef = robotPose.relativeTo(reefCenter);
-        Rotation2d angularError = goalFromReef
-                .getTranslation()
-                .getAngle()
-                .minus(robotFromReef.getTranslation().getAngle());
-        Logger.recordOutput("AutoAlign/AngularError", angularError);
+        Rotation2d goalAngleFromReef = goalFromReef.getTranslation().getAngle();
+        Rotation2d angularError =
+                goalAngleFromReef.minus(robotFromReef.getTranslation().getAngle());
 
-        // If the robot is within a +/-30 deg angle sweep from the goal or close to the goal, go directly there
-        if (Math.abs(angularError.getDegrees()) <= 15) {
+        // If the robot is within a +/-10 deg angle sweep around the goal, go directly there
+        if (Math.abs(angularError.getDegrees()) <= 10) {
+            double distanceToGoal = robotFromReef.getTranslation().getDistance(goalFromReef.getTranslation());
+            if (distanceToGoal <= finalAlignDistanceMeters.get()) {
+                Pose2d interpolatedPose =
+                        robotPose.interpolate(goalPose, finalAlignLookaheadMeters.get() / distanceToGoal);
+                return new Pose2d(interpolatedPose.getTranslation(), goalPose.getRotation());
+            }
             return goalPose;
         }
         // If the robot is within or near the reef avoidance radius, drive around the reef
         if (robotFromReef.getTranslation().getNorm() <= reefAvoidanceRadiusMeters.get() + 0.1) {
             Rotation2d angleFromReefCenter = robotFromReef.getTranslation().getAngle();
-            Rotation2d step = Rotation2d.fromDegrees(Math.copySign(
-                    reefAvoidanceSpeedDegPerSec.get() * Constants.LOOP_PERIOD_SECS, angularError.getDegrees()));
+            Rotation2d step =
+                    Rotation2d.fromDegrees(Math.copySign(reefAvoidanceLookaheadDeg.get(), angularError.getDegrees()));
+            Rotation2d nextAngle = Math.abs(angularError.getDegrees()) <= reefAvoidanceLookaheadDeg.get()
+                    ? goalAngleFromReef
+                    : angleFromReefCenter.plus(step);
             return new Pose2d(
                     reefCenter
                             .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
                             .getTranslation()
-                            .rotateAround(reefCenter.getTranslation(), angleFromReefCenter.plus(step)),
-                    goalPose.getRotation());
+                            .rotateAround(reefCenter.getTranslation(), nextAngle),
+                    goalPose.getRotation().minus(angularError));
         }
         // Otherwise, drive to nearest tangent point on reef avoidance circle
         double distanceFromCenter = robotFromReef.getTranslation().getNorm();
@@ -67,9 +77,9 @@ public class AutoAlignCommands {
                         robotFromReef.getTranslation().getAngle().minus(tangentOffsetAngle));
         if (tangentPoint1.getDistance(goalPose.getTranslation())
                 < tangentPoint2.getDistance(goalPose.getTranslation())) {
-            return new Pose2d(tangentPoint1, goalPose.getRotation());
+            return new Pose2d(tangentPoint1, goalPose.getRotation().minus(angularError));
         } else {
-            return new Pose2d(tangentPoint2, goalPose.getRotation());
+            return new Pose2d(tangentPoint2, goalPose.getRotation().minus(angularError));
         }
     }
 

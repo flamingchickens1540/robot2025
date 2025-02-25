@@ -67,7 +67,7 @@ public class AutoAlignController {
         double distance = currentPose.getTranslation().getDistance(goalPose.getTranslation());
         translationError = distance;
         double translationScalar =
-                translationController.getSetpoint().velocity + translationController.calculate(distance, 0.0);
+                translationController.calculate(distance, 0.0) + translationController.getSetpoint().velocity;
         Translation2d translationVelocity = new Translation2d(
                 translationScalar,
                 currentPose.getTranslation().minus(goalPose.getTranslation()).getAngle());
@@ -80,10 +80,10 @@ public class AutoAlignController {
                 .transformBy(new Transform2d(translationController.getSetpoint().position, 0.0, Rotation2d.kZero))
                 .getTranslation();
 
-        double headingVelocity = headingController.getSetpoint().velocity
-                + headingController.calculate(
+        double headingVelocity = headingController.calculate(
                         currentPose.getRotation().getRadians(),
-                        goalPose.getRotation().getRadians());
+                        goalPose.getRotation().getRadians())
+                + headingController.getSetpoint().velocity;
         headingError =
                 Math.abs(currentPose.getRotation().minus(goalPose.getRotation()).getRadians());
 

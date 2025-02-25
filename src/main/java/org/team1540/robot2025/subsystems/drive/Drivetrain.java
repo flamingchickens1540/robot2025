@@ -12,6 +12,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -50,7 +51,7 @@ public class Drivetrain extends SubsystemBase {
     private static boolean hasInstance;
     static final Lock odometryLock = new ReentrantLock();
 
-    private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 4.0);
+    private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 6.0);
     private static final LoggedTunableNumber translationKI = new LoggedTunableNumber("Drivetrain/Translation/kI", 0.0);
     private static final LoggedTunableNumber translationKD = new LoggedTunableNumber("Drivetrain/Translation/kD", 0.0);
 
@@ -59,13 +60,13 @@ public class Drivetrain extends SubsystemBase {
     private static final LoggedTunableNumber headingKD = new LoggedTunableNumber("Drivetrain/Heading/kD", 0.0);
 
     private static final LoggedTunableNumber autoAlignLinearSpeedFactor =
-            new LoggedTunableNumber("Drivetrain/AutoAlign/LinearSpeedFactor", 0.5);
+            new LoggedTunableNumber("AutoAlign/LinearSpeedFactor", 0.6);
     private static final LoggedTunableNumber autoAlignLinearAccelFactor =
-            new LoggedTunableNumber("Drivetrain/AutoAlign/LinearAccelFactor", 0.5);
+            new LoggedTunableNumber("AutoAlign/LinearAccelFactor", 0.5);
     private static final LoggedTunableNumber autoAlignRotationSpeedFactor =
-            new LoggedTunableNumber("Drivetrain/AutoAlign/RotationSpeedFactor", 0.5);
+            new LoggedTunableNumber("AutoAlign/RotationSpeedFactor", 0.5);
     private static final LoggedTunableNumber autoAlignRotationAccelFactor =
-            new LoggedTunableNumber("Drivetrain/AutoAlign/RotationAccelFactor", 0.5);
+            new LoggedTunableNumber("AutoAlign/RotationAccelFactor", 0.5);
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -103,10 +104,10 @@ public class Drivetrain extends SubsystemBase {
             headingKP.get(),
             headingKI.get(),
             headingKD.get(),
-            MAX_LINEAR_SPEED_MPS * 0.5,
-            MAX_LINEAR_ACCEL_MPS2 * 0.5,
-            MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.5,
-            MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.5);
+            MAX_LINEAR_SPEED_MPS * autoAlignLinearSpeedFactor.get(),
+            MAX_LINEAR_ACCEL_MPS2 * autoAlignLinearAccelFactor.get(),
+            MAX_ANGULAR_SPEED_RAD_PER_SEC * autoAlignRotationSpeedFactor.get(),
+            MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * autoAlignRotationAccelFactor.get());
 
     private final ProfiledPIDController headingController = new ProfiledPIDController(
             headingKP.get(),
@@ -440,13 +441,14 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public Command driveToPoseCommand(Supplier<Pose2d> pose) {
+        Debouncer atGoalDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kRising);
         return Commands.startRun(
                         () -> autoAlignController.setGoal(pose),
                         () -> runVelocity(autoAlignController.calculate(
                                 RobotState.getInstance().getEstimatedPose(),
                                 RobotState.getInstance().getRobotVelocity())),
                         this)
-                .until(() -> autoAlignController.atGoal(0.01, Rotation2d.fromDegrees(1.0)))
+                .until(() -> atGoalDebouncer.calculate(autoAlignController.atGoal(0.01, Rotation2d.fromDegrees(1.0))))
                 .finallyDo(this::stop);
     }
 
