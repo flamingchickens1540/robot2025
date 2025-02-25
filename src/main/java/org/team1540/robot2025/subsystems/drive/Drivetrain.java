@@ -307,7 +307,9 @@ public class Drivetrain extends SubsystemBase {
         runVelocity(trajectoryController.calculate(RobotState.getInstance().getEstimatedPose(), trajectorySample));
     }
 
-    /** Stops the drive. */
+    /**
+     * Stops the drive.
+     */
     public void stop() {
         runVelocity(new ChassisSpeeds());
     }
@@ -324,49 +326,65 @@ public class Drivetrain extends SubsystemBase {
         stop();
     }
 
-    /** Zeroes field-oriented drive to the direction the robot is facing */
+    /**
+     * Zeroes field-oriented drive to the direction the robot is facing
+     */
     public void zeroFieldOrientationManual() {
         fieldOrientationOffset = rawGyroRotation;
     }
 
-    /** Zeroes field-oriented drive to the field based on the calculated odometry yaw */
+    /**
+     * Zeroes field-oriented drive to the field based on the calculated odometry yaw
+     */
     public void zeroFieldOrientation() {
         fieldOrientationOffset = rawGyroRotation.minus(
                 AllianceFlipUtil.maybeFlipRotation(RobotState.getInstance().getRobotRotation()));
     }
 
-    /** Sets the brake mode of all modules */
+    /**
+     * Sets the brake mode of all modules
+     */
     public void setBrakeMode(boolean enabled) {
         for (Module module : modules) module.setBrakeMode(enabled);
     }
 
-    /** Orients all modules forward and applies the specified voltage to the drive motors */
+    /**
+     * Orients all modules forward and applies the specified voltage to the drive motors
+     */
     private void runFFCharacterization(double volts) {
         ffCharacterizationInput = volts;
         isFFCharacterizing = true;
     }
 
-    /** Ends characterization and returns to default drive behavior */
+    /**
+     * Ends characterization and returns to default drive behavior
+     */
     private void endFFCharacterization() {
         ffCharacterizationInput = 0;
         isFFCharacterizing = false;
     }
 
-    /** Returns the average velocity of each module in rot/s */
+    /**
+     * Returns the average velocity of each module in rot/s
+     */
     private double getFFCharacterizationVelocity() {
         double driveVelocityAverage = 0;
         for (Module module : modules) driveVelocityAverage += module.getFFCharacterizationVelocity();
         return driveVelocityAverage / modules.length;
     }
 
-    /** Returns the position of each module in radians */
+    /**
+     * Returns the position of each module in radians
+     */
     private double[] getWheelRadiusCharacterizationPositions() {
         return Arrays.stream(modules)
                 .mapToDouble(Module::getWheelRadiusCharacterizationPosition)
                 .toArray();
     }
 
-    /** Returns the module states (turn angles and drive velocities) for all the modules. */
+    /**
+     * Returns the module states (turn angles and drive velocities) for all the modules.
+     */
     @AutoLogOutput(key = "Drivetrain/SwerveStates/Measured")
     public SwerveModuleState[] getModuleStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
@@ -421,7 +439,7 @@ public class Drivetrain extends SubsystemBase {
                 .until(() -> Math.abs(controller.getRightX()) >= 0.1);
     }
 
-    public Command alignToPoseCommand(Pose2d pose) {
+    public Command driveToPoseCommand(Supplier<Pose2d> pose) {
         return Commands.startRun(
                         () -> autoAlignController.setGoal(pose),
                         () -> runVelocity(autoAlignController.calculate(
