@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.FieldConstants.Reef;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefFace;
@@ -42,8 +43,13 @@ public class AutoAlignCommands {
                                         .getTranslation()
                                         .getNorm()
                                 < 0.4)
-                        .andThen(drivetrain.alignToPoseCommand(pose.get())),
+                        .andThen(drivetrain.alignToPoseCommand(pose.get()))
+                        .deadlineFor(Commands.run(() -> Logger.recordOutput("AutoAlign/GoalPose", pose.get()))),
                 Set.of(drivetrain));
+    }
+
+    public static Command alignToPose(Pose2d pose, Drivetrain drivetrain) {
+        return alignToPose(() -> pose, drivetrain);
     }
 
     public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain) {
@@ -72,17 +78,19 @@ public class AutoAlignCommands {
                         if (distance < closestDistance) {
                             closestDistance = distance;
                             closestFace = Reef.faces.get(i);
-                            if (i >= 3) flipDirection = true;
+                            if (i >= 2 && i != 5) flipDirection = true;
                         }
                     }
 
                     if (isRight.getAsBoolean()) {
                         return alignToPose(
-                                flipDirection ? closestFace::leftBranchScore : closestFace::rightBranchScore,
+                                AllianceFlipUtil.maybeFlipPose(
+                                        flipDirection ? closestFace.leftBranchScore() : closestFace.rightBranchScore()),
                                 drivetrain);
                     } else {
                         return alignToPose(
-                                flipDirection ? closestFace::rightBranchScore : closestFace::leftBranchScore,
+                                AllianceFlipUtil.maybeFlipPose(
+                                        flipDirection ? closestFace.rightBranchScore() : closestFace.leftBranchScore()),
                                 drivetrain);
                     }
                 },
