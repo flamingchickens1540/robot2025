@@ -3,9 +3,9 @@ package org.team1540.robot2025.subsystems.intake;
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
-public interface CoralIntakeIO {
+public interface IntakeIO {
     @AutoLog
-    class CoralIntakeInputs {
+    class IntakeInputs {
         public boolean spinConnected = true;
         public double spinMotorVelocityRPS = 0;
         public double spinMotorAppliedVolts = 0;
@@ -40,5 +40,5 @@ public interface CoralIntakeIO {
 
     default void setPivotFF(double kS, double kV, double kG) {}
 
-    default void updateInputs(CoralIntakeInputs inputs) {}
+    default void updateInputs(IntakeInputs inputs) {}
 }

@@ -118,11 +118,11 @@ public class FieldConstants {
                 scorePositions.add(centerFaces[face].transformBy(new Transform2d(
                         Constants.BUMPER_LENGTH_X_METERS / 2,
                         GrabberConstants.Y_OFFSET_METERS - Units.inchesToMeters(6.469),
-                        Rotation2d.k180deg)));
+                        Rotation2d.kZero)));
                 scorePositions.add(centerFaces[face].transformBy(new Transform2d(
                         Constants.BUMPER_LENGTH_X_METERS / 2,
                         GrabberConstants.Y_OFFSET_METERS + Units.inchesToMeters(6.469),
-                        Rotation2d.k180deg)));
+                        Rotation2d.kZero)));
 
                 faces.add(new ReefFace(
                         centerFaces[face],

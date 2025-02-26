@@ -13,6 +13,7 @@ import org.team1540.robot2025.FieldConstants.ReefFace;
 import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
+import org.team1540.robot2025.subsystems.grabber.GrabberConstants;
 import org.team1540.robot2025.util.AllianceFlipUtil;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
@@ -99,6 +100,25 @@ public class AutoAlignCommands {
         return alignToReefPose(() -> AllianceFlipUtil.maybeFlipPose(branch.scorePosition), drivetrain);
     }
 
+    public static Command alignToBranchNearestSide(ReefBranch branch, Drivetrain drivetrain) {
+        return Commands.defer(
+                () -> {
+                    Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
+                    if (Math.abs(pose.getRotation()
+                                    .minus(RobotState.getInstance().getRobotRotation())
+                                    .getDegrees())
+                            >= 90)
+                        pose = new Pose2d(
+                                        pose.getTranslation(),
+                                        pose.getRotation().rotateBy(Rotation2d.k180deg))
+                                .transformBy(
+                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                    Pose2d finalPose = pose;
+                    return alignToReefPose(() -> finalPose, drivetrain);
+                },
+                Set.of(drivetrain));
+    }
+
     public static Command alignToNearestBranch(Drivetrain drivetrain) {
         return Commands.defer(() -> alignToReefPose(Reef.closestBranch(), drivetrain), Set.of(drivetrain));
     }
@@ -125,17 +145,26 @@ public class AutoAlignCommands {
                         }
                     }
 
+                    Pose2d pose;
                     if (isRight.getAsBoolean()) {
-                        return alignToReefPose(
-                                AllianceFlipUtil.maybeFlipPose(
-                                        flipDirection ? closestFace.leftBranchScore() : closestFace.rightBranchScore()),
-                                drivetrain);
+                        pose = AllianceFlipUtil.maybeFlipPose(
+                                flipDirection ? closestFace.leftBranchScore() : closestFace.rightBranchScore());
                     } else {
-                        return alignToReefPose(
-                                AllianceFlipUtil.maybeFlipPose(
-                                        flipDirection ? closestFace.rightBranchScore() : closestFace.leftBranchScore()),
-                                drivetrain);
+                        pose = AllianceFlipUtil.maybeFlipPose(
+                                flipDirection ? closestFace.rightBranchScore() : closestFace.leftBranchScore());
                     }
+                    if (Math.abs(pose.getRotation()
+                                    .minus(RobotState.getInstance().getRobotRotation())
+                                    .getDegrees())
+                            >= 90) {
+                        pose = new Pose2d(
+                                        pose.getTranslation(),
+                                        pose.getRotation().rotateBy(Rotation2d.k180deg))
+                                .transformBy(
+                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                    }
+
+                    return alignToReefPose(pose, drivetrain);
                 },
                 Set.of(drivetrain));
     }

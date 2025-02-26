@@ -1,6 +1,6 @@
 package org.team1540.robot2025.subsystems.intake;
 
-import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
+import static org.team1540.robot2025.subsystems.intake.IntakeConstants.*;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.SimState;
 
-public class CoralIntakeIOSim implements CoralIntakeIO {
+public class IntakeIOSim implements IntakeIO {
     private static final double SIM_KS = 0.01;
     private static final double SIM_KV = 0.58;
     private static final double SIM_KG = 0.2;
@@ -49,12 +49,12 @@ public class CoralIntakeIOSim implements CoralIntakeIO {
     private ArmFeedforward pivotFeedforward = new ArmFeedforward(SIM_KS, SIM_KG, SIM_KV);
     private boolean isPivotClosedLoop;
 
-    public CoralIntakeIOSim() {
+    public IntakeIOSim() {
         pivotController.reset(PIVOT_MAX_ANGLE.getRotations());
     }
 
     @Override
-    public void updateInputs(CoralIntakeInputs inputs) {
+    public void updateInputs(IntakeInputs inputs) {
         if (isPivotClosedLoop) {
             pivotAppliedVolts = pivotController.calculate(Units.radiansToRotations(pivotSim.getAngleRads()))
                     + pivotFeedforward.calculate(

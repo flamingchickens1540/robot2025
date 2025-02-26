@@ -3,7 +3,7 @@ package org.team1540.robot2025.subsystems.intake;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 
-public class CoralIntakeConstants {
+public class IntakeConstants {
     public static final int SPIN_MOTOR_ID = 6;
     public static final int PIVOT_MOTOR_ID = 5;
     public static final int FUNNEL_MOTOR_ID = 4;
