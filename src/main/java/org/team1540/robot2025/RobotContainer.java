@@ -103,6 +103,7 @@ public class RobotContainer {
         driver.leftStick()
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
                         .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
+        driver.x().whileTrue(AutoAlignCommands.alignToBranch(FieldConstants.ReefBranch.C, drivetrain));
 
         driver.leftTrigger()
                 .whileTrue(superstructure.coralGroundIntake())

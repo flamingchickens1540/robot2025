@@ -24,7 +24,7 @@ public class AutoAlignCommands {
     private static final LoggedTunableNumber finalAlignLookaheadMeters =
             new LoggedTunableNumber("AutoAlign/FinalAlignLookaheadMeters", 0.25);
     private static final LoggedTunableNumber finalAlignDistanceMeters =
-            new LoggedTunableNumber("AutoAlign/FinalAlignDistanceMeters", 1.0);
+            new LoggedTunableNumber("AutoAlign/FinalAlignDistanceMeters", 1.25);
 
     private static Pose2d getReefDriveTarget(Pose2d robotPose, Pose2d goalPose) {
         Pose2d reefCenter = AllianceFlipUtil.maybeFlipPose(new Pose2d(Reef.center, Rotation2d.kZero));

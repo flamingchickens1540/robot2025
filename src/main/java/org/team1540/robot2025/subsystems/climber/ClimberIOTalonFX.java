@@ -67,11 +67,6 @@ public class ClimberIOTalonFX implements ClimberIO {
         motorConfig.CurrentLimits.SupplyCurrentLowerLimit = 0.1;
         motorConfig.CurrentLimits.SupplyCurrentLowerTime = 15;
 
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = MAX_ANGLE.getRotations();
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = MIN_ANGLE.getRotations();
-        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-
         motor.getConfigurator().apply(motorConfig);
         BaseStatusSignal.setUpdateFrequencyForAll(
                 50, motorPosition, velocity, appliedVoltage, supplyCurrentAmps, statorCurrentAmps, temp);
