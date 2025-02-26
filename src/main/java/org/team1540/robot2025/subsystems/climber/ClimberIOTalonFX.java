@@ -38,11 +38,6 @@ public class ClimberIOTalonFX implements ClimberIO {
 
         motorConfig.Feedback.SensorToMechanismRatio = GEAR_RATIO;
 
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = MAX_ANGLE.getRotations();
-        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = MIN_ANGLE.getRotations();
-
         motorConfig.Slot0.kP = KP;
         motorConfig.Slot0.kI = KI;
         motorConfig.Slot0.kD = KD;
@@ -50,13 +45,6 @@ public class ClimberIOTalonFX implements ClimberIO {
         motorConfig.Slot0.kG = KG;
         motorConfig.Slot0.kV = KV;
         motorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
-        /*
-        Note that the sensor offset and ratios must be
-        configured so that the sensor reports a position
-         of 0 when the mechanism is horizonal
-         (parallel to the ground), and the reported
-         sensor position is 1:1 with the mechanism.
-         */
 
         motorConfig.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY_RPS;
         motorConfig.MotionMagic.MotionMagicAcceleration = MAX_ACCEL_RPS2;
