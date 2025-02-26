@@ -22,15 +22,15 @@ public class AprilTagVisionConstants {
             Units.inchesToMeters(8.216),
             new Rotation3d(0.0, Math.toRadians(-25.5), Math.toRadians(-32.467)));
     public static final Transform3d BL_CAMERA_TRANSFORM = new Transform3d(
-            Units.inchesToMeters(-11.987),
-            Units.inchesToMeters(11.333),
+            Units.inchesToMeters(-11.933),
+            Units.inchesToMeters(12.329),
             Units.inchesToMeters(8.281),
-            new Rotation3d(0.0, Math.toRadians(-19), Math.toRadians(180 - 26)));
+            new Rotation3d(0.0, Math.toRadians(-19), Math.toRadians(180 + 26)));
     public static final Transform3d BR_CAMERA_TRANSFORM = new Transform3d(
-            Units.inchesToMeters(-11.987),
-            Units.inchesToMeters(-11.333),
+            Units.inchesToMeters(-11.933),
+            Units.inchesToMeters(-11.329),
             Units.inchesToMeters(8.281),
-            new Rotation3d(0.0, Math.toRadians(-19), Math.toRadians(-180 + 26)));
+            new Rotation3d(0.0, Math.toRadians(-19), Math.toRadians(-180 - 26)));
 
     public static final double XY_STD_DEV_COEFF = 0.3;
     public static final double ROT_STD_DEV_COEFF = 0.25;
