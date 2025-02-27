@@ -6,6 +6,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import java.util.*;
+import java.util.function.Supplier;
+import org.team1540.robot2025.subsystems.grabber.GrabberConstants;
+import org.team1540.robot2025.util.AllianceFlipUtil;
 
 // NOTE this file is available at:
 // https://github.com/Mechanical-Advantage/RobotCode2025Public/blob/main/src/main/java/org/littletonrobotics/frc2025/FieldConstants.java
@@ -53,16 +56,20 @@ public class FieldConstants {
         public static final double faceToZoneLine =
                 Units.inchesToMeters(12); // Side of the reef to the inside of the reef zone line
 
-        public static final Pose2d[] centerFaces = new Pose2d[] {
+        private static final Pose2d[] centerFaces = new Pose2d[] {
             new Pose2d(Units.inchesToMeters(144.003), Units.inchesToMeters(158.500), Rotation2d.fromDegrees(180)),
-            new Pose2d(Units.inchesToMeters(160.373), Units.inchesToMeters(186.857), Rotation2d.fromDegrees(120)),
-            new Pose2d(Units.inchesToMeters(193.116), Units.inchesToMeters(186.858), Rotation2d.fromDegrees(60)),
-            new Pose2d(Units.inchesToMeters(209.489), Units.inchesToMeters(158.502), Rotation2d.fromDegrees(0)),
+            new Pose2d(Units.inchesToMeters(160.375), Units.inchesToMeters(130.144), Rotation2d.fromDegrees(-120)),
             new Pose2d(Units.inchesToMeters(193.118), Units.inchesToMeters(130.145), Rotation2d.fromDegrees(-60)),
-            new Pose2d(Units.inchesToMeters(160.375), Units.inchesToMeters(130.144), Rotation2d.fromDegrees(-120))
-        }; // Starting facing the driver station in clockwise order
+            new Pose2d(Units.inchesToMeters(209.489), Units.inchesToMeters(158.502), Rotation2d.fromDegrees(0)),
+            new Pose2d(Units.inchesToMeters(193.116), Units.inchesToMeters(186.858), Rotation2d.fromDegrees(60)),
+            new Pose2d(Units.inchesToMeters(160.373), Units.inchesToMeters(186.857), Rotation2d.fromDegrees(120)),
+        }; // Starting facing the driver station in counterclockwise order
+
         public static final List<Map<ReefHeight, Pose3d>> branchPositions =
                 new ArrayList<>(); // Starting at the right branch facing the driver station in clockwise
+        public static final List<Pose2d> scorePositions = new ArrayList<>();
+        public static final List<ReefFace> faces =
+                new ArrayList<>(); // Starting facing the driver station in counterclockwise order
 
         static {
             // Initialize branch positions
@@ -105,9 +112,65 @@ public class FieldConstants {
                                             Units.degreesToRadians(level.pitch),
                                             poseDirection.getRotation().getRadians())));
                 }
-                branchPositions.add(fillRight);
                 branchPositions.add(fillLeft);
+                branchPositions.add(fillRight);
+
+                scorePositions.add(centerFaces[face].transformBy(new Transform2d(
+                        Constants.BUMPER_LENGTH_X_METERS / 2,
+                        GrabberConstants.Y_OFFSET_METERS - Units.inchesToMeters(6.469),
+                        Rotation2d.kZero)));
+                scorePositions.add(centerFaces[face].transformBy(new Transform2d(
+                        Constants.BUMPER_LENGTH_X_METERS / 2,
+                        GrabberConstants.Y_OFFSET_METERS + Units.inchesToMeters(6.469),
+                        Rotation2d.kZero)));
+
+                faces.add(new ReefFace(
+                        centerFaces[face],
+                        scorePositions.get(scorePositions.size() - 2),
+                        scorePositions.get(scorePositions.size() - 1)));
             }
+        }
+
+        public static Supplier<Pose2d> closestBranch() {
+            return () -> {
+                Pose2d closestBranch = new Pose2d();
+                double closestDistance = Double.MAX_VALUE;
+
+                for (Pose2d pose : FieldConstants.Reef.scorePositions) {
+                    pose = AllianceFlipUtil.maybeFlipPose(pose);
+                    double distance = RobotState.getInstance()
+                            .getEstimatedPose()
+                            .minus(pose)
+                            .getTranslation()
+                            .getNorm();
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestBranch = pose;
+                    }
+                }
+                return closestBranch;
+            };
+        }
+
+        public static Supplier<Pose2d> closestFace() {
+            return () -> {
+                Pose2d closestFace = new Pose2d();
+                double closestDistance = Double.MAX_VALUE;
+
+                for (Pose2d pose : Reef.centerFaces) {
+                    pose = AllianceFlipUtil.maybeFlipPose(pose);
+                    double distance = RobotState.getInstance()
+                            .getEstimatedPose()
+                            .minus(pose)
+                            .getTranslation()
+                            .getNorm();
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestFace = pose;
+                    }
+                }
+                return closestFace;
+            };
         }
     }
 
@@ -133,12 +196,39 @@ public class FieldConstants {
         }
 
         public static ReefHeight fromLevel(int level) {
-            return values()[MathUtil.clamp(1, 4, level) - 1];
+            return values()[MathUtil.clamp(level, 1, 4) - 1];
         }
 
         public final double height;
         public final double pitch;
     }
+
+    public enum ReefBranch {
+        A,
+        B,
+        C,
+        D,
+        E,
+        F,
+        G,
+        H,
+        I,
+        J,
+        K,
+        L;
+
+        public final Pose2d scorePosition;
+
+        ReefBranch() {
+            scorePosition = Reef.scorePositions.get(ordinal());
+        }
+
+        public static ReefBranch fromOrdinal(int value) {
+            return values()[value];
+        }
+    }
+
+    public record ReefFace(Pose2d pose, Pose2d leftBranchScore, Pose2d rightBranchScore) {}
 
     public static final double aprilTagWidth = Units.inchesToMeters(6.50);
     public static final int aprilTagCount = 22;

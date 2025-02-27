@@ -103,7 +103,7 @@ public class RobotState {
                 && estimatedPose.getY() >= -MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 && estimatedPose.getY() <= FieldConstants.fieldWidth + MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 // Must not be actively flying
-                && estimatedPose.getZ() <= MAX_ROBOT_Z_TOLERANCE;
+                && Math.abs(estimatedPose.getZ()) <= MAX_ROBOT_Z_TOLERANCE;
     }
 
     public void addVelocityData(ChassisSpeeds velocity) {

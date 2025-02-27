@@ -20,27 +20,14 @@ public class CoralIntake extends SubsystemBase {
     private static boolean hasInstance = false;
 
     public enum CoralIntakeState {
-        STOW(
-                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees()),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/RollerVoltage", 0.0),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Stow/FunnelVoltage", 0.0)),
-        INTAKE(
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/RollerVoltage", 12.0),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Intake/FunnelVoltage", 12.0)),
-        EJECT(
-                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees()),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/RollerVoltage", -12.0),
-                new LoggedTunableNumber("CoralIntake/Setpoints/Eject/FunnelVoltage", -12.0));
+        STOW(new LoggedTunableNumber("CoralIntake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees())),
+        INTAKE(new LoggedTunableNumber("CoralIntake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees())),
+        EJECT(new LoggedTunableNumber("CoralIntake/Setpoints/Eject/AngleDegrees", 60));
 
         private final DoubleSupplier pivotPosition;
-        public final DoubleSupplier rollerVoltage;
-        public final DoubleSupplier funnelVoltage;
 
-        CoralIntakeState(DoubleSupplier pivotPositionDeg, DoubleSupplier rollerVoltage, DoubleSupplier funnelVoltage) {
+        CoralIntakeState(DoubleSupplier pivotPositionDeg) {
             this.pivotPosition = pivotPositionDeg;
-            this.rollerVoltage = rollerVoltage;
-            this.funnelVoltage = funnelVoltage;
         }
 
         public Rotation2d pivotPosition() {
@@ -110,6 +97,14 @@ public class CoralIntake extends SubsystemBase {
         io.setPivotSetpoint(rotations);
     }
 
+    public Rotation2d getPivotPosition() {
+        return inputs.pivotPosition;
+    }
+
+    public void resetPivotPosition(Rotation2d rotations) {
+        io.resetPivotPosition(rotations);
+    }
+
     public void setPivotVoltage(double voltage) {
         io.setPivotVoltage(voltage);
     }
@@ -130,14 +125,37 @@ public class CoralIntake extends SubsystemBase {
     }
 
     public Command commandToSetpoint(CoralIntakeState state) {
-        return Commands.run(
-                        () -> {
-                            setPivotPosition(state.pivotPosition());
-                            setRollerVoltage(state.rollerVoltage.getAsDouble());
-                            setFunnelVoltage(state.funnelVoltage.getAsDouble());
-                        },
-                        this)
-                .until(this::isPivotAtSetpoint);
+        return (Commands.run(() -> setPivotPosition(state.pivotPosition()), this)
+                        .until(this::isPivotAtSetpoint))
+                .handleInterrupt(this::holdPivot);
+    }
+
+    public Command commandRunRoller(double percent) {
+        return Commands.startEnd(() -> this.setRollerVoltage(percent * 12), () -> this.setRollerVoltage(0), this);
+    }
+
+    public Command commandRunFunnel(double percent) {
+        return Commands.startEnd(() -> this.setFunnelVoltage(percent * 12), () -> this.setFunnelVoltage(0), this);
+    }
+
+    public Command commandRunRollerFunnel(double rollerPercent, double funnelPercent) {
+        return Commands.startEnd(
+                () -> {
+                    this.setRollerVoltage(rollerPercent * 12);
+                    this.setFunnelVoltage(funnelPercent * 12);
+                },
+                () -> {
+                    this.setRollerVoltage(0);
+                    this.setFunnelVoltage(0);
+                });
+    }
+
+    public Command zeroCommand() {
+        return Commands.runOnce(() -> setPivotVoltage(0.3 * 12))
+                .andThen(Commands.waitSeconds(0.5))
+                .andThen(Commands.waitUntil(() -> Math.abs(inputs.pivotStatorCurrentAmps) > 20)
+                        .andThen(Commands.runOnce(() -> resetPivotPosition(Rotation2d.fromDegrees(90))))
+                        .andThen(commandToSetpoint(CoralIntakeState.STOW)));
     }
 
     public static CoralIntake createReal() {

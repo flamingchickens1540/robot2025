@@ -2,9 +2,15 @@ package org.team1540.robot2025.subsystems.leds;
 
 import static edu.wpi.first.units.Units.Microseconds;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.util.Color;
+import java.util.function.DoubleSupplier;
+import org.team1540.robot2025.RobotState;
+import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
+import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
 
 public class CustomLEDPatterns {
 
@@ -25,5 +31,19 @@ public class CustomLEDPatterns {
                 writer.setHSV(i, offset, saturation, value);
             }
         };
+    }
+
+    public static LEDPattern drivetrainSpeed(Color color) {
+        return LEDPattern.solid(color).mask(LEDPattern.progressMaskLayer(() -> {
+            ChassisSpeeds robotSpeed = RobotState.getInstance().getRobotVelocity();
+            return Math.hypot(robotSpeed.vxMetersPerSecond, robotSpeed.vyMetersPerSecond)
+                    / DrivetrainConstants.MAX_LINEAR_SPEED_MPS;
+        }));
+    }
+
+    public static LEDPattern elevatorHeight(Color color, DoubleSupplier elevatorHeightMeters) {
+        return LEDPattern.solid(color)
+                .mask(LEDPattern.progressMaskLayer(
+                        () -> elevatorHeightMeters.getAsDouble() / ElevatorConstants.MAX_HEIGHT_M));
     }
 }
