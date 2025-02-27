@@ -1,8 +1,11 @@
 package org.team1540.robot2025.subsystems.elevator;
 
+import static org.team1540.robot2025.subsystems.arm.ArmConstants.CRUISE_VELOCITY_RPS;
+import static org.team1540.robot2025.subsystems.arm.ArmConstants.MAX_ACCEL_RPS2;
 import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
@@ -25,6 +28,7 @@ public class Elevator extends SubsystemBase {
         FUNNEL(new LoggedTunableNumber("Elevator/Setpoints/Funnel", 0.242)),
         GROUND_CORAL(new LoggedTunableNumber("Elevator/Setpoints/GroundCoral", 0)),
         L1_BACK(new LoggedTunableNumber("Elevator/Setpoints/L1Back", 0.7)),
+        L1_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L1Front", 0.7)),
         L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 0.55)),
         L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 0.92)),
         L4(new LoggedTunableNumber("Elevator/Setpoints/L4", MAX_HEIGHT_M)),
@@ -55,6 +59,9 @@ public class Elevator extends SubsystemBase {
 
     private final Alert leaderDisconnectedAlert = new Alert("Elevator leader disconnected", Alert.AlertType.kError);
     private final Alert followerDisconnectedAlert = new Alert("Elevator follower disconnected", Alert.AlertType.kError);
+
+    private final TrapezoidProfile trapezoidProfile =
+            new TrapezoidProfile(new TrapezoidProfile.Constraints(CRUISE_VELOCITY_RPS, MAX_ACCEL_RPS2));
 
     private Elevator(ElevatorIO elevatorIO) {
         if (hasInstance) throw new IllegalStateException("Instance of elevator already exists");
@@ -101,6 +108,19 @@ public class Elevator extends SubsystemBase {
     @AutoLogOutput(key = "Elevator/Setpoint")
     public double getSetpoint() {
         return setpointMeters;
+    }
+
+    public double timeToSetpoint(double setpoint) {
+        trapezoidProfile.calculate(
+                0.0,
+                new TrapezoidProfile.State(getPosition(), inputs.velocityMPS[0]),
+                new TrapezoidProfile.State(setpoint, 0));
+        return trapezoidProfile.totalTime();
+    }
+
+    @AutoLogOutput(key = "Elevator/TimeToSetpoint")
+    public double timeToSetpoint() {
+        return timeToSetpoint(getSetpoint());
     }
 
     public double getPosition() {

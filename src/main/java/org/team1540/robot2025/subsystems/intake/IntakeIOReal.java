@@ -1,6 +1,6 @@
 package org.team1540.robot2025.subsystems.intake;
 
-import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
+import static org.team1540.robot2025.subsystems.intake.IntakeConstants.*;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
@@ -25,7 +25,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 
-public class CoralIntakeIOReal implements CoralIntakeIO {
+public class IntakeIOReal implements IntakeIO {
     // rotation of horizontal beams for the intake, clockwise to intake, counter-clockwise to spit out
     private final TalonFX spinFalcon = new TalonFX(SPIN_MOTOR_ID);
 
@@ -59,7 +59,7 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
     private final Debouncer pivotConnectedDebounce = new Debouncer(0.5);
     private final Debouncer funnelConnectedDebounce = new Debouncer(0.5);
 
-    public CoralIntakeIOReal() {
+    public IntakeIOReal() {
         TalonFXConfiguration spinTalonFXConfigs = new TalonFXConfiguration();
         TalonFXConfiguration pivotTalonFXConfigs = new TalonFXConfiguration();
         SparkMaxConfig funnelNEOConfig = new SparkMaxConfig();
@@ -154,7 +154,7 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
     }
 
     @Override
-    public void updateInputs(CoralIntakeInputs inputs) {
+    public void updateInputs(IntakeInputs inputs) {
         StatusCode spinStatus = BaseStatusSignal.refreshAll(
                 spinVelocity, spinPosition, spinAppliedVoltage, spinSupplyCurrent, spinStatorCurrent, spinTemp);
         StatusCode pivotStatus = BaseStatusSignal.refreshAll(
