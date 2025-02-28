@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.commands.AutoAlignCommands;
+import org.team1540.robot2025.commands.AutoScoreCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.subsystems.Superstructure;
@@ -141,12 +142,13 @@ public class RobotContainer {
                         .and(buttonBoard.branchHeightAt(height))
                         .and(buttonBoard.flexFalse())
                         .and(driver.leftStick())
-                        .whileTrue(AutoAlignCommands.alignToBranchNearestSide(
-                                        FieldConstants.ReefBranch.fromOrdinal(
-                                                buttonBoard.reefButtonToReefBranchIndex(button)),
-                                        drivetrain)
-                                .asProxy()
-                                .andThen(superstructure.scoreCoral(height, driver.rightTrigger())));
+                        .whileTrue(AutoScoreCommands.alignToBranchAndScore(
+                                FieldConstants.ReefBranch.fromOrdinal(buttonBoard.reefButtonToReefBranchIndex(button)),
+                                height,
+                                driver.rightTrigger(),
+                                true,
+                                drivetrain,
+                                superstructure));
             }
         }
     }
