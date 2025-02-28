@@ -1,6 +1,7 @@
 package org.team1540.robot2025.subsystems.vision.apriltag;
 
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.*;
 import org.photonvision.EstimatedRobotPose;
@@ -35,6 +36,7 @@ public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
         inputs.connected = camera.isConnected();
 
         List<PoseObservation> poseObservations = new ArrayList<>();
+        List<SingleTagObservation> singleTagObservations = new ArrayList<>();
         lastSeenTagIDs.clear();
         for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
             Optional<EstimatedRobotPose> poseEstimatorResult = poseEstimator.update(result);
@@ -47,7 +49,6 @@ public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
                     totalDistance +=
                             target.getBestCameraToTarget().getTranslation().getNorm();
                     totalAmbiguity += target.poseAmbiguity;
-                    lastSeenTagIDs.add(target.fiducialId);
                 }
 
                 poseObservations.add(new PoseObservation(
@@ -57,9 +58,20 @@ public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
                         poseEstimatorResult.get().timestampSeconds,
                         totalAmbiguity / poseEstimatorResult.get().targetsUsed.size()));
             }
+
+            for (PhotonTrackedTarget target : result.getTargets()) {
+                singleTagObservations.add(new SingleTagObservation(
+                        target.fiducialId,
+                        Rotation2d.fromRadians(target.getYaw()),
+                        Rotation2d.fromRadians(target.getPitch()),
+                        target.getBestCameraToTarget().getTranslation().getNorm(),
+                        result.getTimestampSeconds()));
+                lastSeenTagIDs.add(target.fiducialId);
+            }
         }
 
         inputs.seenTagIDs = lastSeenTagIDs.stream().mapToInt(Integer::intValue).toArray();
         inputs.poseObservations = poseObservations.toArray(new PoseObservation[0]);
+        inputs.singleTagObservations = singleTagObservations.toArray(new SingleTagObservation[0]);
     }
 }
