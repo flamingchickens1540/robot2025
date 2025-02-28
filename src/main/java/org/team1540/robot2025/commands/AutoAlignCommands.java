@@ -58,7 +58,7 @@ public class AutoAlignCommands {
                             .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
                             .getTranslation()
                             .rotateAround(reefCenter.getTranslation(), nextAngle),
-                    goalPose.getRotation().minus(angularError));
+                    goalPose.getRotation());
         }
         // Otherwise, drive to nearest tangent point on reef avoidance circle
         double distanceFromCenter = robotFromReef.getTranslation().getNorm();
@@ -78,9 +78,9 @@ public class AutoAlignCommands {
                         robotFromReef.getTranslation().getAngle().minus(tangentOffsetAngle));
         if (tangentPoint1.getDistance(goalPose.getTranslation())
                 < tangentPoint2.getDistance(goalPose.getTranslation())) {
-            return new Pose2d(tangentPoint1, goalPose.getRotation().minus(angularError));
+            return new Pose2d(tangentPoint1, goalPose.getRotation());
         } else {
-            return new Pose2d(tangentPoint2, goalPose.getRotation().minus(angularError));
+            return new Pose2d(tangentPoint2, goalPose.getRotation());
         }
     }
 
