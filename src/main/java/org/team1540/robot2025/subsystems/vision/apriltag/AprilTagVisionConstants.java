@@ -28,7 +28,7 @@ public class AprilTagVisionConstants {
             new Rotation3d(0.0, Math.toRadians(-19), Math.toRadians(180 + 26)));
     public static final Transform3d BR_CAMERA_TRANSFORM = new Transform3d(
             Units.inchesToMeters(-11.933),
-            Units.inchesToMeters(-11.329),
+            Units.inchesToMeters(-12.329),
             Units.inchesToMeters(8.281),
             new Rotation3d(0.0, Math.toRadians(-19), Math.toRadians(-180 - 26)));
 
