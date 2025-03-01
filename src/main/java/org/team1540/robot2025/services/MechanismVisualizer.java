@@ -8,7 +8,7 @@ import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.subsystems.arm.ArmConstants;
 import org.team1540.robot2025.subsystems.climber.ClimberConstants;
 import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
-import org.team1540.robot2025.subsystems.intake.CoralIntakeConstants;
+import org.team1540.robot2025.subsystems.intake.IntakeConstants;
 
 public class MechanismVisualizer {
     private static MechanismVisualizer instance = null;
@@ -33,7 +33,7 @@ public class MechanismVisualizer {
                 new Rotation3d(0.0, -armPosition.getRadians(), 0.0));
 
         Pose3d intake = new Pose3d(
-                CoralIntakeConstants.ROTATIONAL_ORIGIN,
+                IntakeConstants.ROTATIONAL_ORIGIN,
                 new Rotation3d(0.0, Math.toRadians(90) - intakePosition.getRadians(), 0.0));
 
         Pose3d climber = new Pose3d(

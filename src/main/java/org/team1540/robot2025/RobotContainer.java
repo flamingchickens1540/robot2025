@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.commands.AutoAlignCommands;
+import org.team1540.robot2025.commands.AutoScoreCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.subsystems.Superstructure;
@@ -22,7 +23,7 @@ import org.team1540.robot2025.subsystems.climber.Climber;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
-import org.team1540.robot2025.subsystems.intake.CoralIntake;
+import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
 import org.team1540.robot2025.util.ButtonBoard;
@@ -38,7 +39,7 @@ public class RobotContainer {
     private final AprilTagVision aprilTagVision;
     private final Elevator elevator;
     private final Arm arm;
-    private final CoralIntake coralIntake;
+    private final Intake intake;
     private final Grabber grabber;
     private final Climber climber;
     private final Leds leds = new Leds();
@@ -59,7 +60,7 @@ public class RobotContainer {
                 aprilTagVision = AprilTagVision.createReal();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
-                coralIntake = CoralIntake.createReal();
+                intake = Intake.createReal();
                 grabber = Grabber.createReal();
                 climber = Climber.createReal();
                 break;
@@ -69,7 +70,7 @@ public class RobotContainer {
                 aprilTagVision = AprilTagVision.createSim();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
-                coralIntake = CoralIntake.createSim();
+                intake = Intake.createSim();
                 grabber = Grabber.createSim();
                 climber = Climber.createDummy();
 
@@ -81,11 +82,11 @@ public class RobotContainer {
                 aprilTagVision = AprilTagVision.createDummy();
                 elevator = Elevator.createDummy();
                 arm = Arm.createDummy();
-                coralIntake = CoralIntake.createDummy();
+                intake = Intake.createDummy();
                 grabber = Grabber.createDummy();
                 climber = Climber.createDummy();
         }
-        superstructure = new Superstructure(elevator, arm, coralIntake, grabber);
+        superstructure = new Superstructure(elevator, arm, intake, grabber);
         autos = new Autos(drivetrain, superstructure);
 
         configureButtonBindings();
@@ -141,12 +142,13 @@ public class RobotContainer {
                         .and(buttonBoard.branchHeightAt(height))
                         .and(buttonBoard.flexFalse())
                         .and(driver.leftStick())
-                        .whileTrue(AutoAlignCommands.alignToBranch(
-                                        FieldConstants.ReefBranch.fromOrdinal(
-                                                buttonBoard.reefButtonToReefBranchIndex(button)),
-                                        drivetrain)
-                                .asProxy()
-                                .andThen(superstructure.scoreCoral(height, driver.rightTrigger())));
+                        .whileTrue(AutoScoreCommands.alignToBranchAndScore(
+                                FieldConstants.ReefBranch.fromOrdinal(buttonBoard.reefButtonToReefBranchIndex(button)),
+                                height,
+                                driver.rightTrigger(),
+                                true,
+                                drivetrain,
+                                superstructure));
             }
         }
     }
