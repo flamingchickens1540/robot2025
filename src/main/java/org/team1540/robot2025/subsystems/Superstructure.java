@@ -189,7 +189,7 @@ public class Superstructure {
                         commandToState(superstructureState),
                         Commands.waitUntil(confirm),
                         grabber.commandRun(grabberPower).until(() -> !grabber.reverseSensorTripped()),
-                        grabber.commandRun(grabberPower).withTimeout(0.1),
+                        grabber.commandRun(grabberPower).withTimeout(0.25),
                         commandToState(SuperstructureState.STOW))
                 .unless(grabber::hasAlgae);
     }

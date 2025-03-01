@@ -15,12 +15,12 @@ public class AprilTagVisionConstants {
             Units.inchesToMeters(11.691),
             Units.inchesToMeters(11.051),
             Units.inchesToMeters(8.302),
-            new Rotation3d(0.0, Math.toRadians(-25.5), Math.toRadians(032.467)));
+            new Rotation3d(0.0, Math.toRadians(-25.5), Math.toRadians(32.467)));
     public static final Transform3d FR_CAMERA_TRANSFORM = new Transform3d(
-            Units.inchesToMeters(11.691),
-            Units.inchesToMeters(-11.051),
-            Units.inchesToMeters(8.302),
-            new Rotation3d(0.0, Math.toRadians(-25.5), Math.toRadians(-32.467)));
+            Units.inchesToMeters(11.933),
+            Units.inchesToMeters(-12.329),
+            Units.inchesToMeters(8.281),
+            new Rotation3d(0.0, Math.toRadians(-19), Math.toRadians(10)));
     public static final Transform3d BL_CAMERA_TRANSFORM = new Transform3d(
             Units.inchesToMeters(-11.933),
             Units.inchesToMeters(12.329),
