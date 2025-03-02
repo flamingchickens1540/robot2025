@@ -170,7 +170,6 @@ public class Superstructure {
                 },
                 Set.of(arm, elevator, intake));
     }
-    // TODO: Simon's fun thing where you can start moving arm early
 
     @AutoLogOutput(key = "Superstructure/ArmClear")
     public boolean isArmClear() {
@@ -192,86 +191,43 @@ public class Superstructure {
                 .unless(grabber::hasAlgae);
     }
 
-    public Command scoreCoral(FieldConstants.ReefHeight height, BooleanSupplier confirm) {
+    public Command scoreCoral(
+            FieldConstants.ReefHeight height, BooleanSupplier confirm, BooleanSupplier shouldReverse) {
         return switch (height) {
-            case L1 -> L1(confirm);
-            case L2 -> L2(confirm);
-            case L3 -> L3(confirm);
-            case L4 -> L4(confirm);
+            case L1 -> L1(confirm, shouldReverse);
+            case L2 -> L2(confirm, shouldReverse);
+            case L3 -> L3(confirm, shouldReverse);
+            case L4 -> L4(confirm, shouldReverse);
         };
     }
 
-    public Command L1(BooleanSupplier confirm) {
-        return Commands.defer(
-                () -> {
-                    if (Math.abs(FieldConstants.Reef.closestFace()
-                                    .get()
-                                    .getRotation()
-                                    .minus(RobotState.getInstance().getRobotRotation())
-                                    .getDegrees())
-                            < 90) return scoreCoral(SuperstructureState.L1_BACK, 0.3, confirm);
-                    else return scoreCoral(SuperstructureState.L1_FRONT, -0.3, confirm);
-                },
-                Set.of(elevator, arm, intake, grabber));
+    public Command L1(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
+        return Commands.either(
+                scoreCoral(SuperstructureState.L1_FRONT, -0.3, confirm),
+                scoreCoral(SuperstructureState.L1_BACK, 0.3, confirm),
+                shouldReverse);
     }
 
-    public Command L2(BooleanSupplier confirm) {
-        return Commands.defer(
-                () -> {
-                    if (Math.abs(FieldConstants.Reef.closestFace()
-                                    .get()
-                                    .getRotation()
-                                    .minus(RobotState.getInstance().getRobotRotation())
-                                    .getDegrees())
-                            < 90) return scoreCoral(SuperstructureState.L2_BACK, 0.3, confirm);
-                    else return scoreCoral(SuperstructureState.L2_FRONT, -0.3, confirm);
-                },
-                Set.of(elevator, arm, intake, grabber));
+    public Command L2(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
+        return Commands.either(
+                scoreCoral(SuperstructureState.L2_FRONT, -0.3, confirm),
+                scoreCoral(SuperstructureState.L2_BACK, 0.3, confirm),
+                shouldReverse);
     }
 
-    public Command L3(BooleanSupplier confirm) {
-        return Commands.defer(
-                () -> {
-                    if (Math.abs(FieldConstants.Reef.closestFace()
-                                    .get()
-                                    .getRotation()
-                                    .minus(RobotState.getInstance().getRobotRotation())
-                                    .getDegrees())
-                            < 90) return scoreCoral(SuperstructureState.L3_BACK, 0.3, confirm);
-                    else return scoreCoral(SuperstructureState.L3_FRONT, -0.3, confirm);
-                },
-                Set.of(elevator, arm, intake, grabber));
+    public Command L3(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
+        return Commands.either(
+                scoreCoral(SuperstructureState.L3_FRONT, -0.3, confirm),
+                scoreCoral(SuperstructureState.L3_BACK, 0.3, confirm),
+                shouldReverse);
     }
 
-    public Command L4(BooleanSupplier confirm) {
-        return Commands.defer(
-                () -> {
-                    if (Math.abs(FieldConstants.Reef.closestFace()
-                                    .get()
-                                    .getRotation()
-                                    .minus(RobotState.getInstance().getRobotRotation())
-                                    .getDegrees())
-                            < 90) return scoreCoral(SuperstructureState.L4_BACK, 0.3, confirm);
-                    else return scoreCoral(SuperstructureState.L4_FRONT, -0.3, confirm);
-                },
-                Set.of(elevator, arm, intake, grabber));
+    public Command L4(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
+        return Commands.either(
+                scoreCoral(SuperstructureState.L4_FRONT, -0.3, confirm),
+                scoreCoral(SuperstructureState.L4_BACK, 0.3, confirm),
+                shouldReverse);
     }
-
-    public Command L2Front(BooleanSupplier confirm) {
-        return scoreCoral(SuperstructureState.L2_FRONT, 0.5, confirm);
-    }
-
-    public Command L3Front(BooleanSupplier confirm) {
-        return scoreCoral(SuperstructureState.L3_FRONT, 0.5, confirm);
-    }
-
-    public Command L4Front(BooleanSupplier confirm) {
-        return scoreCoral(SuperstructureState.L4_FRONT, 0.5, confirm);
-    }
-
-    //    public Command L1(BooleanSupplier confirm) {
-    //        return scoreCoral(SuperstructureState.L1_BACK, -0.2, confirm);
-    //    }
 
     private Command dealgify(SuperstructureState state) {
         return Commands.defer(

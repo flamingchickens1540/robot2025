@@ -96,18 +96,23 @@ public class AutoAlignCommands {
         return alignToReefPose(() -> pose, drivetrain);
     }
 
-    public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain) {
-        return alignToReefPose(() -> AllianceFlipUtil.maybeFlipPose(branch.scorePosition), drivetrain);
+    public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
+        return alignToReefPose(
+                () -> {
+                    if (shouldReverse.getAsBoolean()) return AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
+                    else
+                        return AllianceFlipUtil.maybeFlipPose(branch.scorePosition)
+                                .transformBy(
+                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                },
+                drivetrain);
     }
 
     public static Command alignToBranchNearestSide(ReefBranch branch, Drivetrain drivetrain) {
         return Commands.defer(
                 () -> {
                     Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
-                    if (Math.abs(pose.getRotation()
-                                    .minus(RobotState.getInstance().getRobotRotation())
-                                    .getDegrees())
-                            >= 90)
+                    if (RobotState.getInstance().shouldReverseCoral(branch))
                         pose = new Pose2d(
                                         pose.getTranslation(),
                                         pose.getRotation().rotateBy(Rotation2d.k180deg))

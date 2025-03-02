@@ -159,4 +159,21 @@ public class RobotState {
                 pose.getY() + velocity.vyMetersPerSecond * lookaheadSeconds,
                 pose.getRotation().plus(Rotation2d.fromRadians(velocity.omegaRadiansPerSecond * lookaheadSeconds)));
     }
+
+    public boolean shouldReverseCoral() {
+        return Math.abs(FieldConstants.Reef.closestFace()
+                        .get()
+                        .getRotation()
+                        .minus(RobotState.getInstance().getRobotRotation())
+                        .getDegrees())
+                < 90;
+    }
+
+    public boolean shouldReverseCoral(FieldConstants.ReefBranch branch) {
+        return Math.abs(branch.scorePosition
+                        .getRotation()
+                        .minus(RobotState.getInstance().getRobotRotation())
+                        .getDegrees())
+                < 90;
+    }
 }

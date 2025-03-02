@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefHeight;
 import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.commands.AutoAlignCommands;
@@ -109,6 +110,9 @@ public class RobotContainer {
                 .and(buttonBoard.flexTrue())
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
                         .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
+        driver.x()
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(
+                        ReefBranch.A, ReefHeight.L4, driver.rightTrigger(), true, drivetrain, superstructure));
 
         driver.leftTrigger()
                 .whileTrue(superstructure.coralGroundIntake())
@@ -129,10 +133,11 @@ public class RobotContainer {
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
-        copilot.y().onTrue(superstructure.L4(driver.rightTrigger()));
-        copilot.x().onTrue(superstructure.L3(driver.rightTrigger()));
-        copilot.a().onTrue(superstructure.L2(driver.rightTrigger()));
-        copilot.povRight().onTrue(superstructure.L1(driver.rightTrigger()));
+        copilot.y().onTrue(superstructure.L4(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
+        copilot.x().onTrue(superstructure.L3(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
+        copilot.a().onTrue(superstructure.L2(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
+        copilot.povRight()
+                .onTrue(superstructure.L1(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
         copilot.b().onTrue(superstructure.net(driver.rightTrigger()));
 
         copilot.povLeft().onTrue(superstructure.processor(driver.rightTrigger()));

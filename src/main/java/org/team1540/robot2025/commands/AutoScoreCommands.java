@@ -22,10 +22,8 @@ public class AutoScoreCommands {
             boolean canInvert,
             Drivetrain drivetrain,
             Superstructure superstructure) {
-        return Commands.either(
-                        AutoAlignCommands.alignToBranchNearestSide(branch, drivetrain),
-                        AutoAlignCommands.alignToBranch(branch, drivetrain),
-                        () -> canInvert)
+        return AutoAlignCommands.alignToBranch(
+                        branch, drivetrain, () -> RobotState.getInstance().shouldReverseCoral(branch) && canInvert)
                 .asProxy()
                 .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
                                         .getEstimatedPose()
@@ -33,7 +31,10 @@ public class AutoScoreCommands {
                                         .getDistance(AllianceFlipUtil.maybeFlipTranslation(
                                                 branch.scorePosition.getTranslation()))
                                 <= prepareDistanceMeters.get())
-                        .andThen(superstructure.scoreCoral(height, scoreConfirm)));
+                        .andThen(superstructure.scoreCoral(
+                                height,
+                                scoreConfirm,
+                                () -> RobotState.getInstance().shouldReverseCoral(branch) && canInvert)));
     }
 
     public static Command alignToFaceAndDealgify(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {
