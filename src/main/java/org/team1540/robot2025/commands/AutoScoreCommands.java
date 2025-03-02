@@ -25,7 +25,7 @@ public class AutoScoreCommands {
         return Commands.either(
                         AutoAlignCommands.alignToBranchNearestSide(branch, drivetrain),
                         AutoAlignCommands.alignToBranch(branch, drivetrain),
-                        () -> canInvert && height != ReefHeight.L1)
+                        () -> canInvert)
                 .asProxy()
                 .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
                                         .getEstimatedPose()
@@ -34,5 +34,17 @@ public class AutoScoreCommands {
                                                 branch.scorePosition.getTranslation()))
                                 <= prepareDistanceMeters.get())
                         .andThen(superstructure.scoreCoral(height, scoreConfirm)));
+    }
+
+    public static Command alignToFaceAndDealgify(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {
+        return AutoAlignCommands.alignToDealgifyPose(face, drivetrain)
+                .asProxy()
+                .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
+                                        .getEstimatedPose()
+                                        .getTranslation()
+                                        .getDistance(AllianceFlipUtil.maybeFlipTranslation(
+                                                face.dealgifyPosition().getTranslation()))
+                                <= prepareDistanceMeters.get())
+                        .andThen(face.highDealgify() ? superstructure.dealgifyHigh() : superstructure.dealgifyLow()));
     }
 }

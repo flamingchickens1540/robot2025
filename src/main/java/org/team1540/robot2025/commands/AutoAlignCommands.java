@@ -168,4 +168,10 @@ public class AutoAlignCommands {
                 },
                 Set.of(drivetrain));
     }
+
+    public static Command alignToDealgifyPose(ReefFace face, Drivetrain drivetrain) {
+        return Commands.defer(
+                () -> alignToReefPose(AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition()), drivetrain),
+                Set.of(drivetrain));
+    }
 }

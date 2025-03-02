@@ -5,6 +5,7 @@ import static org.team1540.robot2025.FieldConstants.ReefHeight;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.team1540.robot2025.FieldConstants;
 
 public class ButtonBoard {
     private static final int AXIS_STEP = 20;
@@ -66,11 +67,15 @@ public class ButtonBoard {
                 CommandScheduler.getInstance().getDefaultButtonLoop(), () -> getAxisState(4) == 1 && hid.isConnected());
     }
 
+    public Trigger flexTrue() {
+        return flexFalse().negate();
+    }
+
     public ReefButton getSelectedBranchFace() {
         return ReefButton.fromOrdinal(this.getAxisState(BRANCH_FACE_AXIS_ID));
     }
 
-    public int reefButtonToReefBranchIndex(ReefButton button) {
-        return 12 - ((button.ordinal() + 4) % 12) - 1;
+    public FieldConstants.ReefBranch reefButtonToBranch(ReefButton button) {
+        return FieldConstants.ReefBranch.fromOrdinal(12 - ((button.ordinal() + 4) % 12) - 1);
     }
 }

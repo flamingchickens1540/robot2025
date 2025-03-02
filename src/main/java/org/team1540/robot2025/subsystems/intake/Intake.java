@@ -132,6 +132,10 @@ public class Intake extends SubsystemBase {
         return pivotSetpoint;
     }
 
+    public boolean hasCoral() {
+        return inputs.sensorTripped;
+    }
+
     @AutoLogOutput(key = "Intake/TimeToSetpoint")
     public double timeToSetpoint() {
         return timeToSetpoint(pivotSetpoint);

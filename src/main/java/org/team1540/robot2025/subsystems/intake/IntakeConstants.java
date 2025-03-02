@@ -7,6 +7,9 @@ public class IntakeConstants {
     public static final int SPIN_MOTOR_ID = 6;
     public static final int PIVOT_MOTOR_ID = 5;
     public static final int FUNNEL_MOTOR_ID = 4;
+    public static final int LASER_CAN_ID = 33;
+
+    public static final double LASER_CAN_DETECT_DISTANCE_MM = 50.0;
 
     public static final double SPIN_GEAR_RATIO = 2.0;
     public static final double FUNNEL_GEAR_RATIO = 1.0;
