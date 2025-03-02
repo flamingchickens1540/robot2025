@@ -142,8 +142,7 @@ public class RobotContainer {
         copilot.y().onTrue(superstructure.L4(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
         copilot.x().onTrue(superstructure.L3(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
         copilot.a().onTrue(superstructure.L2(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
-        copilot.povRight()
-                .onTrue(superstructure.L1(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
+        copilot.povRight().onTrue(superstructure.L1(driver.rightTrigger()));
         copilot.b().onTrue(superstructure.net(driver.rightTrigger()));
 
         copilot.povLeft().onTrue(superstructure.processor(driver.rightTrigger()));

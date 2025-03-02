@@ -94,56 +94,54 @@ public class Superstructure {
                 () -> {
                     Command command = Commands.none();
                     this.goalState = goalState;
-//                    if(grabber.hasAlgae() && goalState.armState == ArmState.STOW){
-//                        this.goalState = new SuperstructureState(ArmState.STOW, goalState.elevatorState, goalState.intakeState);
-//                    }
+                    final ArmState armState;
+                    if (grabber.hasAlgae() && goalState.armState == ArmState.STOW) {
+                        armState = ArmState.STOW_ALGAE;
+                    } else armState = goalState.armState;
 
                     if (grabber.hasAlgae()
-                            && !((goalState.armState.position().getDegrees()
+                            && !((armState.position().getDegrees()
                                                     >= ArmState.STOW_ALGAE
                                                             .position()
                                                             .getDegrees()
                                             && arm.getPosition().getDegrees()
                                                     >= ArmState.STOW.position().getDegrees())
-                                    || (goalState.armState.position().getDegrees() <= 100
+                                    || (armState.position().getDegrees() <= 100
                                             && arm.getPosition().getDegrees() <= 100))) {
                         command = command.andThen(
-                                elevator.commandToSetpoint(ElevatorState.L2_FRONT),
-                                arm.commandToSetpoint(goalState.armState));
+                                elevator.commandToSetpoint(ElevatorState.L2_FRONT), arm.commandToSetpoint(armState));
                     }
                     if (goalState.elevatorState.height.getAsDouble() >= clearanceHeight) {
-                        if (goalState.armState.position().getDegrees()
+                        if (armState.position().getDegrees()
                                 >= ArmState.STOW.position().getDegrees()) {
                             command = command.andThen(Commands.parallel(
                                     elevator.commandToSetpoint(goalState.elevatorState),
-                                    Commands.waitUntil(() -> getEndEffectorPosition(
-                                                                            elevator.getPosition(),
-                                                                            goalState.armState.position())
-                                                                    .getY()
-                                                            >= 0.1
-                                                    && elevator.timeToSetpoint()
-                                                            <= arm.timeToSetpoint(goalState.armState.position()))
-                                            .andThen(arm.commandToSetpoint(goalState.armState)),
+                                    Commands.waitUntil(() ->
+                                                    getEndEffectorPosition(elevator.getPosition(), armState.position())
+                                                                            .getY()
+                                                                    >= 0.1
+                                                            && elevator.timeToSetpoint()
+                                                                    <= arm.timeToSetpoint(armState.position()))
+                                            .andThen(arm.commandToSetpoint(armState)),
                                     intake.commandToSetpoint(goalState.intakeState)));
                         } else {
                             command = command.andThen(Commands.parallel(
                                     elevator.commandToSetpoint(goalState.elevatorState),
-                                    Commands.waitUntil(() -> getEndEffectorPosition(
-                                                                            elevator.getPosition(),
-                                                                            goalState.armState.position())
-                                                                    .getY()
-                                                            > clearanceHeight
-                                                    && elevator.timeToSetpoint()
-                                                            <= arm.timeToSetpoint(goalState.armState.position()))
+                                    Commands.waitUntil(() ->
+                                                    getEndEffectorPosition(elevator.getPosition(), armState.position())
+                                                                            .getY()
+                                                                    > clearanceHeight
+                                                            && elevator.timeToSetpoint()
+                                                                    <= arm.timeToSetpoint(armState.position()))
                                             .andThen(Commands.parallel(
                                                     intake.commandToSetpoint(goalState.intakeState),
-                                                    arm.commandToSetpoint(goalState.armState)))));
+                                                    arm.commandToSetpoint(armState)))));
                         }
-                    } else if (goalState.armState.position().getDegrees()
+                    } else if (armState.position().getDegrees()
                                     >= ArmState.STOW.position().getDegrees()
-                            && goalState.armState.position().getDegrees() <= 150) {
+                            && armState.position().getDegrees() <= 150) {
                         command = command.andThen(Commands.parallel(
-                                arm.commandToSetpoint(goalState.armState),
+                                arm.commandToSetpoint(armState),
                                 Commands.waitUntil(() -> (arm.getPosition().getDegrees()
                                                                 >= ArmState.STOW
                                                                         .position()
@@ -158,16 +156,16 @@ public class Superstructure {
                         command = command.andThen(Commands.parallel(
                                 intake.commandToSetpoint(goalState.intakeState),
                                 Commands.waitUntil(() -> intake.timeToSetpoint() + 0.1
-                                                <= arm.timeToSetpoint(goalState.armState.position()))
+                                                <= arm.timeToSetpoint(armState.position()))
                                         .andThen(Commands.parallel(
                                                 elevator.commandToSetpoint(goalState.elevatorState),
-                                                arm.commandToSetpoint(goalState.armState)))));
+                                                arm.commandToSetpoint(armState)))));
                     } else {
                         command = command.andThen(
                                 commandStowArm(),
                                 elevator.commandToSetpoint(goalState.elevatorState),
                                 intake.commandToSetpoint(goalState.intakeState),
-                                arm.commandToSetpoint(goalState.armState));
+                                arm.commandToSetpoint(armState));
                     }
 
                     return command;
@@ -210,8 +208,7 @@ public class Superstructure {
                 commandToState(SuperstructureState.L1_FRONT),
                 Commands.waitUntil(confirm),
                 intake.commandRunRollerFunnel(-0.3, -0.3),
-                commandToState(SuperstructureState.STOW)
-        );
+                commandToState(SuperstructureState.STOW));
     }
 
     public Command L2(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
@@ -312,11 +309,12 @@ public class Superstructure {
                         commandToState(SuperstructureState.STOW).alongWith(grabber.commandRun(0.0)))
                 .unless(grabber::hasAlgae);
     }
+
     public Command coralGroundIntakeL1() {
         return Commands.sequence(
-                        commandToState(SuperstructureState.INTAKE_GROUND_L1),
-                        intake.commandRunRollerFunnel(0.5, 0.5).until(()->intake.hasCoral()),
-                        commandToState(SuperstructureState.STOW));
+                commandToState(SuperstructureState.INTAKE_GROUND_L1),
+                intake.commandRunRollerFunnel(0.5, 0.5).until(() -> intake.hasCoral()),
+                commandToState(SuperstructureState.STOW));
     }
 
     public Command coralIntakeEject() {
