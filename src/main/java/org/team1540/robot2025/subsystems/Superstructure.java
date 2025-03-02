@@ -24,11 +24,12 @@ public class Superstructure {
         STOW(ArmState.STOW, ElevatorState.STOW, IntakeState.STOW),
         STOW_ALGAE(ArmState.STOW_ALGAE, ElevatorState.STOW_ALGAE, IntakeState.STOW),
         INTAKE_GROUND(ArmState.INTAKE, ElevatorState.GROUND_CORAL, IntakeState.INTAKE),
-        INTAKE_FUNNEL(ArmState.STOW, ElevatorState.STOW, IntakeState.STOW),
+        INTAKE_GROUND_L1(ArmState.STOW, ElevatorState.STOW, IntakeState.INTAKE),
+        INTAKE_SOURCE(ArmState.STOW, ElevatorState.STOW, IntakeState.STOW),
         INTAKE_ALGAE(ArmState.GROUND_ALGAE, ElevatorState.GROUND_ALGAE, IntakeState.STOW),
         CORAL_EJECT(ArmState.STOW, ElevatorState.STOW, IntakeState.EJECT),
 
-        L1_FRONT(ArmState.SCORE_L1_FRONT, ElevatorState.L1_FRONT, IntakeState.STOW),
+        L1_FRONT(ArmState.STOW, ElevatorState.STOW, IntakeState.L1),
         L1_BACK(ArmState.SCORE_L1_BACK, ElevatorState.L1_BACK, IntakeState.STOW),
 
         L2_FRONT(ArmState.SCORE_L2_L3_FRONT, ElevatorState.L2_FRONT, IntakeState.STOW),
@@ -93,6 +94,9 @@ public class Superstructure {
                 () -> {
                     Command command = Commands.none();
                     this.goalState = goalState;
+//                    if(grabber.hasAlgae() && goalState.armState == ArmState.STOW){
+//                        this.goalState = new SuperstructureState(ArmState.STOW, goalState.elevatorState, goalState.intakeState);
+//                    }
 
                     if (grabber.hasAlgae()
                             && !((goalState.armState.position().getDegrees()
@@ -194,18 +198,20 @@ public class Superstructure {
     public Command scoreCoral(
             FieldConstants.ReefHeight height, BooleanSupplier confirm, BooleanSupplier shouldReverse) {
         return switch (height) {
-            case L1 -> L1(confirm, shouldReverse);
+            case L1 -> L1(confirm);
             case L2 -> L2(confirm, shouldReverse);
             case L3 -> L3(confirm, shouldReverse);
             case L4 -> L4(confirm, shouldReverse);
         };
     }
 
-    public Command L1(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
-        return Commands.either(
-                scoreCoral(SuperstructureState.L1_FRONT, -0.3, confirm),
-                scoreCoral(SuperstructureState.L1_BACK, 0.3, confirm),
-                shouldReverse);
+    public Command L1(BooleanSupplier confirm) {
+        return Commands.sequence(
+                commandToState(SuperstructureState.L1_FRONT),
+                Commands.waitUntil(confirm),
+                intake.commandRunRollerFunnel(-0.3, -0.3),
+                commandToState(SuperstructureState.STOW)
+        );
     }
 
     public Command L2(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
@@ -306,6 +312,12 @@ public class Superstructure {
                         commandToState(SuperstructureState.STOW).alongWith(grabber.commandRun(0.0)))
                 .unless(grabber::hasAlgae);
     }
+    public Command coralGroundIntakeL1() {
+        return Commands.sequence(
+                        commandToState(SuperstructureState.INTAKE_GROUND_L1),
+                        intake.commandRunRollerFunnel(0.5, 0.5).until(()->intake.hasCoral()),
+                        commandToState(SuperstructureState.STOW));
+    }
 
     public Command coralIntakeEject() {
         return Commands.sequence(
@@ -315,7 +327,7 @@ public class Superstructure {
 
     public Command sourceIntake() {
         return Commands.sequence(
-                        commandToState(SuperstructureState.INTAKE_FUNNEL),
+                        commandToState(SuperstructureState.INTAKE_SOURCE),
                         intake.commandRunRoller(0.5).until(intake::hasCoral),
                         commandToState(SuperstructureState.STOW))
                 .unless(grabber::hasAlgae);
