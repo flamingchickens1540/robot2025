@@ -1,7 +1,10 @@
 package org.team1540.robot2025.subsystems.intake;
 
-import static org.team1540.robot2025.subsystems.intake.CoralIntakeConstants.*;
+import static au.grapplerobotics.interfaces.LaserCanInterface.LASERCAN_STATUS_VALID_MEASUREMENT;
+import static org.team1540.robot2025.subsystems.intake.IntakeConstants.*;
 
+import au.grapplerobotics.LaserCan;
+import au.grapplerobotics.interfaces.LaserCanInterface;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
@@ -25,7 +28,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 
-public class CoralIntakeIOReal implements CoralIntakeIO {
+public class IntakeIOReal implements IntakeIO {
     // rotation of horizontal beams for the intake, clockwise to intake, counter-clockwise to spit out
     private final TalonFX spinFalcon = new TalonFX(SPIN_MOTOR_ID);
 
@@ -55,11 +58,13 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
     private final SparkMax funnelNeo = new SparkMax(FUNNEL_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
     private final RelativeEncoder funnelEncoder = funnelNeo.getEncoder();
 
+    private final LaserCan laserCan = new LaserCan(LASER_CAN_ID);
+
     private final Debouncer spinConnectedDebounce = new Debouncer(0.5);
     private final Debouncer pivotConnectedDebounce = new Debouncer(0.5);
     private final Debouncer funnelConnectedDebounce = new Debouncer(0.5);
 
-    public CoralIntakeIOReal() {
+    public IntakeIOReal() {
         TalonFXConfiguration spinTalonFXConfigs = new TalonFXConfiguration();
         TalonFXConfiguration pivotTalonFXConfigs = new TalonFXConfiguration();
         SparkMaxConfig funnelNEOConfig = new SparkMaxConfig();
@@ -154,7 +159,7 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
     }
 
     @Override
-    public void updateInputs(CoralIntakeInputs inputs) {
+    public void updateInputs(IntakeInputs inputs) {
         StatusCode spinStatus = BaseStatusSignal.refreshAll(
                 spinVelocity, spinPosition, spinAppliedVoltage, spinSupplyCurrent, spinStatorCurrent, spinTemp);
         StatusCode pivotStatus = BaseStatusSignal.refreshAll(
@@ -178,6 +183,12 @@ public class CoralIntakeIOReal implements CoralIntakeIO {
         inputs.funnelSupplyCurrentAmps = funnelNeo.getOutputCurrent();
         inputs.funnelStatorCurrentAmps = funnelNeo.getOutputCurrent();
         inputs.funnelConnected = funnelConnectedDebounce.calculate(funnelNeo.getLastError() == REVLibError.kOk);
+
+        LaserCanInterface.Measurement measurement = laserCan.getMeasurement();
+        inputs.sensorConnected = measurement != null;
+        inputs.sensorTripped = measurement != null
+                && measurement.status == LASERCAN_STATUS_VALID_MEASUREMENT
+                && measurement.distance_mm <= LASER_CAN_DETECT_DISTANCE_MM;
     }
 
     public void setPivotPID(double kP, double kI, double kD) {

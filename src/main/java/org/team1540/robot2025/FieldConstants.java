@@ -127,7 +127,12 @@ public class FieldConstants {
                 faces.add(new ReefFace(
                         centerFaces[face],
                         scorePositions.get(scorePositions.size() - 2),
-                        scorePositions.get(scorePositions.size() - 1)));
+                        scorePositions.get(scorePositions.size() - 1),
+                        centerFaces[face].transformBy(new Transform2d(
+                                Constants.BUMPER_LENGTH_X_METERS / 2,
+                                GrabberConstants.Y_OFFSET_METERS,
+                                Rotation2d.kZero)),
+                        face % 2 == 0));
             }
         }
 
@@ -218,9 +223,11 @@ public class FieldConstants {
         L;
 
         public final Pose2d scorePosition;
+        public final ReefFace face;
 
         ReefBranch() {
             scorePosition = Reef.scorePositions.get(ordinal());
+            face = Reef.faces.get(ordinal() / 2);
         }
 
         public static ReefBranch fromOrdinal(int value) {
@@ -228,7 +235,12 @@ public class FieldConstants {
         }
     }
 
-    public record ReefFace(Pose2d pose, Pose2d leftBranchScore, Pose2d rightBranchScore) {}
+    public record ReefFace(
+            Pose2d pose,
+            Pose2d leftBranchScore,
+            Pose2d rightBranchScore,
+            Pose2d dealgifyPosition,
+            boolean highDealgify) {}
 
     public static final double aprilTagWidth = Units.inchesToMeters(6.50);
     public static final int aprilTagCount = 22;
