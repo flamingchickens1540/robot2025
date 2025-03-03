@@ -23,7 +23,8 @@ public class Intake extends SubsystemBase {
     public enum IntakeState {
         STOW(new LoggedTunableNumber("Intake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees())),
         INTAKE(new LoggedTunableNumber("Intake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees())),
-        EJECT(new LoggedTunableNumber("Intake/Setpoints/Eject/AngleDegrees", 60));
+        EJECT(new LoggedTunableNumber("Intake/Setpoints/Eject/AngleDegrees", 60)),
+        L1(new LoggedTunableNumber("Intake/Setpoints/L1/AngleDegrees", 70));
 
         private final DoubleSupplier pivotPosition;
 
@@ -130,6 +131,10 @@ public class Intake extends SubsystemBase {
     @AutoLogOutput(key = "Intake/PivotSetpoint")
     public Rotation2d getPivotSetpoint() {
         return pivotSetpoint;
+    }
+
+    public boolean hasCoral() {
+        return inputs.sensorTripped;
     }
 
     @AutoLogOutput(key = "Intake/TimeToSetpoint")

@@ -1,7 +1,10 @@
 package org.team1540.robot2025.subsystems.intake;
 
+import static au.grapplerobotics.interfaces.LaserCanInterface.LASERCAN_STATUS_VALID_MEASUREMENT;
 import static org.team1540.robot2025.subsystems.intake.IntakeConstants.*;
 
+import au.grapplerobotics.LaserCan;
+import au.grapplerobotics.interfaces.LaserCanInterface;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
@@ -54,6 +57,8 @@ public class IntakeIOReal implements IntakeIO {
     // clockwise to intake, counter-clockwise to spit out
     private final SparkMax funnelNeo = new SparkMax(FUNNEL_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
     private final RelativeEncoder funnelEncoder = funnelNeo.getEncoder();
+
+    private final LaserCan laserCan = new LaserCan(LASER_CAN_ID);
 
     private final Debouncer spinConnectedDebounce = new Debouncer(0.5);
     private final Debouncer pivotConnectedDebounce = new Debouncer(0.5);
@@ -178,6 +183,12 @@ public class IntakeIOReal implements IntakeIO {
         inputs.funnelSupplyCurrentAmps = funnelNeo.getOutputCurrent();
         inputs.funnelStatorCurrentAmps = funnelNeo.getOutputCurrent();
         inputs.funnelConnected = funnelConnectedDebounce.calculate(funnelNeo.getLastError() == REVLibError.kOk);
+
+        LaserCanInterface.Measurement measurement = laserCan.getMeasurement();
+        inputs.sensorConnected = measurement != null;
+        inputs.sensorTripped = measurement != null
+                && measurement.status == LASERCAN_STATUS_VALID_MEASUREMENT
+                && measurement.distance_mm <= LASER_CAN_DETECT_DISTANCE_MM;
     }
 
     public void setPivotPID(double kP, double kI, double kD) {

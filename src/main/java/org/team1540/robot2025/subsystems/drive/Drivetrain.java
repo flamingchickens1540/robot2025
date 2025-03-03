@@ -60,7 +60,7 @@ public class Drivetrain extends SubsystemBase {
     private static final LoggedTunableNumber headingKD = new LoggedTunableNumber("Drivetrain/Heading/kD", 0.0);
 
     private static final LoggedTunableNumber autoAlignLinearSpeedFactor =
-            new LoggedTunableNumber("AutoAlign/LinearSpeedFactor", 0.75);
+            new LoggedTunableNumber("AutoAlign/LinearSpeedFactor", 0.4);
     private static final LoggedTunableNumber autoAlignLinearAccelFactor =
             new LoggedTunableNumber("AutoAlign/LinearAccelFactor", 0.5);
     private static final LoggedTunableNumber autoAlignRotationSpeedFactor =
@@ -85,6 +85,8 @@ public class Drivetrain extends SubsystemBase {
     private SwerveSetpoint lastSetpoint;
     private final SwerveSetpointGenerator setpointGenerator =
             new SwerveSetpointGenerator(ROBOT_CONFIG, MAX_STEER_SPEED_RAD_PER_SEC);
+
+    private final Debouncer atAutoAlignGoalDebounce = new Debouncer(0.1, Debouncer.DebounceType.kRising);
 
     private boolean isFFCharacterizing = false;
     private double ffCharacterizationInput = 0.0;
@@ -395,6 +397,11 @@ public class Drivetrain extends SubsystemBase {
         return states;
     }
 
+    @AutoLogOutput(key = "AutoAlign/AtGoal")
+    public boolean atAutoAlignGoal() {
+        return atAutoAlignGoalDebounce.calculate(autoAlignController.atGoal(0.01, Rotation2d.fromDegrees(1.0)));
+    }
+
     public Command percentDriveCommand(
             Supplier<Translation2d> linearPercent, DoubleSupplier omegaPercent, BooleanSupplier fieldRelative) {
         return Commands.run(
@@ -441,14 +448,13 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public Command driveToPoseCommand(Supplier<Pose2d> pose) {
-        Debouncer atGoalDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kRising);
         return Commands.startRun(
                         () -> autoAlignController.setGoal(pose),
                         () -> runVelocity(autoAlignController.calculate(
                                 RobotState.getInstance().getEstimatedPose(),
                                 RobotState.getInstance().getRobotVelocity())),
                         this)
-                .until(() -> atGoalDebouncer.calculate(autoAlignController.atGoal(0.01, Rotation2d.fromDegrees(1.0))))
+                .until(this::atAutoAlignGoal)
                 .finallyDo(this::stop);
     }
 

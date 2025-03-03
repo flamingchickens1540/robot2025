@@ -1,16 +1,19 @@
 package org.team1540.robot2025;
 
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.team1540.robot2025.FieldConstants.ReefHeight;
 import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.commands.AutoScoreCommands;
@@ -24,6 +27,7 @@ import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.subsystems.elevator.Elevator;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.Intake;
+import org.team1540.robot2025.subsystems.leds.CustomLEDPatterns;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
 import org.team1540.robot2025.util.ButtonBoard;
@@ -100,13 +104,24 @@ public class RobotContainer {
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
-        driver.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
-        driver.leftStick()
+        driver.leftStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
+        driver.rightStick()
+                .and(buttonBoard.flexTrue())
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
                         .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
+        driver.x()
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(
+                        FieldConstants.ReefBranch.E, ReefHeight.L3, driver.rightTrigger(), drivetrain, superstructure));
 
         driver.leftTrigger()
+                .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
+                //                .and(() -> !grabber.hasAlgae())
                 .whileTrue(superstructure.coralGroundIntake())
+                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+        driver.leftTrigger()
+                .and(buttonBoard.branchHeightAt(ReefHeight.L1))
+                //                .or(grabber::hasAlgae)
+                .whileTrue(superstructure.coralGroundIntakeL1())
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
 
         climber.setDefaultCommand(climber.manualCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
@@ -123,11 +138,11 @@ public class RobotContainer {
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
-        copilot.y().onTrue(superstructure.L4(driver.rightTrigger()));
-        copilot.x().onTrue(superstructure.L3(driver.rightTrigger()));
-        copilot.a().onTrue(superstructure.L2(driver.rightTrigger()));
+        copilot.y().onTrue(superstructure.L4(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
+        copilot.x().onTrue(superstructure.L3(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
+        copilot.a().onTrue(superstructure.L2(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
         copilot.povRight().onTrue(superstructure.L1(driver.rightTrigger()));
-        copilot.b().onTrue(superstructure.net());
+        copilot.b().onTrue(superstructure.net(driver.rightTrigger()));
 
         copilot.povLeft().onTrue(superstructure.processor(driver.rightTrigger()));
         copilot.povDown()
@@ -136,25 +151,40 @@ public class RobotContainer {
         copilot.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
 
         for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {
-            for (FieldConstants.ReefHeight height : FieldConstants.ReefHeight.values()) {
+            for (ReefHeight height : ReefHeight.values()) {
                 buttonBoard
                         .branchFaceAt(button)
                         .and(buttonBoard.branchHeightAt(height))
                         .and(buttonBoard.flexFalse())
-                        .and(driver.leftStick())
+                        .and(driver.rightStick())
                         .whileTrue(AutoScoreCommands.alignToBranchAndScore(
-                                FieldConstants.ReefBranch.fromOrdinal(buttonBoard.reefButtonToReefBranchIndex(button)),
+                                buttonBoard.reefButtonToBranch(button),
                                 height,
                                 driver.rightTrigger(),
-                                true,
                                 drivetrain,
                                 superstructure));
             }
+            buttonBoard
+                    .branchFaceAt(button)
+                    .and(buttonBoard.flexFalse())
+                    .and(driver.rightBumper())
+                    .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(
+                            buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
         }
+
+        new Trigger(grabber::reverseSensorTripped)
+                .whileTrue(leds.viewFull
+                        .commandShowPattern(LEDPattern.solid(Color.kPurple).blink(Seconds.of(0.05)))
+                        .withTimeout(0.5)
+                        .andThen(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kPurple))));
+        new Trigger(grabber::forwardSensorTripped)
+                .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kYellow)));
+        new Trigger(intake::hasCoral).whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kOrange)));
     }
 
     private void configureAutoRoutines() {
         autoChooser.addCmd("Zero mechanisms", superstructure::zeroCommand);
+        autoChooser.addRoutine("Right 3 Piece Lollipop", autos::right3PieceLollipop);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);
@@ -163,12 +193,16 @@ public class RobotContainer {
     }
 
     private void configureRobotModeTriggers() {
-        RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
+        //        RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
+        RobotModeTriggers.disabled()
+                .whileTrue(leds.viewFull.commandShowPattern(
+                        CustomLEDPatterns.movingRainbow(Value.one().div(Second.of(5)))));
         RobotModeTriggers.autonomous()
-                .whileTrue(leds.viewTop.commandShowPattern(() -> LEDPattern.solid(Leds.getAllianceColor())));
+                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(
+                        leds.viewFull.commandShowPattern(() -> LEDPattern.solid(Leds.getAllianceColor())))));
         RobotModeTriggers.teleop()
-                .whileTrue(leds.viewTop.commandShowPattern(
-                        () -> LEDPattern.solid(Leds.getAllianceColor()).breathe(Seconds.of(3))));
+                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(leds.viewFull.commandShowPattern(
+                        () -> LEDPattern.solid(Leds.getAllianceColor()).breathe(Seconds.of(3))))));
         RobotModeTriggers.teleop()
                 .and(DriverStation::isFMSAttached)
                 .onTrue(Commands.runOnce(drivetrain::zeroFieldOrientation));

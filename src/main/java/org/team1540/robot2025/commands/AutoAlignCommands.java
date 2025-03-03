@@ -96,18 +96,27 @@ public class AutoAlignCommands {
         return alignToReefPose(() -> pose, drivetrain);
     }
 
-    public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain) {
-        return alignToReefPose(() -> AllianceFlipUtil.maybeFlipPose(branch.scorePosition), drivetrain);
+    public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
+        return alignToReefPose(
+                () -> {
+                    if (!shouldReverse.getAsBoolean()) return AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
+                    else {
+                        Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
+                        return new Pose2d(
+                                        pose.getTranslation(),
+                                        pose.getRotation().rotateBy(Rotation2d.k180deg))
+                                .transformBy(
+                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                    }
+                },
+                drivetrain);
     }
 
     public static Command alignToBranchNearestSide(ReefBranch branch, Drivetrain drivetrain) {
         return Commands.defer(
                 () -> {
                     Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
-                    if (Math.abs(pose.getRotation()
-                                    .minus(RobotState.getInstance().getRobotRotation())
-                                    .getDegrees())
-                            >= 90)
+                    if (RobotState.getInstance().shouldReverseCoral(branch))
                         pose = new Pose2d(
                                         pose.getTranslation(),
                                         pose.getRotation().rotateBy(Rotation2d.k180deg))
@@ -166,6 +175,12 @@ public class AutoAlignCommands {
 
                     return alignToReefPose(pose, drivetrain);
                 },
+                Set.of(drivetrain));
+    }
+
+    public static Command alignToDealgifyPose(ReefFace face, Drivetrain drivetrain) {
+        return Commands.defer(
+                () -> alignToReefPose(AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition()), drivetrain),
                 Set.of(drivetrain));
     }
 }

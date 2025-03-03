@@ -24,27 +24,28 @@ public class Superstructure {
         STOW(ArmState.STOW, ElevatorState.STOW, IntakeState.STOW),
         STOW_ALGAE(ArmState.STOW_ALGAE, ElevatorState.STOW_ALGAE, IntakeState.STOW),
         INTAKE_GROUND(ArmState.INTAKE, ElevatorState.GROUND_CORAL, IntakeState.INTAKE),
-        INTAKE_FUNNEL(ArmState.FUNNEL, ElevatorState.FUNNEL, IntakeState.STOW),
+        INTAKE_GROUND_L1(ArmState.STOW, ElevatorState.STOW, IntakeState.INTAKE),
+        INTAKE_SOURCE(ArmState.STOW, ElevatorState.STOW, IntakeState.STOW),
         INTAKE_ALGAE(ArmState.GROUND_ALGAE, ElevatorState.GROUND_ALGAE, IntakeState.STOW),
         CORAL_EJECT(ArmState.STOW, ElevatorState.STOW, IntakeState.EJECT),
 
+        L1_FRONT(ArmState.STOW, ElevatorState.STOW, IntakeState.L1),
         L1_BACK(ArmState.SCORE_L1_BACK, ElevatorState.L1_BACK, IntakeState.STOW),
-        L1_FRONT(ArmState.SCORE_L1_FRONT, ElevatorState.L1_FRONT, IntakeState.STOW),
 
-        L2_FRONT(ArmState.SCORE_L2_L3_FRONT, ElevatorState.L2, IntakeState.STOW),
-        L2_BACK(ArmState.SCORE_L2_L3_BACK, ElevatorState.L2, IntakeState.STOW),
+        L2_FRONT(ArmState.SCORE_L2_L3_FRONT, ElevatorState.L2_FRONT, IntakeState.STOW),
+        L2_BACK(ArmState.SCORE_L2_L3_BACK, ElevatorState.L2_BACK, IntakeState.STOW),
 
-        L3_FRONT(ArmState.SCORE_L2_L3_FRONT, ElevatorState.L3, IntakeState.STOW),
-        L3_BACK(ArmState.SCORE_L2_L3_BACK, ElevatorState.L3, IntakeState.STOW),
+        L3_FRONT(ArmState.SCORE_L2_L3_FRONT, ElevatorState.L3_FRONT, IntakeState.STOW),
+        L3_BACK(ArmState.SCORE_L2_L3_BACK, ElevatorState.L3_BACK, IntakeState.STOW),
 
-        L4_FRONT(ArmState.SCORE_L4_FRONT, ElevatorState.L4, IntakeState.STOW),
-        L4_BACK(ArmState.SCORE_L4_BACK, ElevatorState.L4, IntakeState.STOW),
+        L4_FRONT(ArmState.SCORE_L4_FRONT, ElevatorState.L4_FRONT, IntakeState.STOW),
+        L4_BACK(ArmState.SCORE_L4_BACK, ElevatorState.L4_BACK, IntakeState.STOW),
 
-        DEALGIFY_LOW_BACK(ArmState.REEF_ALGAE_BACK, ElevatorState.REEF_ALGAE_LOW, IntakeState.STOW),
-        DEALGIFY_LOW_FRONT(ArmState.REEF_ALGAE_FRONT, ElevatorState.REEF_ALGAE_LOW, IntakeState.STOW),
+        DEALGIFY_LOW_FRONT(ArmState.REEF_ALGAE_FRONT, ElevatorState.REEF_ALGAE_LOW_FRONT, IntakeState.STOW),
+        DEALGIFY_LOW_BACK(ArmState.REEF_ALGAE_BACK, ElevatorState.REEF_ALGAE_LOW_BACK, IntakeState.STOW),
 
-        DEALGIFY_HIGH_FRONT(ArmState.REEF_ALGAE_FRONT, ElevatorState.REEF_ALGAE_HIGH, IntakeState.STOW),
-        DEALGIFY_HIGH_BACK(ArmState.REEF_ALGAE_BACK, ElevatorState.REEF_ALGAE_HIGH, IntakeState.STOW),
+        DEALGIFY_HIGH_FRONT(ArmState.REEF_ALGAE_FRONT, ElevatorState.REEF_ALGAE_HIGH_FRONT, IntakeState.STOW),
+        DEALGIFY_HIGH_BACK(ArmState.REEF_ALGAE_BACK, ElevatorState.REEF_ALGAE_HIGH_BACK, IntakeState.STOW),
 
         // barge is same from both sides
         SCORE_BARGE_FRONT(ArmState.SCORE_BARGE_FRONT, ElevatorState.BARGE, IntakeState.STOW),
@@ -64,10 +65,10 @@ public class Superstructure {
         }
     }
 
-    private final Elevator elevator;
-    private final Arm arm;
-    private final Intake intake;
-    private final Grabber grabber;
+    public final Elevator elevator;
+    public final Arm arm;
+    public final Intake intake;
+    public final Grabber grabber;
     private final double clearanceHeight = 0.5;
 
     private SuperstructureState goalState;
@@ -93,55 +94,54 @@ public class Superstructure {
                 () -> {
                     Command command = Commands.none();
                     this.goalState = goalState;
+                    final ArmState armState;
+                    if (grabber.hasAlgae() && goalState.armState == ArmState.STOW) {
+                        armState = ArmState.STOW_ALGAE;
+                    } else armState = goalState.armState;
 
                     if (grabber.hasAlgae()
-                            && !((goalState.armState.position().getDegrees()
+                            && !((armState.position().getDegrees()
                                                     >= ArmState.STOW_ALGAE
                                                             .position()
                                                             .getDegrees()
                                             && arm.getPosition().getDegrees()
-                                                    >= ArmState.STOW_ALGAE
-                                                            .position()
-                                                            .getDegrees())
-                                    || (goalState.armState.position().getDegrees() <= 100
+                                                    >= ArmState.STOW.position().getDegrees())
+                                    || (armState.position().getDegrees() <= 100
                                             && arm.getPosition().getDegrees() <= 100))) {
                         command = command.andThen(
-                                elevator.commandToSetpoint(ElevatorState.L2),
-                                arm.commandToSetpoint(goalState.armState));
+                                elevator.commandToSetpoint(ElevatorState.L2_FRONT), arm.commandToSetpoint(armState));
                     }
                     if (goalState.elevatorState.height.getAsDouble() >= clearanceHeight) {
-                        if (goalState.armState.position().getDegrees()
+                        if (armState.position().getDegrees()
                                 >= ArmState.STOW.position().getDegrees()) {
                             command = command.andThen(Commands.parallel(
                                     elevator.commandToSetpoint(goalState.elevatorState),
-                                    Commands.waitUntil(() -> getEndEffectorPosition(
-                                                                            elevator.getPosition(),
-                                                                            goalState.armState.position())
-                                                                    .getY()
-                                                            >= 0.1
-                                                    && elevator.timeToSetpoint()
-                                                            <= arm.timeToSetpoint(goalState.armState.position()))
-                                            .andThen(arm.commandToSetpoint(goalState.armState)),
+                                    Commands.waitUntil(() ->
+                                                    getEndEffectorPosition(elevator.getPosition(), armState.position())
+                                                                            .getY()
+                                                                    >= 0.1
+                                                            && elevator.timeToSetpoint()
+                                                                    <= arm.timeToSetpoint(armState.position()))
+                                            .andThen(arm.commandToSetpoint(armState)),
                                     intake.commandToSetpoint(goalState.intakeState)));
                         } else {
                             command = command.andThen(Commands.parallel(
                                     elevator.commandToSetpoint(goalState.elevatorState),
-                                    Commands.waitUntil(() -> getEndEffectorPosition(
-                                                                            elevator.getPosition(),
-                                                                            goalState.armState.position())
-                                                                    .getY()
-                                                            > clearanceHeight
-                                                    && elevator.timeToSetpoint()
-                                                            <= arm.timeToSetpoint(goalState.armState.position()))
+                                    Commands.waitUntil(() ->
+                                                    getEndEffectorPosition(elevator.getPosition(), armState.position())
+                                                                            .getY()
+                                                                    > clearanceHeight
+                                                            && elevator.timeToSetpoint()
+                                                                    <= arm.timeToSetpoint(armState.position()))
                                             .andThen(Commands.parallel(
                                                     intake.commandToSetpoint(goalState.intakeState),
-                                                    arm.commandToSetpoint(goalState.armState)))));
+                                                    arm.commandToSetpoint(armState)))));
                         }
-                    } else if (goalState.armState.position().getDegrees()
+                    } else if (armState.position().getDegrees()
                                     >= ArmState.STOW.position().getDegrees()
-                            && goalState.armState.position().getDegrees() <= 150) {
+                            && armState.position().getDegrees() <= 150) {
                         command = command.andThen(Commands.parallel(
-                                arm.commandToSetpoint(goalState.armState),
+                                arm.commandToSetpoint(armState),
                                 Commands.waitUntil(() -> (arm.getPosition().getDegrees()
                                                                 >= ArmState.STOW
                                                                         .position()
@@ -156,23 +156,22 @@ public class Superstructure {
                         command = command.andThen(Commands.parallel(
                                 intake.commandToSetpoint(goalState.intakeState),
                                 Commands.waitUntil(() -> intake.timeToSetpoint() + 0.1
-                                                <= arm.timeToSetpoint(goalState.armState.position()))
+                                                <= arm.timeToSetpoint(armState.position()))
                                         .andThen(Commands.parallel(
                                                 elevator.commandToSetpoint(goalState.elevatorState),
-                                                arm.commandToSetpoint(goalState.armState)))));
+                                                arm.commandToSetpoint(armState)))));
                     } else {
                         command = command.andThen(
                                 commandStowArm(),
                                 elevator.commandToSetpoint(goalState.elevatorState),
                                 intake.commandToSetpoint(goalState.intakeState),
-                                arm.commandToSetpoint(goalState.armState));
+                                arm.commandToSetpoint(armState));
                     }
 
                     return command;
                 },
                 Set.of(arm, elevator, intake));
     }
-    // TODO: Simon's fun thing where you can start moving arm early
 
     @AutoLogOutput(key = "Superstructure/ArmClear")
     public boolean isArmClear() {
@@ -189,91 +188,49 @@ public class Superstructure {
                         commandToState(superstructureState),
                         Commands.waitUntil(confirm),
                         grabber.commandRun(grabberPower).until(() -> !grabber.reverseSensorTripped()),
-                        grabber.commandRun(grabberPower).withTimeout(0.1),
+                        grabber.commandRun(grabberPower).withTimeout(0.25),
                         commandToState(SuperstructureState.STOW))
                 .unless(grabber::hasAlgae);
     }
 
-    public Command scoreCoral(FieldConstants.ReefHeight height, BooleanSupplier confirm) {
+    public Command scoreCoral(
+            FieldConstants.ReefHeight height, BooleanSupplier confirm, BooleanSupplier shouldReverse) {
         return switch (height) {
             case L1 -> L1(confirm);
-            case L2 -> L2(confirm);
-            case L3 -> L3(confirm);
-            case L4 -> L4(confirm);
+            case L2 -> L2(confirm, shouldReverse);
+            case L3 -> L3(confirm, shouldReverse);
+            case L4 -> L4(confirm, shouldReverse);
         };
     }
 
     public Command L1(BooleanSupplier confirm) {
-        return Commands.defer(
-                () -> {
-                    if (Math.abs(FieldConstants.Reef.closestFace()
-                                    .get()
-                                    .getRotation()
-                                    .minus(RobotState.getInstance().getRobotRotation())
-                                    .getDegrees())
-                            < 90) return scoreCoral(SuperstructureState.L1_BACK, 0.3, confirm);
-                    else return scoreCoral(SuperstructureState.L1_FRONT, -0.3, confirm);
-                },
-                Set.of(elevator, arm, intake, grabber));
+        return Commands.sequence(
+                commandToState(SuperstructureState.L1_FRONT),
+                Commands.waitUntil(confirm),
+                intake.commandRunRollerFunnel(-0.2, -0.2),
+                commandToState(SuperstructureState.STOW));
     }
 
-    public Command L2(BooleanSupplier confirm) {
-        return Commands.defer(
-                () -> {
-                    if (Math.abs(FieldConstants.Reef.closestFace()
-                                    .get()
-                                    .getRotation()
-                                    .minus(RobotState.getInstance().getRobotRotation())
-                                    .getDegrees())
-                            < 90) return scoreCoral(SuperstructureState.L2_BACK, 0.3, confirm);
-                    else return scoreCoral(SuperstructureState.L2_FRONT, -0.3, confirm);
-                },
-                Set.of(elevator, arm, intake, grabber));
+    public Command L2(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
+        return Commands.either(
+                scoreCoral(SuperstructureState.L2_FRONT, -0.3, confirm),
+                scoreCoral(SuperstructureState.L2_BACK, 0.3, confirm),
+                shouldReverse);
     }
 
-    public Command L3(BooleanSupplier confirm) {
-        return Commands.defer(
-                () -> {
-                    if (Math.abs(FieldConstants.Reef.closestFace()
-                                    .get()
-                                    .getRotation()
-                                    .minus(RobotState.getInstance().getRobotRotation())
-                                    .getDegrees())
-                            < 90) return scoreCoral(SuperstructureState.L3_BACK, 0.3, confirm);
-                    else return scoreCoral(SuperstructureState.L3_FRONT, -0.3, confirm);
-                },
-                Set.of(elevator, arm, intake, grabber));
+    public Command L3(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
+        return Commands.either(
+                scoreCoral(SuperstructureState.L3_FRONT, -0.3, confirm),
+                scoreCoral(SuperstructureState.L3_BACK, 0.3, confirm),
+                shouldReverse);
     }
 
-    public Command L4(BooleanSupplier confirm) {
-        return Commands.defer(
-                () -> {
-                    if (Math.abs(FieldConstants.Reef.closestFace()
-                                    .get()
-                                    .getRotation()
-                                    .minus(RobotState.getInstance().getRobotRotation())
-                                    .getDegrees())
-                            < 90) return scoreCoral(SuperstructureState.L4_BACK, 0.3, confirm);
-                    else return scoreCoral(SuperstructureState.L4_FRONT, -0.3, confirm);
-                },
-                Set.of(elevator, arm, intake, grabber));
+    public Command L4(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
+        return Commands.either(
+                scoreCoral(SuperstructureState.L4_FRONT, -0.3, confirm),
+                scoreCoral(SuperstructureState.L4_BACK, 0.3, confirm),
+                shouldReverse);
     }
-
-    public Command L2Front(BooleanSupplier confirm) {
-        return scoreCoral(SuperstructureState.L2_FRONT, 0.5, confirm);
-    }
-
-    public Command L3Front(BooleanSupplier confirm) {
-        return scoreCoral(SuperstructureState.L3_FRONT, 0.5, confirm);
-    }
-
-    public Command L4Front(BooleanSupplier confirm) {
-        return scoreCoral(SuperstructureState.L4_FRONT, 0.5, confirm);
-    }
-
-    //    public Command L1(BooleanSupplier confirm) {
-    //        return scoreCoral(SuperstructureState.L1_BACK, -0.2, confirm);
-    //    }
 
     private Command dealgify(SuperstructureState state) {
         return Commands.defer(
@@ -348,9 +305,16 @@ public class Superstructure {
                         grabber.commandRun(0.3)
                                 .until(grabber::forwardSensorTripped)
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
-                                .deadlineFor(intake.commandRunRollerFunnel(0.5, 0.5)),
+                                .deadlineFor(intake.commandRunRollerFunnel(0.5, 0.3)),
                         commandToState(SuperstructureState.STOW).alongWith(grabber.commandRun(0.0)))
                 .unless(grabber::hasAlgae);
+    }
+
+    public Command coralGroundIntakeL1() {
+        return Commands.sequence(
+                commandToState(SuperstructureState.INTAKE_GROUND_L1),
+                intake.commandRunRollerFunnel(0.5, 0.5).until(intake::hasCoral),
+                commandToState(SuperstructureState.STOW));
     }
 
     public Command coralIntakeEject() {
@@ -361,8 +325,8 @@ public class Superstructure {
 
     public Command sourceIntake() {
         return Commands.sequence(
-                        commandToState(SuperstructureState.INTAKE_FUNNEL),
-                        grabber.commandRun(0.3).until(grabber::reverseSensorTripped),
+                        commandToState(SuperstructureState.INTAKE_SOURCE),
+                        intake.commandRunRoller(0.5).until(intake::hasCoral),
                         commandToState(SuperstructureState.STOW))
                 .unless(grabber::hasAlgae);
     }
@@ -370,8 +334,9 @@ public class Superstructure {
     public Command algaeIntake() {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_ALGAE),
-                        Commands.runOnce(() -> grabber.setPercent(0.25)),
+                        Commands.runOnce(() -> grabber.setPercent(1.0)),
                         Commands.waitUntil(grabber::hasAlgae),
+                        Commands.runOnce(() -> grabber.setPercent(0.25)),
                         commandToState(SuperstructureState.STOW))
                 .unless(grabber::reverseSensorTripped)
                 .handleInterrupt(grabber::stop);
@@ -386,14 +351,11 @@ public class Superstructure {
         //                .onlyIf(grabber::hasAlgae);
     }
 
-    public Command net() {
+    public Command net(BooleanSupplier confirm) {
         return Commands.sequence(
-                elevator.commandToSetpoint(ElevatorState.L4),
-                arm.commandToSetpoint(ArmState.INTAKE),
-                Commands.parallel(
-                        elevator.commandToSetpoint(ElevatorState.BARGE),
-                        arm.commandToSetpoint(ArmState.STOW_ALGAE),
-                        grabber.commandRun(-0.5).withTimeout(1)),
+                commandToState(SuperstructureState.SCORE_BARGE_BACK),
+                Commands.waitUntil(confirm),
+                grabber.commandRun(-0.8),
                 commandToState(SuperstructureState.STOW));
         //                .onlyIf(grabber::hasAlgae);
     }
@@ -408,7 +370,7 @@ public class Superstructure {
                                         grabber.commandRun(-0.5).withTimeout(1))
                                 .beforeStarting(Commands.waitSeconds(0.2))
                                 .beforeStarting(Commands.waitUntil(
-                                        () -> elevator.getPosition() > ElevatorState.L3.height.getAsDouble()))),
+                                        () -> elevator.getPosition() > ElevatorState.L3_BACK.height.getAsDouble()))),
                 commandToState(SuperstructureState.STOW));
         //                .onlyIf(grabber::hasAlgae);
     }

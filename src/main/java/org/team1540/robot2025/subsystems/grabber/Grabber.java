@@ -19,7 +19,7 @@ public class Grabber extends SubsystemBase {
             new Alert("Before sensor is disconnected", Alert.AlertType.kWarning);
     private final Alert afterSensorDisconnectedAlert =
             new Alert("After sensor is disconnected", Alert.AlertType.kWarning);
-    private final Debouncer algaeDebounce = new Debouncer(0.2);
+    private final Debouncer algaeDebounce = new Debouncer(0.3);
     private boolean hasAlgae = false;
 
     private Grabber(GrabberIO grabberIO, SensorIO sensorIO) {

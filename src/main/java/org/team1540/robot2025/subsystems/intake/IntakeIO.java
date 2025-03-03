@@ -24,6 +24,9 @@ public interface IntakeIO {
         public double pivotMotorAppliedVolts = 0;
         public double pivotSupplyCurrentAmps = 0;
         public double pivotStatorCurrentAmps = 0;
+
+        public boolean sensorConnected = true;
+        public boolean sensorTripped = false;
     }
 
     default void setRollerVoltage(double voltage) {}

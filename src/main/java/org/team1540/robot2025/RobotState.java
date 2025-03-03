@@ -22,6 +22,7 @@ import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO;
+import org.team1540.robot2025.util.AllianceFlipUtil;
 
 public class RobotState {
     private static RobotState instance = null;
@@ -74,7 +75,7 @@ public class RobotState {
     }
 
     public boolean addVisionMeasurement(AprilTagVisionIO.PoseObservation visionPose) {
-        if (shouldAcceptVision(visionPose)) {
+        if (shouldAcceptVision(visionPose) && resetTimer.hasElapsed(0.1)) {
             poseEstimator.addVisionMeasurement(
                     visionPose.estimatedPoseMeters().toPose2d(),
                     visionPose.lastMeasurementTimestampSecs(),
@@ -158,5 +159,22 @@ public class RobotState {
                 pose.getX() + velocity.vxMetersPerSecond * lookaheadSeconds,
                 pose.getY() + velocity.vyMetersPerSecond * lookaheadSeconds,
                 pose.getRotation().plus(Rotation2d.fromRadians(velocity.omegaRadiansPerSecond * lookaheadSeconds)));
+    }
+
+    public boolean shouldReverseCoral() {
+        return Math.abs(FieldConstants.Reef.closestFace()
+                        .get()
+                        .getRotation()
+                        .minus(RobotState.getInstance().getRobotRotation())
+                        .getDegrees())
+                < 90;
+    }
+
+    public boolean shouldReverseCoral(FieldConstants.ReefBranch branch) {
+        return Math.abs(AllianceFlipUtil.maybeFlipPose(branch.face.pose())
+                        .getRotation()
+                        .minus(RobotState.getInstance().getRobotRotation())
+                        .getDegrees())
+                > 90;
     }
 }
