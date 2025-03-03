@@ -2,6 +2,7 @@ package org.team1540.robot2025.subsystems.vision.apriltag;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import org.littletonrobotics.junction.AutoLog;
 
 public abstract class AprilTagVisionIO {
@@ -23,11 +24,16 @@ public abstract class AprilTagVisionIO {
             Pose3d estimatedPoseMeters,
             int numTagsSeen,
             double avgTagDistance,
-            double lastMeasurementTimestampSecs,
+            double timestampSecs,
             double ambiguity) {}
 
     public record SingleTagObservation(
-            int id, Rotation2d yaw, Rotation2d pitch, double distanceMeters, double timestamp) {}
+            int id,
+            Transform3d cameraTransform,
+            Rotation2d yaw,
+            Rotation2d pitch,
+            double distanceMeters,
+            double timestampSecs) {}
 
     public void updateInputs(AprilTagVisionIOInputs inputs) {}
 }

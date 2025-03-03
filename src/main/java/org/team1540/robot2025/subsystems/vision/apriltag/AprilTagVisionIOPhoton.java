@@ -62,8 +62,9 @@ public class AprilTagVisionIOPhoton extends AprilTagVisionIO {
             for (PhotonTrackedTarget target : result.getTargets()) {
                 singleTagObservations.add(new SingleTagObservation(
                         target.fiducialId,
-                        Rotation2d.fromRadians(target.getYaw()),
-                        Rotation2d.fromRadians(target.getPitch()),
+                        cameraTransformMeters,
+                        Rotation2d.fromDegrees(target.getYaw()),
+                        Rotation2d.fromDegrees(target.getPitch()),
                         target.getBestCameraToTarget().getTranslation().getNorm(),
                         result.getTimestampSeconds()));
                 lastSeenTagIDs.add(target.fiducialId);
