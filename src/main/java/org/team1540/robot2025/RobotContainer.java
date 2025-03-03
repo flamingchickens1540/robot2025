@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefHeight;
 import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.commands.AutoAlignCommands;
@@ -105,25 +104,25 @@ public class RobotContainer {
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
-        driver.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
-        driver.leftStick()
+        driver.leftStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
+        driver.rightStick()
                 .and(buttonBoard.flexTrue())
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
                         .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
         driver.x()
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(
-                        ReefBranch.A, ReefHeight.L4, driver.rightTrigger(), true, drivetrain, superstructure));
+                        FieldConstants.ReefBranch.E, ReefHeight.L3, driver.rightTrigger(), drivetrain, superstructure));
 
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
-                .and(() -> !grabber.hasAlgae())
+                //                .and(() -> !grabber.hasAlgae())
                 .whileTrue(superstructure.coralGroundIntake())
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
         driver.leftTrigger()
-                .and(buttonBoard.branchHeightAt(ReefHeight.L1).or(() -> grabber.hasAlgae()))
+                .and(buttonBoard.branchHeightAt(ReefHeight.L1))
+                //                .or(grabber::hasAlgae)
                 .whileTrue(superstructure.coralGroundIntakeL1())
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
-        driver.leftBumper().whileTrue(superstructure.sourceIntake());
 
         climber.setDefaultCommand(climber.manualCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
 
@@ -157,12 +156,11 @@ public class RobotContainer {
                         .branchFaceAt(button)
                         .and(buttonBoard.branchHeightAt(height))
                         .and(buttonBoard.flexFalse())
-                        .and(driver.leftStick())
+                        .and(driver.rightStick())
                         .whileTrue(AutoScoreCommands.alignToBranchAndScore(
                                 buttonBoard.reefButtonToBranch(button),
                                 height,
                                 driver.rightTrigger(),
-                                true,
                                 drivetrain,
                                 superstructure));
             }
@@ -186,6 +184,7 @@ public class RobotContainer {
 
     private void configureAutoRoutines() {
         autoChooser.addCmd("Zero mechanisms", superstructure::zeroCommand);
+        autoChooser.addRoutine("Right 3 Piece Lollipop", autos::right3PieceLollipop);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);

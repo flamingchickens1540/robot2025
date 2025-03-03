@@ -65,10 +65,10 @@ public class Superstructure {
         }
     }
 
-    private final Elevator elevator;
-    private final Arm arm;
-    private final Intake intake;
-    private final Grabber grabber;
+    public final Elevator elevator;
+    public final Arm arm;
+    public final Intake intake;
+    public final Grabber grabber;
     private final double clearanceHeight = 0.5;
 
     private SuperstructureState goalState;
@@ -207,7 +207,7 @@ public class Superstructure {
         return Commands.sequence(
                 commandToState(SuperstructureState.L1_FRONT),
                 Commands.waitUntil(confirm),
-                intake.commandRunRollerFunnel(-0.3, -0.3),
+                intake.commandRunRollerFunnel(-0.2, -0.2),
                 commandToState(SuperstructureState.STOW));
     }
 
@@ -305,7 +305,7 @@ public class Superstructure {
                         grabber.commandRun(0.3)
                                 .until(grabber::forwardSensorTripped)
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
-                                .deadlineFor(intake.commandRunRollerFunnel(0.5, 0.5)),
+                                .deadlineFor(intake.commandRunRollerFunnel(0.5, 0.3)),
                         commandToState(SuperstructureState.STOW).alongWith(grabber.commandRun(0.0)))
                 .unless(grabber::hasAlgae);
     }
@@ -313,7 +313,7 @@ public class Superstructure {
     public Command coralGroundIntakeL1() {
         return Commands.sequence(
                 commandToState(SuperstructureState.INTAKE_GROUND_L1),
-                intake.commandRunRollerFunnel(0.5, 0.5).until(() -> intake.hasCoral()),
+                intake.commandRunRollerFunnel(0.5, 0.5).until(intake::hasCoral),
                 commandToState(SuperstructureState.STOW));
     }
 

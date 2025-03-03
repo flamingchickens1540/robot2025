@@ -4,6 +4,7 @@ import static org.team1540.robot2025.FieldConstants.*;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.Superstructure;
@@ -19,22 +20,29 @@ public class AutoScoreCommands {
             ReefBranch branch,
             ReefHeight height,
             BooleanSupplier scoreConfirm,
-            boolean canInvert,
             Drivetrain drivetrain,
             Superstructure superstructure) {
-        return AutoAlignCommands.alignToBranch(
-                        branch, drivetrain, () -> RobotState.getInstance().shouldReverseCoral(branch) && canInvert)
-                .asProxy()
-                .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
-                                        .getEstimatedPose()
-                                        .getTranslation()
-                                        .getDistance(AllianceFlipUtil.maybeFlipTranslation(
-                                                branch.scorePosition.getTranslation()))
-                                <= prepareDistanceMeters.get())
-                        .andThen(superstructure.scoreCoral(
-                                height,
-                                scoreConfirm,
-                                () -> RobotState.getInstance().shouldReverseCoral(branch) && canInvert)));
+        return Commands.defer(
+                () -> {
+                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch)
+                            || height == ReefHeight.L4
+                            || height == ReefHeight.L1;
+                    return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse)
+                            .asProxy()
+                            .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
+                                                    .getEstimatedPose()
+                                                    .getTranslation()
+                                                    .getDistance(AllianceFlipUtil.maybeFlipTranslation(
+                                                            branch.scorePosition.getTranslation()))
+                                            <= prepareDistanceMeters.get())
+                                    .andThen(superstructure.scoreCoral(height, scoreConfirm, () -> reverse)));
+                },
+                Set.of(superstructure.intake, superstructure.elevator, superstructure.arm, superstructure.grabber));
+    }
+
+    public static Command alignToBranchAndScore(
+            ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
+        return alignToBranchAndScore(branch, height, drivetrain::atAutoAlignGoal, drivetrain, superstructure);
     }
 
     public static Command alignToFaceAndDealgify(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {

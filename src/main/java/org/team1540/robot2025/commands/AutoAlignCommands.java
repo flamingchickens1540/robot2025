@@ -99,11 +99,15 @@ public class AutoAlignCommands {
     public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
         return alignToReefPose(
                 () -> {
-                    if (shouldReverse.getAsBoolean()) return AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
-                    else
-                        return AllianceFlipUtil.maybeFlipPose(branch.scorePosition)
+                    if (!shouldReverse.getAsBoolean()) return AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
+                    else {
+                        Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
+                        return new Pose2d(
+                                        pose.getTranslation(),
+                                        pose.getRotation().rotateBy(Rotation2d.k180deg))
                                 .transformBy(
                                         new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                    }
                 },
                 drivetrain);
     }

@@ -171,12 +171,14 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command zeroCommand() {
-        return Commands.runOnce(() -> setVoltage(-1.5), this)
-                .andThen(
-                        Commands.waitSeconds(0.5),
-                        Commands.waitUntil(() -> inputs.statorCurrentAmps[0] > 40),
-                        Commands.runOnce(() -> resetPosition(0)),
-                        commandToSetpoint(ElevatorState.STOW));
+        return Commands.deadline(
+                        Commands.waitUntil(() -> inputs.statorCurrentAmps[0] > 40)
+                                .andThen(Commands.waitSeconds(0.5)),
+                        commandToSetpoint(ElevatorState.STOW)
+                                .onlyIf(() -> getPosition() > ElevatorState.STOW.height.getAsDouble())
+                                .withTimeout(0.5)
+                                .andThen(Commands.runOnce(() -> setVoltage(-2.5), this)))
+                .andThen(Commands.runOnce(() -> resetPosition(0)), commandToSetpoint(ElevatorState.STOW));
     }
 
     public Command feedforwardCharacterizationCommand() {
