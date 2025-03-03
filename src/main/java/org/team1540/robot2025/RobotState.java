@@ -167,7 +167,7 @@ public class RobotState {
                         .getRotation()
                         .minus(RobotState.getInstance().getRobotRotation())
                         .getDegrees())
-                < 90;
+                > 90;
     }
 
     public boolean shouldReverseCoral(FieldConstants.ReefBranch branch) {
