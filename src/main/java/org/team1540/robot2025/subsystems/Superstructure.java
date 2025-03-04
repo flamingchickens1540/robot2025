@@ -305,7 +305,7 @@ public class Superstructure {
                         grabber.commandRun(0.3)
                                 .until(grabber::forwardSensorTripped)
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
-                                .deadlineFor(intake.commandRunRollerFunnel(0.5, 0.3)),
+                                .deadlineFor(intake.commandRunRollerFunnel(0.8, 0.8)),
                         commandToState(SuperstructureState.STOW).alongWith(grabber.commandRun(0.0)))
                 .unless(grabber::hasAlgae);
     }
@@ -313,7 +313,7 @@ public class Superstructure {
     public Command coralGroundIntakeL1() {
         return Commands.sequence(
                 commandToState(SuperstructureState.INTAKE_GROUND_L1),
-                intake.commandRunRollerFunnel(0.5, 0.5).until(intake::hasCoral),
+                intake.commandRunRollerFunnel(0.8, 0.5).until(intake::hasCoral),
                 commandToState(SuperstructureState.STOW));
     }
 
