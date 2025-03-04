@@ -104,7 +104,11 @@ public class RobotContainer {
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             driver.x()
                     .onTrue(AutoScoreCommands.alignToBranchAndScore(
-                            FieldConstants.ReefBranch.E, ReefHeight.L3, driver.rightTrigger(), drivetrain, superstructure));
+                            FieldConstants.ReefBranch.E,
+                            ReefHeight.L3,
+                            driver.rightTrigger(),
+                            drivetrain,
+                            superstructure));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));

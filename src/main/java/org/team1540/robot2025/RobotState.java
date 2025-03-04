@@ -265,7 +265,7 @@ public class RobotState {
                         / (tagPoseMaxBlendDistanceMeters.get() - tagPoseMinBlendDistanceMeters.get()),
                 0.0,
                 1.0);
-        return getEstimatedPose().interpolate(singleTagPose.get(), t);
+        return getEstimatedPose().interpolate(singleTagPose.get(), 1.0 - t);
     }
 
     public boolean shouldReverseCoral() {
