@@ -102,12 +102,8 @@ public class RobotContainer {
         // Sim testing binding
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             driver.x()
-                    .onTrue(AutoScoreCommands.alignToBranchAndScore(
-                            FieldConstants.ReefBranch.E,
-                            ReefHeight.L3,
-                            driver.rightTrigger(),
-                            drivetrain,
-                            superstructure));
+                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
+                            FieldConstants.ReefBranch.E, ReefHeight.L3, drivetrain, superstructure));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
@@ -122,14 +118,13 @@ public class RobotContainer {
 
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
-                //                .and(() -> !grabber.hasAlgae())
                 .whileTrue(superstructure.coralGroundIntake())
                 .onFalse(superstructure.stow());
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1))
-                //                .or(grabber::hasAlgae)
                 .whileTrue(superstructure.coralGroundIntakeL1())
                 .onFalse(superstructure.stow());
+        driver.rightTrigger().onTrue(superstructure.score());
 
         climber.setDefaultCommand(climber.manualCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
 
@@ -141,13 +136,13 @@ public class RobotContainer {
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
-        copilot.y().onTrue(superstructure.L4(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
-        copilot.x().onTrue(superstructure.L3(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
-        copilot.a().onTrue(superstructure.L2(driver.rightTrigger(), RobotState.getInstance()::shouldReverseCoral));
-        copilot.povRight().onTrue(superstructure.L1(driver.rightTrigger()));
-        copilot.b().onTrue(superstructure.net(driver.rightTrigger()));
+        copilot.y().onTrue(superstructure.L4(RobotState.getInstance()::shouldReverseCoral));
+        copilot.x().onTrue(superstructure.L3(RobotState.getInstance()::shouldReverseCoral));
+        copilot.a().onTrue(superstructure.L2(RobotState.getInstance()::shouldReverseCoral));
+        copilot.povRight().onTrue(superstructure.L1());
+        copilot.b().onTrue(superstructure.net());
 
-        copilot.povLeft().onTrue(superstructure.processor(driver.rightTrigger()));
+        copilot.povLeft().onTrue(superstructure.processor());
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
         copilot.rightStick().onTrue(superstructure.stow());
 
@@ -159,11 +154,7 @@ public class RobotContainer {
                         .and(buttonBoard.flexFalse())
                         .and(driver.rightStick())
                         .whileTrue(AutoScoreCommands.alignToBranchAndScore(
-                                buttonBoard.reefButtonToBranch(button),
-                                height,
-                                driver.rightTrigger(),
-                                drivetrain,
-                                superstructure));
+                                buttonBoard.reefButtonToBranch(button), height, drivetrain, superstructure));
             }
             buttonBoard
                     .branchFaceAt(button)

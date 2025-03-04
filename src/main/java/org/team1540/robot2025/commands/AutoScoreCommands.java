@@ -5,7 +5,6 @@ import static org.team1540.robot2025.FieldConstants.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
-import java.util.function.BooleanSupplier;
 import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.Superstructure;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
@@ -17,11 +16,7 @@ public class AutoScoreCommands {
             new LoggedTunableNumber("AutoScore/PrepareDistanceMeters", 1.0);
 
     public static Command alignToBranchAndScore(
-            ReefBranch branch,
-            ReefHeight height,
-            BooleanSupplier scoreConfirm,
-            Drivetrain drivetrain,
-            Superstructure superstructure) {
+            ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
         return Commands.defer(
                 () -> {
                     boolean reverse = RobotState.getInstance().shouldReverseCoral(branch)
@@ -35,14 +30,9 @@ public class AutoScoreCommands {
                                                     .getDistance(AllianceFlipUtil.maybeFlipTranslation(
                                                             branch.scorePosition.getTranslation()))
                                             <= prepareDistanceMeters.get())
-                                    .andThen(superstructure.scoreCoral(height, scoreConfirm, () -> reverse)));
+                                    .andThen(superstructure.scoreCoral(height, () -> reverse)));
                 },
                 Set.of(superstructure.intake, superstructure.elevator, superstructure.arm, superstructure.grabber));
-    }
-
-    public static Command alignToBranchAndScore(
-            ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
-        return alignToBranchAndScore(branch, height, drivetrain::atAutoAlignGoal, drivetrain, superstructure);
     }
 
     public static Command alignToFaceAndDealgify(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {

@@ -63,23 +63,27 @@ public class Autos {
 
         routine.active().onTrue(startToE.cmd());
         routine.active().onTrue(superstructure.zeroCommand());
-        startToE.atTimeBeforeEnd(0.4)
+        startToE.atTimeBeforeEnd(0.6)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.E, ReefHeight.L4, drivetrain, superstructure)
-                        .andThen(eToRightLPToD.spawnCmd()));
+                        .andThen(
+                                superstructure.score(false),
+                                superstructure.stow().alongWith(eToRightLPToD.spawnCmd())));
         eToRightLPToD
                 .atTime("DeployIntake")
-                .onTrue(superstructure.coralGroundIntake().withTimeout(2.5).andThen(superstructure.stow()));
+                .onTrue(superstructure.coralGroundIntake().withTimeout(1.5).andThen(superstructure.stow()));
         eToRightLPToD
-                .atTimeBeforeEnd(0.4)
+                .atTimeBeforeEnd(0.6)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.D, ReefHeight.L4, drivetrain, superstructure)
-                        .andThen(dToCenterLPtoC.spawnCmd()));
+                        .andThen(
+                                superstructure.score(false),
+                                superstructure.stow().alongWith(dToCenterLPtoC.spawnCmd())));
         dToCenterLPtoC
                 .atTime("DeployIntake")
-                .onTrue(superstructure.coralGroundIntake().withTimeout(2.5).andThen(superstructure.stow()));
+                .onTrue(superstructure.coralGroundIntake().withTimeout(1.5).andThen(superstructure.stow()));
         dToCenterLPtoC
-                .atTimeBeforeEnd(0.4)
-                .onTrue(AutoScoreCommands.alignToBranchAndScore(
-                        ReefBranch.C, ReefHeight.L4, drivetrain, superstructure));
+                .atTimeBeforeEnd(0.6)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.C, ReefHeight.L4, drivetrain, superstructure)
+                        .andThen(superstructure.score()));
         return routine;
     }
 }
