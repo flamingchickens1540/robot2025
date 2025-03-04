@@ -13,7 +13,6 @@ import org.team1540.robot2025.FieldConstants.ReefHeight;
 import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.commands.AutoScoreCommands;
 import org.team1540.robot2025.subsystems.Superstructure;
-import org.team1540.robot2025.subsystems.Superstructure.SuperstructureState;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.util.AllianceFlipUtil;
 
@@ -69,20 +68,14 @@ public class Autos {
                         .andThen(eToRightLPToD.spawnCmd()));
         eToRightLPToD
                 .atTime("DeployIntake")
-                .onTrue(superstructure
-                        .coralGroundIntake()
-                        .withTimeout(2.5)
-                        .andThen(superstructure.commandToState(SuperstructureState.STOW)));
+                .onTrue(superstructure.coralGroundIntake().withTimeout(2.5).andThen(superstructure.stow()));
         eToRightLPToD
                 .atTimeBeforeEnd(0.4)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.D, ReefHeight.L4, drivetrain, superstructure)
                         .andThen(dToCenterLPtoC.spawnCmd()));
         dToCenterLPtoC
                 .atTime("DeployIntake")
-                .onTrue(superstructure
-                        .coralGroundIntake()
-                        .withTimeout(2.5)
-                        .andThen(superstructure.commandToState(SuperstructureState.STOW)));
+                .onTrue(superstructure.coralGroundIntake().withTimeout(2.5).andThen(superstructure.stow()));
         dToCenterLPtoC
                 .atTimeBeforeEnd(0.4)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(

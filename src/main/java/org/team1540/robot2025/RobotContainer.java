@@ -20,7 +20,6 @@ import org.team1540.robot2025.commands.AutoScoreCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
 import org.team1540.robot2025.subsystems.Superstructure;
-import org.team1540.robot2025.subsystems.Superstructure.SuperstructureState;
 import org.team1540.robot2025.subsystems.arm.Arm;
 import org.team1540.robot2025.subsystems.climber.Climber;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
@@ -104,14 +103,18 @@ public class RobotContainer {
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             driver.x()
                     .onTrue(AutoScoreCommands.alignToBranchAndScore(
-                            FieldConstants.ReefBranch.E, ReefHeight.L3, driver.rightTrigger(), drivetrain, superstructure));
+                            FieldConstants.ReefBranch.E,
+                            ReefHeight.L3,
+                            driver.rightTrigger(),
+                            drivetrain,
+                            superstructure));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
-        driver.leftStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
+        driver.leftStick().onTrue(superstructure.stow());
         driver.rightStick()
                 .and(buttonBoard.flexTrue())
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
@@ -121,24 +124,20 @@ public class RobotContainer {
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
                 //                .and(() -> !grabber.hasAlgae())
                 .whileTrue(superstructure.coralGroundIntake())
-                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+                .onFalse(superstructure.stow());
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1))
                 //                .or(grabber::hasAlgae)
                 .whileTrue(superstructure.coralGroundIntakeL1())
-                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+                .onFalse(superstructure.stow());
 
         climber.setDefaultCommand(climber.manualCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
 
         copilot.start().whileTrue(superstructure.zeroCommand());
         copilot.back()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
-        copilot.rightTrigger()
-                .whileTrue(superstructure.coralGroundIntake())
-                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
-        copilot.leftTrigger()
-                .whileTrue(superstructure.algaeIntake())
-                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
+        copilot.rightTrigger().whileTrue(superstructure.coralGroundIntake()).onFalse(superstructure.stow());
+        copilot.leftTrigger().whileTrue(superstructure.algaeIntake()).onFalse(superstructure.stow());
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
@@ -149,10 +148,8 @@ public class RobotContainer {
         copilot.b().onTrue(superstructure.net(driver.rightTrigger()));
 
         copilot.povLeft().onTrue(superstructure.processor(driver.rightTrigger()));
-        copilot.povDown()
-                .whileTrue(superstructure.coralIntakeEject())
-                .onFalse(superstructure.commandToState(SuperstructureState.STOW));
-        copilot.rightStick().onTrue(superstructure.commandToState(SuperstructureState.STOW));
+        copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
+        copilot.rightStick().onTrue(superstructure.stow());
 
         for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {
             for (ReefHeight height : ReefHeight.values()) {

@@ -183,13 +183,17 @@ public class Superstructure {
                 arm.commandToSetpoint(ArmState.STOW_ALGAE), arm.commandToSetpoint(ArmState.STOW), grabber::hasAlgae);
     }
 
+    public Command stow() {
+        return commandToState(SuperstructureState.STOW);
+    }
+
     private Command scoreCoral(SuperstructureState superstructureState, double grabberPower, BooleanSupplier confirm) {
         return Commands.sequence(
                         commandToState(superstructureState),
                         Commands.waitUntil(confirm),
                         grabber.commandRun(grabberPower).until(() -> !grabber.reverseSensorTripped()),
                         grabber.commandRun(grabberPower).withTimeout(0.25),
-                        commandToState(SuperstructureState.STOW))
+                        stow())
                 .unless(grabber::hasAlgae);
     }
 
@@ -208,7 +212,7 @@ public class Superstructure {
                 commandToState(SuperstructureState.L1_FRONT),
                 Commands.waitUntil(confirm),
                 intake.commandRunRollerFunnel(-0.2, -0.2),
-                commandToState(SuperstructureState.STOW));
+                stow());
     }
 
     public Command L2(BooleanSupplier confirm, BooleanSupplier shouldReverse) {
@@ -306,7 +310,7 @@ public class Superstructure {
                                 .until(grabber::forwardSensorTripped)
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
                                 .deadlineFor(intake.commandRunRollerFunnel(0.8, 0.8)),
-                        commandToState(SuperstructureState.STOW).alongWith(grabber.commandRun(0.0)))
+                        stow().alongWith(grabber.commandRun(0.0)))
                 .unless(grabber::hasAlgae);
     }
 
@@ -314,7 +318,7 @@ public class Superstructure {
         return Commands.sequence(
                 commandToState(SuperstructureState.INTAKE_GROUND_L1),
                 intake.commandRunRollerFunnel(0.8, 0.5).until(intake::hasCoral),
-                commandToState(SuperstructureState.STOW));
+                stow());
     }
 
     public Command coralIntakeEject() {
@@ -327,7 +331,7 @@ public class Superstructure {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_SOURCE),
                         intake.commandRunRoller(0.5).until(intake::hasCoral),
-                        commandToState(SuperstructureState.STOW))
+                        stow())
                 .unless(grabber::hasAlgae);
     }
 
@@ -337,7 +341,7 @@ public class Superstructure {
                         Commands.runOnce(() -> grabber.setPercent(1.0)),
                         Commands.waitUntil(grabber::hasAlgae),
                         Commands.runOnce(() -> grabber.setPercent(0.25)),
-                        commandToState(SuperstructureState.STOW))
+                        stow())
                 .unless(grabber::reverseSensorTripped)
                 .handleInterrupt(grabber::stop);
     }
@@ -347,7 +351,7 @@ public class Superstructure {
                 commandToState(SuperstructureState.PROCESSOR_BACK),
                 Commands.waitUntil(confirm),
                 grabber.commandRun(-0.5).withTimeout(0.5),
-                commandToState(SuperstructureState.STOW));
+                stow());
         //                .onlyIf(grabber::hasAlgae);
     }
 
@@ -356,7 +360,7 @@ public class Superstructure {
                 commandToState(SuperstructureState.SCORE_BARGE_BACK),
                 Commands.waitUntil(confirm),
                 grabber.commandRun(-0.8),
-                commandToState(SuperstructureState.STOW));
+                stow());
         //                .onlyIf(grabber::hasAlgae);
     }
 
@@ -371,7 +375,7 @@ public class Superstructure {
                                 .beforeStarting(Commands.waitSeconds(0.2))
                                 .beforeStarting(Commands.waitUntil(
                                         () -> elevator.getPosition() > ElevatorState.L3_BACK.height.getAsDouble()))),
-                commandToState(SuperstructureState.STOW));
+                stow());
         //                .onlyIf(grabber::hasAlgae);
     }
 
