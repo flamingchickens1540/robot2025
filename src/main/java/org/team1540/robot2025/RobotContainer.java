@@ -100,6 +100,13 @@ public class RobotContainer {
     }
 
     private void configureButtonBindings() {
+        // Sim testing binding
+        if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
+            driver.x()
+                    .onTrue(AutoScoreCommands.alignToBranchAndScore(
+                            FieldConstants.ReefBranch.E, ReefHeight.L3, driver.rightTrigger(), drivetrain, superstructure));
+        }
+
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
@@ -109,9 +116,6 @@ public class RobotContainer {
                 .and(buttonBoard.flexTrue())
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
                         .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
-        driver.x()
-                .onTrue(AutoScoreCommands.alignToBranchAndScore(
-                        FieldConstants.ReefBranch.E, ReefHeight.L3, driver.rightTrigger(), drivetrain, superstructure));
 
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
