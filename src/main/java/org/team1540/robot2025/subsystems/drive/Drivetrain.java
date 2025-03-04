@@ -447,15 +447,19 @@ public class Drivetrain extends SubsystemBase {
                 .until(() -> Math.abs(controller.getRightX()) >= 0.1);
     }
 
-    public Command driveToPoseCommand(Supplier<Pose2d> pose) {
+    public Command driveToPoseCommand(Supplier<Pose2d> goalPose, Supplier<Pose2d> poseEstimateSource) {
         return Commands.startRun(
-                        () -> autoAlignController.setGoal(pose),
+                        () -> autoAlignController.setGoal(goalPose),
                         () -> runVelocity(autoAlignController.calculate(
-                                RobotState.getInstance().getEstimatedPose(),
+                                poseEstimateSource.get(),
                                 RobotState.getInstance().getRobotVelocity())),
                         this)
                 .until(this::atAutoAlignGoal)
                 .finallyDo(this::stop);
+    }
+
+    public Command driveToPoseCommand(Supplier<Pose2d> goalPose) {
+        return driveToPoseCommand(goalPose, RobotState.getInstance()::getEstimatedPose);
     }
 
     public Command feedforwardCharacterization() {

@@ -2,6 +2,7 @@ package org.team1540.robot2025;
 
 import static org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionConstants.*;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -12,6 +13,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -20,6 +22,7 @@ import java.util.Optional;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.Logger;
+import org.team1540.robot2025.FieldConstants.ReefFace;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO;
 import org.team1540.robot2025.util.AllianceFlipUtil;
@@ -28,6 +31,10 @@ import org.team1540.robot2025.util.LoggedTunableNumber;
 public class RobotState {
     private static final LoggedTunableNumber singleTagObservationStaleSecs =
             new LoggedTunableNumber("Odometry/SingleTagObservationStaleSecs", 0.5);
+    private static final LoggedTunableNumber tagPoseMinBlendDistanceMeters =
+            new LoggedTunableNumber("Odometry/TagPoseMinBlendDistanceMeters", Units.inchesToMeters(24.0));
+    private static final LoggedTunableNumber tagPoseMaxBlendDistanceMeters =
+            new LoggedTunableNumber("Odometry/TagPoseMaxBlendDistanceMeters", Units.inchesToMeters(36.0));
 
     private static RobotState instance = null;
 
@@ -240,9 +247,30 @@ public class RobotState {
                 pose.getRotation().plus(Rotation2d.fromRadians(velocity.omegaRadiansPerSecond * lookaheadSeconds)));
     }
 
+    public Pose2d getReefAlignmentPose(ReefFace face) {
+        boolean isRed = AllianceFlipUtil.shouldFlip();
+        int tagID = isRed ? face.redTagID() : face.blueTagID();
+        Optional<Pose2d> singleTagPose = getSingleTagPose(tagID);
+
+        // If no single tag pose, return global pose estimate
+        if (singleTagPose.isEmpty()) return getEstimatedPose();
+
+        Pose2d tagPose = FieldConstants.aprilTagLayout
+                .getTagPose(tagID)
+                .orElse(Pose3d.kZero)
+                .toPose2d();
+        double t = MathUtil.clamp(
+                (getEstimatedPose().getTranslation().getDistance(tagPose.getTranslation())
+                                - tagPoseMinBlendDistanceMeters.get())
+                        / (tagPoseMaxBlendDistanceMeters.get() - tagPoseMinBlendDistanceMeters.get()),
+                0.0,
+                1.0);
+        return getEstimatedPose().interpolate(singleTagPose.get(), t);
+    }
+
     public boolean shouldReverseCoral() {
-        return Math.abs(FieldConstants.Reef.closestFace()
-                        .get()
+        return Math.abs(AllianceFlipUtil.maybeFlipPose(
+                                FieldConstants.Reef.closestFace().get().pose())
                         .getRotation()
                         .minus(RobotState.getInstance().getRobotRotation())
                         .getDegrees())

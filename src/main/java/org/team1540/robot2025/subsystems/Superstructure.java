@@ -18,6 +18,7 @@ import org.team1540.robot2025.subsystems.elevator.Elevator.ElevatorState;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.intake.Intake.IntakeState;
+import org.team1540.robot2025.util.AllianceFlipUtil;
 
 public class Superstructure {
     public enum SuperstructureState {
@@ -276,8 +277,8 @@ public class Superstructure {
     public Command dealgify() {
         return Commands.defer(
                 () -> {
-                    int degrees = (int) Math.round(FieldConstants.Reef.closestFace()
-                            .get()
+                    int degrees = (int) Math.round(AllianceFlipUtil.maybeFlipPose(
+                                    FieldConstants.Reef.closestFace().get().pose())
                             .getRotation()
                             .getDegrees());
                     if (degrees == -180 || degrees == 60 || degrees == -60) {
