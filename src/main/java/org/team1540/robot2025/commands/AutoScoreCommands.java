@@ -20,7 +20,7 @@ public class AutoScoreCommands {
         return Commands.defer(
                 () -> {
                     boolean reverse = RobotState.getInstance().shouldReverseCoral(branch)
-                            || height == ReefHeight.L4
+                            //                            || height == ReefHeight.L4
                             || height == ReefHeight.L1;
                     return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse)
                             .asProxy()

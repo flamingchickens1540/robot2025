@@ -1,9 +1,11 @@
 package org.team1540.robot2025.subsystems.leds;
 
 import static edu.wpi.first.units.Units.Microseconds;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Frequency;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.util.Color;
@@ -13,6 +15,7 @@ import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
 
 public class CustomLEDPatterns {
+    private static final Time DEFAULT_STROBE_DURATION = Seconds.of(0.07);
 
     public static LEDPattern movingRainbow(Frequency velocity) {
         return movingRainbow(velocity, 255, 255);
@@ -31,6 +34,14 @@ public class CustomLEDPatterns {
                 writer.setHSV(i, offset, saturation, value);
             }
         };
+    }
+
+    public static LEDPattern strobe(Color color, Time duration) {
+        return LEDPattern.solid(color).blink(duration);
+    }
+
+    public static LEDPattern strobe(Color color) {
+        return strobe(color, DEFAULT_STROBE_DURATION);
     }
 
     public static LEDPattern drivetrainSpeed(Color color) {

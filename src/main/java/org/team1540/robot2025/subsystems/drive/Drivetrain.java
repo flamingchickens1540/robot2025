@@ -86,6 +86,7 @@ public class Drivetrain extends SubsystemBase {
     private final SwerveSetpointGenerator setpointGenerator =
             new SwerveSetpointGenerator(ROBOT_CONFIG, MAX_STEER_SPEED_RAD_PER_SEC);
 
+    private boolean isAutoAligning = false;
     private final Debouncer atAutoAlignGoalDebounce = new Debouncer(0.1, Debouncer.DebounceType.kRising);
 
     private boolean isFFCharacterizing = false;
@@ -397,6 +398,11 @@ public class Drivetrain extends SubsystemBase {
         return states;
     }
 
+    @AutoLogOutput(key = "AutoAlign/IsRunning")
+    public boolean isAutoAligning() {
+        return isAutoAligning;
+    }
+
     @AutoLogOutput(key = "AutoAlign/AtGoal")
     public boolean atAutoAlignGoal() {
         return atAutoAlignGoalDebounce.calculate(autoAlignController.atGoal(0.01, Rotation2d.fromDegrees(1.0)));
@@ -449,13 +455,19 @@ public class Drivetrain extends SubsystemBase {
 
     public Command driveToPoseCommand(Supplier<Pose2d> pose) {
         return Commands.startRun(
-                        () -> autoAlignController.setGoal(pose),
+                        () -> {
+                            autoAlignController.setGoal(pose);
+                            isAutoAligning = true;
+                        },
                         () -> runVelocity(autoAlignController.calculate(
                                 RobotState.getInstance().getEstimatedPose(),
                                 RobotState.getInstance().getRobotVelocity())),
                         this)
                 .until(this::atAutoAlignGoal)
-                .finallyDo(this::stop);
+                .finallyDo(() -> {
+                    isAutoAligning = false;
+                    stop();
+                });
     }
 
     public Command feedforwardCharacterization() {
