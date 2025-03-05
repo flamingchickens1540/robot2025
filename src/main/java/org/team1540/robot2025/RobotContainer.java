@@ -170,10 +170,8 @@ public class RobotContainer {
 
     private void configureAutoRoutines() {
         autoChooser.addCmd("Zero mechanisms", superstructure::zeroCommand);
-        autoChooser.addCmd(
-                "AutoAlign test",
-                () -> AutoScoreCommands.alignToBranchAndScore(ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
         autoChooser.addRoutine("Right 3 Piece Lollipop", autos::right3PieceLollipop);
+        autoChooser.addRoutine("Left 3 Piece Lollipop", autos::left3PieceLollipop);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);
