@@ -138,7 +138,7 @@ public class RobotState {
             return;
         }
 
-        Optional<Pose2d> poseBufferSample = odometryPoseBuffer.getSample(observation.timestampSecs());
+        Optional<Pose2d> poseBufferSample = fusedPoseBuffer.getSample(observation.timestampSecs());
         if (poseBufferSample.isEmpty()) {
             return;
         }
