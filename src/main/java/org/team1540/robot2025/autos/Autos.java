@@ -122,4 +122,40 @@ public class Autos {
                         .andThen(superstructure.score()));
         return routine;
     }
+
+    public AutoRoutine left3PieceSweep() {
+        final String trajName = "Left3PieceSweep";
+
+        AutoRoutine routine = autoFactory.newRoutine("Left3PieceSweep");
+        AutoTrajectory startToJ = routine.trajectory(trajName, 0);
+        AutoTrajectory jToLeftLPtoK = routine.trajectory(trajName, 1);
+        AutoTrajectory kToCenterLPtoL = routine.trajectory(trajName, 2);
+
+        resetPoseInSim(routine, startToJ);
+
+        routine.active().onTrue(startToJ.cmd());
+        routine.active().onTrue(superstructure.zeroCommand());
+        startToJ.atTimeBeforeEnd(0.6)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.J, ReefHeight.L4, drivetrain, superstructure)
+                        .andThen(
+                                superstructure.score(false),
+                                superstructure.stow().alongWith(jToLeftLPtoK.spawnCmd())));
+        jToLeftLPtoK
+                .atTime("DeployIntake")
+                .onTrue(superstructure.coralGroundIntake().withTimeout(1.5).andThen(superstructure.stow()));
+        jToLeftLPtoK
+                .atTimeBeforeEnd(0.6)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.K, ReefHeight.L4, drivetrain, superstructure)
+                        .andThen(
+                                superstructure.score(false),
+                                superstructure.stow().alongWith(kToCenterLPtoL.spawnCmd())));
+        kToCenterLPtoL
+                .atTime("DeployIntake")
+                .onTrue(superstructure.coralGroundIntake().withTimeout(1.5).andThen(superstructure.stow()));
+        kToCenterLPtoL
+                .atTimeBeforeEnd(0.6)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.L, ReefHeight.L4, drivetrain, superstructure)
+                        .andThen(superstructure.score()));
+        return routine;
+    }
 }

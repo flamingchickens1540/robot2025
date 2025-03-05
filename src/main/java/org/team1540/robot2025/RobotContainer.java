@@ -172,6 +172,7 @@ public class RobotContainer {
         autoChooser.addCmd("Zero mechanisms", superstructure::zeroCommand);
         autoChooser.addRoutine("Right 3 Piece Lollipop", autos::right3PieceLollipop);
         autoChooser.addRoutine("Left 3 Piece Lollipop", autos::left3PieceLollipop);
+        autoChooser.addRoutine("Left 3 Piece Sweep", autos::left3PieceSweep);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);
