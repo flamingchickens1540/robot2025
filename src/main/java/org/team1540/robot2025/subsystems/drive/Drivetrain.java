@@ -398,6 +398,33 @@ public class Drivetrain extends SubsystemBase {
                 .until(() -> Math.abs(controller.getRightX()) >= 0.1);
     }
 
+    public Command teleopDriveOneDimensionPose(XboxController controller, Supplier<Pose2d> destination) {
+
+        Pose2d destPose = destination.get();
+        Pose2d currPose = RobotState.getInstance().getEstimatedPose();
+
+        Rotation2d heading = new Rotation2d(
+                        Math.atan2(destPose.getY() - currPose.getY(), destPose.getX() - currPose.getX()))
+                .plus(Rotation2d.kCCW_90deg);
+        return percentDriveCommand(
+                        () -> JoystickUtil.deadzonedJoystickTranslation(0, DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Blue ? -controller.getLeftY(): controller.getLeftY(), 0.1),
+                        () -> headingController.calculate(
+                                        RobotState.getInstance()
+                                                .getRobotRotation()
+                                                .getRadians(),
+                                        new TrapezoidProfile.State(heading.getRadians(), 0.0))
+                                / MAX_ANGULAR_SPEED_RAD_PER_SEC,
+                        () -> false)
+                .beforeStarting(() -> headingController.reset(
+                        RobotState.getInstance().getRobotRotation().getRadians(),
+                        RobotState.getInstance().getRobotVelocity().omegaRadiansPerSecond))
+                .alongWith(Commands.run(() -> {
+                    Logger.recordOutput("Drivetrain/HeadingGoal", heading);
+                    Logger.recordOutput("Drivetrain/PoseGoal", destination.get());
+                }))
+                .until(() -> Math.abs(controller.getRightX()) >= 0.1);
+    }
+
     public Command alignToPoseCommand(Pose2d pose) {
         return Commands.startRun(
                         () -> autoAlignController.setGoal(pose),

@@ -2,9 +2,13 @@ package org.team1540.robot2025.util;
 
 import static org.team1540.robot2025.FieldConstants.ReefHeight;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.team1540.robot2025.FieldConstants;
+
+import java.util.Optional;
 
 public class ButtonBoard {
     private static final int AXIS_STEP = 20;
@@ -66,10 +70,19 @@ public class ButtonBoard {
                 CommandScheduler.getInstance().getDefaultButtonLoop(), () -> getAxisState(4) == 1 && hid.isConnected());
     }
 
+
     public ReefButton getSelectedBranchFace() {
         return ReefButton.fromOrdinal(this.getAxisState(BRANCH_FACE_AXIS_ID));
     }
 
+    public Translation2d getSelectedCage() {
+        return switch (this.getAxisState(ALGAE_REEF_ACTION_AXIS_ID)) {
+            case 0 -> FieldConstants.Barge.leftCage;
+            case 1 -> FieldConstants.Barge.middleCage;
+            case 2 -> FieldConstants.Barge.rightCage;
+            default -> FieldConstants.Barge.rightCage;
+        };
+    }
     public int reefButtonToReefBranchIndex(ReefButton button) {
         return 12 - ((button.ordinal() + 4) % 12) - 1;
     }

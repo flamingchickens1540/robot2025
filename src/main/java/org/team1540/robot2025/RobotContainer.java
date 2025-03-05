@@ -103,7 +103,9 @@ public class RobotContainer {
         driver.leftStick()
                 .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
                         .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
-
+        driver.b()
+                .toggleOnTrue(drivetrain.teleopDriveOneDimensionPose(
+                        driver.getHID(), () -> new Pose2d(buttonBoard.getSelectedCage(), Rotation2d.kZero)));
         driver.leftTrigger()
                 .whileTrue(superstructure.coralGroundIntake())
                 .onFalse(superstructure.commandToState(SuperstructureState.STOW));
