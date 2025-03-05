@@ -30,7 +30,7 @@ import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class RobotState {
     private static final LoggedTunableNumber singleTagObservationStaleSecs =
-            new LoggedTunableNumber("Odometry/SingleTagObservationStaleSecs", 0.5);
+            new LoggedTunableNumber("Odometry/SingleTagObservationStaleSecs", 1.0);
     private static final LoggedTunableNumber tagPoseMinBlendDistanceMeters =
             new LoggedTunableNumber("Odometry/TagPoseMinBlendDistanceMeters", Units.inchesToMeters(24.0));
     private static final LoggedTunableNumber tagPoseMaxBlendDistanceMeters =
