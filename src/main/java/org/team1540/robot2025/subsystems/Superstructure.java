@@ -174,11 +174,6 @@ public class Superstructure {
                 Set.of(arm, elevator, intake));
     }
 
-    @AutoLogOutput(key = "Superstructure/ArmClear")
-    public boolean isArmClear() {
-        return elevator.getPosition() > clearanceHeight;
-    }
-
     public Command commandStowArm() {
         return new ConditionalCommand(
                 arm.commandToSetpoint(ArmState.STOW_ALGAE), arm.commandToSetpoint(ArmState.STOW), grabber::hasAlgae);
@@ -320,7 +315,7 @@ public class Superstructure {
                         grabber.commandRun(0.3)
                                 .until(grabber::forwardSensorTripped)
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
-                                .deadlineFor(intake.commandRunRollerFunnel(0.8, 0.8)),
+                                .deadlineFor(intake.commandRunRollerFunnel(0.75, 0.75)),
                         stow().alongWith(grabber.commandRun(0.0)))
                 .unless(grabber::hasAlgae);
     }

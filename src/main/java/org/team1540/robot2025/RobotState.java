@@ -71,7 +71,7 @@ public class RobotState {
                 lastGyroRotation,
                 lastModulePositions,
                 Pose2d.kZero,
-                VecBuilder.fill(0.1, 0.1, 0.1),
+                VecBuilder.fill(0.05, 0.05, 0.1),
                 VecBuilder.fill(0.5, 0.5, 5.0));
         resetTimer.start();
 

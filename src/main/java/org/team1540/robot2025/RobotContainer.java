@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefHeight;
 import org.team1540.robot2025.autos.Autos;
 import org.team1540.robot2025.commands.AutoAlignCommands;
@@ -31,6 +32,7 @@ import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
 import org.team1540.robot2025.util.ButtonBoard;
 import org.team1540.robot2025.util.JoystickUtil;
+import org.team1540.robot2025.util.MatchTriggers;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
@@ -96,6 +98,7 @@ public class RobotContainer {
         configureAutoRoutines();
         configureRobotModeTriggers();
         configurePeriodicCallbacks();
+        configureLEDBindings();
     }
 
     private void configureButtonBindings() {
@@ -103,7 +106,7 @@ public class RobotContainer {
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             driver.x()
                     .whileTrue(AutoScoreCommands.alignToBranchAndScore(
-                            FieldConstants.ReefBranch.E, ReefHeight.L3, drivetrain, superstructure));
+                            ReefBranch.E, ReefHeight.L3, drivetrain, superstructure));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
@@ -163,19 +166,13 @@ public class RobotContainer {
                     .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(
                             buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
         }
-
-        new Trigger(grabber::reverseSensorTripped)
-                .whileTrue(leds.viewFull
-                        .commandShowPattern(LEDPattern.solid(Color.kPurple).blink(Seconds.of(0.05)))
-                        .withTimeout(0.5)
-                        .andThen(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kPurple))));
-        new Trigger(grabber::forwardSensorTripped)
-                .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kYellow)));
-        new Trigger(intake::hasCoral).whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kOrange)));
     }
 
     private void configureAutoRoutines() {
         autoChooser.addCmd("Zero mechanisms", superstructure::zeroCommand);
+        autoChooser.addCmd(
+                "AutoAlign test",
+                () -> AutoScoreCommands.alignToBranchAndScore(ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
         autoChooser.addRoutine("Right 3 Piece Lollipop", autos::right3PieceLollipop);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
@@ -185,16 +182,6 @@ public class RobotContainer {
     }
 
     private void configureRobotModeTriggers() {
-        //        RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
-        RobotModeTriggers.disabled()
-                .whileTrue(leds.viewFull.commandShowPattern(
-                        CustomLEDPatterns.movingRainbow(Value.one().div(Second.of(5)))));
-        RobotModeTriggers.autonomous()
-                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(
-                        leds.viewFull.commandShowPattern(() -> LEDPattern.solid(Leds.getAllianceColor())))));
-        RobotModeTriggers.teleop()
-                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(leds.viewFull.commandShowPattern(
-                        () -> LEDPattern.solid(Leds.getAllianceColor()).breathe(Seconds.of(3))))));
         RobotModeTriggers.teleop()
                 .and(DriverStation::isFMSAttached)
                 .onTrue(Commands.runOnce(drivetrain::zeroFieldOrientation));
@@ -212,6 +199,39 @@ public class RobotContainer {
     private void addPeriodicCallback(Runnable callback, String name) {
         CommandScheduler.getInstance()
                 .schedule(Commands.run(callback).withName(name).ignoringDisable(true));
+    }
+
+    private void configureLEDBindings() {
+        // RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
+        RobotModeTriggers.disabled()
+                .whileTrue(leds.viewFull.commandShowPattern(CustomLEDPatterns.movingRainbow(Hertz.of(0.2))));
+        RobotModeTriggers.autonomous()
+                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(
+                        leds.viewFull.commandShowPattern(LEDPattern.solid(Leds.getAllianceColor())))));
+        RobotModeTriggers.teleop()
+                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(leds.viewFull.commandShowPattern(
+                        LEDPattern.solid(Leds.getAllianceColor()).breathe(Seconds.of(3))))));
+
+        new Trigger(drivetrain::isAutoAligning)
+                .and(DriverStation::isEnabled)
+                .whileTrue(leds.viewFull.commandShowPattern(CustomLEDPatterns.movingRainbow(Hertz.of(1.5))));
+        new Trigger(grabber::reverseSensorTripped)
+                .and(DriverStation::isEnabled)
+                .whileTrue(leds.viewFull
+                        .commandShowPattern(CustomLEDPatterns.strobe(Color.kPurple))
+                        .withTimeout(0.5)
+                        .alongWith(leds.viewTop.commandShowPattern(LEDPattern.solid(Color.kPurple))));
+        new Trigger(grabber::forwardSensorTripped)
+                .and(DriverStation::isEnabled)
+                .whileTrue(leds.viewTop.commandShowPattern(LEDPattern.solid(Color.kYellow)));
+        new Trigger(intake::hasCoral)
+                .and(DriverStation::isEnabled)
+                .whileTrue(leds.viewTop.commandShowPattern(LEDPattern.solid(Color.kOrangeRed)));
+
+        MatchTriggers.endgame()
+                .onTrue(leds.viewFull
+                        .commandShowPattern(CustomLEDPatterns.strobe(Color.kWhite))
+                        .withTimeout(1.5));
     }
 
     /**
