@@ -105,9 +105,8 @@ public class RobotContainer {
     private void configureButtonBindings() {
         // Sim testing binding
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
-            driver.x()
-                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
-                            ReefBranch.E, ReefHeight.L3, drivetrain, superstructure));
+            driver.y()
+                    .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain, superstructure));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
@@ -145,9 +144,9 @@ public class RobotContainer {
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
-        copilot.y().onTrue(superstructure.L4(()->true));
-        copilot.x().onTrue(superstructure.L3(()->true));
-        copilot.a().onTrue(superstructure.L2(()->true));
+        copilot.y().onTrue(superstructure.L4(() -> true));
+        copilot.x().onTrue(superstructure.L3(() -> true));
+        copilot.a().onTrue(superstructure.L2(() -> true));
         copilot.povRight().onTrue(superstructure.L1());
         copilot.b().onTrue(superstructure.net());
 
@@ -178,6 +177,7 @@ public class RobotContainer {
         autoChooser.addCmd("Zero mechanisms", superstructure::zeroCommand);
         autoChooser.addRoutine("Right 3 Piece Lollipop", autos::right3PieceLollipop);
         autoChooser.addRoutine("Left 3 Piece Lollipop", autos::left3PieceLollipop);
+        autoChooser.addRoutine("Right 3 Piece Sweep", autos::right3PieceSweep);
         autoChooser.addRoutine("Left 3 Piece Sweep", autos::left3PieceSweep);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
