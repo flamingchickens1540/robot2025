@@ -15,6 +15,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.services.MechanismVisualizer;
+import org.team1540.robot2025.util.LoggedTracer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class Intake extends SubsystemBase {
@@ -63,6 +64,8 @@ public class Intake extends SubsystemBase {
     }
 
     public void periodic() {
+        LoggedTracer.reset();
+
         io.updateInputs(inputs);
         Logger.processInputs("Intake", inputs);
 
@@ -86,6 +89,8 @@ public class Intake extends SubsystemBase {
         pivotDisconnectedAlert.set(!inputs.pivotConnected);
         rollerDisconnectedAlert.set(!inputs.spinConnected);
         funnelDisconnectedAlert.set(!inputs.funnelConnected);
+
+        LoggedTracer.record("Intake");
     }
 
     public void setRollerVoltage(double voltage) {

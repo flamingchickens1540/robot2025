@@ -14,6 +14,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.services.MechanismVisualizer;
+import org.team1540.robot2025.util.LoggedTracer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class Climber extends SubsystemBase {
@@ -52,6 +53,8 @@ public class Climber extends SubsystemBase {
     }
 
     public void periodic() {
+        LoggedTracer.reset();
+
         // update + process inputs!
         io.updateInputs(inputs);
         Logger.processInputs("Climber", inputs);
@@ -63,6 +66,8 @@ public class Climber extends SubsystemBase {
 
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configPID(kP.get(), kI.get(), kD.get()), kP, kI, kD);
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configFF(kS.get(), kV.get(), kG.get()), kS, kV, kG);
+
+        LoggedTracer.record("Climber");
     }
 
     public void holdPosition() {

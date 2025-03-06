@@ -11,6 +11,7 @@ import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.FieldConstants;
 import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO.PoseObservation;
+import org.team1540.robot2025.util.LoggedTracer;
 
 public class AprilTagVision extends SubsystemBase {
     private final AprilTagVisionIO[] visionIOs;
@@ -34,6 +35,8 @@ public class AprilTagVision extends SubsystemBase {
     }
 
     public void periodic() {
+        LoggedTracer.reset();
+
         for (int i = 0; i < visionIOs.length; i++) {
             visionIOs[i].updateInputs(cameraInputs[i]);
             Logger.processInputs("Vision/" + visionIOs[i].name, cameraInputs[i]);
@@ -70,6 +73,8 @@ public class AprilTagVision extends SubsystemBase {
         Logger.recordOutput("Vision/AcceptedPoses", lastAcceptedPoses.toArray(new Pose3d[0]));
         Logger.recordOutput("Vision/RejectedPoses", lastRejectedPoses.toArray(new Pose3d[0]));
         Logger.recordOutput("Vision/SeenTagPoses", lastSeenTagPoses.toArray(new Pose3d[0]));
+
+        LoggedTracer.record("AprilTagVision");
     }
 
     public static AprilTagVision createReal() {

@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.generated.TunerConstants;
+import org.team1540.robot2025.util.LoggedTracer;
 
 /**
  * Class for managing high-level robot alerts, such as low battery and CAN bus errors.
@@ -43,6 +44,8 @@ public class AlertManager {
     private final Alert tuningModeAlert = new Alert("Tuning mode is enabled", Alert.AlertType.kInfo);
 
     public void update() {
+        LoggedTracer.reset();
+
         tuningModeAlert.set(Constants.isTuningMode());
 
         // Update CAN bus alerts
@@ -64,5 +67,7 @@ public class AlertManager {
         lowBatteryAlert.set(
                 lowBatteryDebouncer.calculate(RobotController.getBatteryVoltage() < lowBatteryVoltageThreshold)
                         && lowBatteryDisabledDebouncer.calculate(DriverStation.isDisabled()));
+
+        LoggedTracer.record("AlertManager");
     }
 }

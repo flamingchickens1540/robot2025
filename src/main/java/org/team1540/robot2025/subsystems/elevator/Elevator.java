@@ -18,6 +18,7 @@ import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.commands.CharacterizationCommands;
 import org.team1540.robot2025.services.MechanismVisualizer;
+import org.team1540.robot2025.util.LoggedTracer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class Elevator extends SubsystemBase {
@@ -76,6 +77,8 @@ public class Elevator extends SubsystemBase {
 
     @Override
     public void periodic() {
+        LoggedTracer.reset();
+
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
 
@@ -88,6 +91,8 @@ public class Elevator extends SubsystemBase {
 
         leaderDisconnectedAlert.set(!inputs.connection[0]);
         followerDisconnectedAlert.set(!inputs.connection[1]);
+
+        LoggedTracer.record("Elevator");
     }
 
     public void setPosition(double positionMeters) {

@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import org.team1540.robot2025.util.LoggedTracer;
 
 public class Leds extends SubsystemBase {
     private final AddressableLED ledStrip = new AddressableLED(LEDS_PWM_PORT);
@@ -30,10 +31,14 @@ public class Leds extends SubsystemBase {
 
     @Override
     public void periodic() {
+        LoggedTracer.reset();
+
         for (LedWindow child : children) {
             child.apply();
         }
         ledStrip.setData(buffer);
+
+        LoggedTracer.record("LEDs");
     }
 
     public static Color getAllianceColor() {
