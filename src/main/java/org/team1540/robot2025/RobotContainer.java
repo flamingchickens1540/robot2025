@@ -130,13 +130,20 @@ public class RobotContainer {
                 .onFalse(superstructure.stow());
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1))
+                //                .and(() -> !grabber.forwardSensorTripped() && !grabber.reverseSensorTripped())
                 .whileTrue(superstructure.coralGroundIntakeL1())
                 .onFalse(superstructure.stow());
+        //        driver.leftTrigger()
+        //                .and(buttonBoard.branchHeightAt(ReefHeight.L1))
+        //                .and(() -> grabber.forwardSensorTripped() || grabber.reverseSensorTripped())
+        //                .whileTrue(superstructure.coralIntakeReverseHandoff())
+        //                .onFalse(superstructure.stow());
+
         driver.rightTrigger().onTrue(superstructure.score());
 
         climber.setDefaultCommand(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
 
-        copilot.start().whileTrue(superstructure.zeroCommand());
+        copilot.start().whileTrue(superstructure.zeroCommand().alongWith(Commands.runOnce(()->climber.resetPosition(Rotation2d.kZero))));
         copilot.back()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
         copilot.rightTrigger().whileTrue(superstructure.coralGroundIntake()).onFalse(superstructure.stow());
