@@ -163,7 +163,13 @@ public class Autos {
         routine.active().onTrue(startToJ.cmd());
         routine.active().onTrue(superstructure.zeroCommand());
         startToJ.atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
-                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.J, ReefHeight.L4, drivetrain, superstructure)
+                .onTrue(AutoScoreCommands.alignToBranchAndScoreL1Fallback(
+                                ReefBranch.J,
+                                ReefHeight.L4,
+                                drivetrain,
+                                superstructure,
+                                () -> !superstructure.grabber.forwardSensorTripped()
+                                        && !superstructure.grabber.reverseSensorTripped())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
@@ -177,7 +183,13 @@ public class Autos {
                         .andThen(superstructure.stow()));
         jToLeftSrcToK
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
-                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.K, ReefHeight.L4, drivetrain, superstructure)
+                .onTrue(AutoScoreCommands.alignToBranchAndScoreL1Fallback(
+                                ReefBranch.K,
+                                ReefHeight.L4,
+                                drivetrain,
+                                superstructure,
+                                () -> !superstructure.grabber.forwardSensorTripped()
+                                        && !superstructure.grabber.reverseSensorTripped())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
@@ -191,7 +203,13 @@ public class Autos {
                         .andThen(superstructure.stow()));
         kToLeftSrcToL
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
-                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.L, ReefHeight.L4, drivetrain, superstructure)
+                .onTrue(AutoScoreCommands.alignToBranchAndScoreL1Fallback(
+                                ReefBranch.L,
+                                ReefHeight.L4,
+                                drivetrain,
+                                superstructure,
+                                () -> !superstructure.grabber.forwardSensorTripped()
+                                        && !superstructure.grabber.reverseSensorTripped())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(Commands.waitSeconds(SCORE_WAIT_TIME), superstructure.score()));
         return routine;
@@ -210,7 +228,13 @@ public class Autos {
         routine.active().onTrue(startToE.cmd());
         routine.active().onTrue(superstructure.zeroCommand());
         startToE.atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
-                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.E, ReefHeight.L4, drivetrain, superstructure)
+                .onTrue(AutoScoreCommands.alignToBranchAndScoreL1Fallback(
+                                ReefBranch.E,
+                                ReefHeight.L4,
+                                drivetrain,
+                                superstructure,
+                                () -> !superstructure.grabber.forwardSensorTripped()
+                                        && !superstructure.grabber.reverseSensorTripped())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
@@ -224,7 +248,13 @@ public class Autos {
                         .andThen(superstructure.stow()));
         eToRightSrcToD
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
-                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.D, ReefHeight.L4, drivetrain, superstructure)
+                .onTrue(AutoScoreCommands.alignToBranchAndScoreL1Fallback(
+                                ReefBranch.D,
+                                ReefHeight.L4,
+                                drivetrain,
+                                superstructure,
+                                () -> !superstructure.grabber.forwardSensorTripped()
+                                        && !superstructure.grabber.reverseSensorTripped())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
@@ -238,9 +268,79 @@ public class Autos {
                         .andThen(superstructure.stow()));
         dToRightSrcToC
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
-                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.C, ReefHeight.L4, drivetrain, superstructure)
+                .onTrue(AutoScoreCommands.alignToBranchAndScoreL1Fallback(
+                                ReefBranch.C,
+                                ReefHeight.L4,
+                                drivetrain,
+                                superstructure,
+                                () -> !superstructure.grabber.forwardSensorTripped()
+                                        && !superstructure.grabber.reverseSensorTripped())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(Commands.waitSeconds(SCORE_WAIT_TIME), superstructure.score()));
+        return routine;
+    }
+
+    public AutoRoutine center1PieceBarge() {
+        final String trajName = "Center1PieceBarge";
+
+        AutoRoutine routine = autoFactory.newRoutine("Center1PieceBarge");
+        AutoTrajectory startToH = routine.trajectory(trajName, 0);
+        AutoTrajectory hToBarge = routine.trajectory(trajName, 1);
+
+        resetPoseInSim(routine, startToH);
+        routine.active().onTrue(startToH.cmd());
+        routine.active().onTrue(superstructure.zeroCommand());
+
+        startToH.atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .onTrue(AutoScoreCommands.alignToBranchAndScoreL1Fallback(
+                                ReefBranch.H,
+                                ReefHeight.L4,
+                                drivetrain,
+                                superstructure,
+                                () -> !superstructure.grabber.forwardSensorTripped()
+                                        && !superstructure.grabber.reverseSensorTripped())
+                        .withTimeout(ALIGN_TIMEOUT)
+                        .andThen(
+                                Commands.waitSeconds(SCORE_WAIT_TIME),
+                                superstructure.score(false),
+                                AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.H.face, drivetrain, superstructure)
+                                        .withTimeout(ALIGN_TIMEOUT),
+                                hToBarge.spawnCmd()));
+        hToBarge.done()
+                .onTrue(superstructure.net().andThen(Commands.waitSeconds(SCORE_WAIT_TIME), superstructure.score()));
+
+        return routine;
+    }
+
+    public AutoRoutine center1PieceProcessor() {
+        final String trajName = "Center1PieceProcessor";
+
+        AutoRoutine routine = autoFactory.newRoutine("Center1PieceProcessor");
+        AutoTrajectory startToG = routine.trajectory(trajName, 0);
+        AutoTrajectory gToProcessor = routine.trajectory(trajName, 1);
+
+        resetPoseInSim(routine, startToG);
+        routine.active().onTrue(startToG.cmd());
+        routine.active().onTrue(superstructure.zeroCommand());
+
+        startToG.atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .onTrue(AutoScoreCommands.alignToBranchAndScoreL1Fallback(
+                                ReefBranch.G,
+                                ReefHeight.L4,
+                                drivetrain,
+                                superstructure,
+                                () -> !superstructure.grabber.forwardSensorTripped()
+                                        && !superstructure.grabber.reverseSensorTripped())
+                        .withTimeout(ALIGN_TIMEOUT)
+                        .andThen(
+                                Commands.waitSeconds(SCORE_WAIT_TIME),
+                                superstructure.score(false),
+                                AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.H.face, drivetrain, superstructure)
+                                        .withTimeout(ALIGN_TIMEOUT),
+                                gToProcessor.spawnCmd()));
+        gToProcessor.done().onTrue(Commands.waitSeconds(SCORE_WAIT_TIME).andThen(superstructure.score()));
+        gToProcessor.atTime("Processor").onTrue(superstructure.processor());
+
         return routine;
     }
 }

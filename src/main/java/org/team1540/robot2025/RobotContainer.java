@@ -139,11 +139,16 @@ public class RobotContainer {
         //                .whileTrue(superstructure.coralIntakeReverseHandoff())
         //                .onFalse(superstructure.stow());
 
+        driver.leftBumper().whileTrue(superstructure.algaeIntake()).onFalse(superstructure.stow());
+
         driver.rightTrigger().onTrue(superstructure.score());
 
         climber.setDefaultCommand(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
 
-        copilot.start().whileTrue(superstructure.zeroCommand().alongWith(Commands.runOnce(()->climber.resetPosition(Rotation2d.kZero))));
+        copilot.start()
+                .whileTrue(superstructure
+                        .zeroCommand()
+                        .alongWith(Commands.runOnce(() -> climber.resetPosition(Rotation2d.kZero))));
         copilot.back()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
         copilot.rightTrigger().whileTrue(superstructure.coralGroundIntake()).onFalse(superstructure.stow());
@@ -178,14 +183,18 @@ public class RobotContainer {
                     .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(
                             buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
         }
+
+        new Trigger(() -> climber.getPosition().getDegrees() > 10).onTrue(superstructure.processor());
     }
 
     private void configureAutoRoutines() {
         autoChooser.addCmd("Zero mechanisms", superstructure::zeroCommand);
-        autoChooser.addRoutine("Right 3 Piece Lollipop", autos::right3PieceLollipop);
-        autoChooser.addRoutine("Left 3 Piece Lollipop", autos::left3PieceLollipop);
+        //        autoChooser.addRoutine("Right 3 Piece Lollipop", autos::right3PieceLollipop);
+        //        autoChooser.addRoutine("Left 3 Piece Lollipop", autos::left3PieceLollipop);
         autoChooser.addRoutine("Right 3 Piece Sweep", autos::right3PieceSweep);
         autoChooser.addRoutine("Left 3 Piece Sweep", autos::left3PieceSweep);
+        autoChooser.addRoutine("Center 1 Piece Barge", autos::center1PieceBarge);
+        autoChooser.addRoutine("Center 1 Piece Processor", autos::center1PieceProcessor);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);
@@ -197,6 +206,9 @@ public class RobotContainer {
         RobotModeTriggers.teleop()
                 .and(DriverStation::isFMSAttached)
                 .onTrue(Commands.runOnce(drivetrain::zeroFieldOrientation));
+        RobotModeTriggers.teleop()
+                .and(DriverStation::isFMSAttached)
+                .onTrue(Commands.runOnce(() -> climber.resetPosition(Rotation2d.kZero)));
     }
 
     private void configurePeriodicCallbacks() {
