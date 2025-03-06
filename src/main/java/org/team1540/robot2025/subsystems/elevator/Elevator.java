@@ -1,8 +1,11 @@
 package org.team1540.robot2025.subsystems.elevator;
 
+import static org.team1540.robot2025.subsystems.arm.ArmConstants.CRUISE_VELOCITY_RPS;
+import static org.team1540.robot2025.subsystems.arm.ArmConstants.MAX_ACCEL_RPS2;
 import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
@@ -24,14 +27,20 @@ public class Elevator extends SubsystemBase {
         STOW(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
         FUNNEL(new LoggedTunableNumber("Elevator/Setpoints/Funnel", 0.242)),
         GROUND_CORAL(new LoggedTunableNumber("Elevator/Setpoints/GroundCoral", 0)),
-        L1_BACK(new LoggedTunableNumber("Elevator/Setpoints/L1Back", 0.7)),
-        L2(new LoggedTunableNumber("Elevator/Setpoints/L2", 0.55)),
-        L3(new LoggedTunableNumber("Elevator/Setpoints/L3", 0.92)),
-        L4(new LoggedTunableNumber("Elevator/Setpoints/L4", MAX_HEIGHT_M)),
+        L1_BACK(new LoggedTunableNumber("Elevator/Setpoints/L1Back", 0.2)),
+        L1_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L1Front", 0.2)),
+        L2_BACK(new LoggedTunableNumber("Elevator/Setpoints/L2Back", 0.55)),
+        L2_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L2Front", 0.60)),
+        L3_BACK(new LoggedTunableNumber("Elevator/Setpoints/L3Back", 0.98)),
+        L3_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L3Front", 0.95)),
+        L4_BACK(new LoggedTunableNumber("Elevator/Setpoints/L4Back", MAX_HEIGHT_M)),
+        L4_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L4Front", MAX_HEIGHT_M)),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
-        GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.47)),
-        REEF_ALGAE_LOW(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLow", 0.75)),
-        REEF_ALGAE_HIGH(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHigh", 1.15)),
+        GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.42)),
+        REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowBack", 0.75)),
+        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowFront", 0.75)),
+        REEF_ALGAE_HIGH_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighBack", 1.15)),
+        REEF_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighFront", 1.15)),
         PROCESSOR(new LoggedTunableNumber("Elevator/Setpoints/Processor", 0.254)), // TODO: get value
         STOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/StowAlgae", 0.03));
 
@@ -55,6 +64,9 @@ public class Elevator extends SubsystemBase {
 
     private final Alert leaderDisconnectedAlert = new Alert("Elevator leader disconnected", Alert.AlertType.kError);
     private final Alert followerDisconnectedAlert = new Alert("Elevator follower disconnected", Alert.AlertType.kError);
+
+    private final TrapezoidProfile trapezoidProfile =
+            new TrapezoidProfile(new TrapezoidProfile.Constraints(CRUISE_VELOCITY_RPS, MAX_ACCEL_RPS2));
 
     private Elevator(ElevatorIO elevatorIO) {
         if (hasInstance) throw new IllegalStateException("Instance of elevator already exists");
@@ -103,6 +115,19 @@ public class Elevator extends SubsystemBase {
         return setpointMeters;
     }
 
+    public double timeToSetpoint(double setpoint) {
+        trapezoidProfile.calculate(
+                0.0,
+                new TrapezoidProfile.State(getPosition(), inputs.velocityMPS[0]),
+                new TrapezoidProfile.State(setpoint, 0));
+        return trapezoidProfile.totalTime();
+    }
+
+    @AutoLogOutput(key = "Elevator/TimeToSetpoint")
+    public double timeToSetpoint() {
+        return timeToSetpoint(getSetpoint());
+    }
+
     public double getPosition() {
         return inputs.positionMeters[0];
     }
@@ -146,12 +171,14 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command zeroCommand() {
-        return Commands.runOnce(() -> setVoltage(-1.5), this)
-                .andThen(
-                        Commands.waitSeconds(0.5),
-                        Commands.waitUntil(() -> inputs.statorCurrentAmps[0] > 40),
-                        Commands.runOnce(() -> resetPosition(0)),
-                        commandToSetpoint(ElevatorState.STOW));
+        return Commands.deadline(
+                        Commands.waitUntil(() -> inputs.statorCurrentAmps[0] > 40)
+                                .andThen(Commands.waitSeconds(0.5)),
+                        commandToSetpoint(ElevatorState.STOW)
+                                .onlyIf(() -> getPosition() > ElevatorState.STOW.height.getAsDouble())
+                                .withTimeout(0.5)
+                                .andThen(Commands.runOnce(() -> setVoltage(-2.5), this)))
+                .andThen(Commands.runOnce(() -> resetPosition(0)), commandToSetpoint(ElevatorState.STOW));
     }
 
     public Command feedforwardCharacterizationCommand() {

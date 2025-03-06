@@ -28,6 +28,8 @@ public interface ClimberIO {
     // runs closed loop to given position
     default void setSetpoint(Rotation2d motorPosition) {}
 
+    default void resetPivotPosition(Rotation2d position) {}
+
     // configures the PID controller
     default void configPID(double kP, double kI, double kD) {}
 

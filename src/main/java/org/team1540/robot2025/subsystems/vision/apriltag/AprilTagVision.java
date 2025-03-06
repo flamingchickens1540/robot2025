@@ -46,13 +46,21 @@ public class AprilTagVision extends SubsystemBase {
         lastSeenTagPoses.clear();
         for (int i = 0; i < visionIOs.length; i++) {
             disconnectedAlerts[i].set(!cameraInputs[i].connected);
-            for (PoseObservation poseObservation : cameraInputs[i].poseObservations) {
-                if (robotState.addVisionMeasurement(poseObservation)) {
-                    lastAcceptedPoses.add(poseObservation.estimatedPoseMeters());
+
+            // Send global pose observations
+            for (PoseObservation observation : cameraInputs[i].poseObservations) {
+                if (robotState.addVisionMeasurement(observation)) {
+                    lastAcceptedPoses.add(observation.estimatedPoseMeters());
                 } else {
-                    lastRejectedPoses.add(poseObservation.estimatedPoseMeters());
+                    lastRejectedPoses.add(observation.estimatedPoseMeters());
                 }
             }
+
+            // Send single tag poses
+            for (AprilTagVisionIO.SingleTagObservation observation : cameraInputs[i].singleTagObservations) {
+                robotState.addSingleTagMeasurement(observation);
+            }
+
             lastSeenTagPoses.addAll(Arrays.stream(cameraInputs[i].seenTagIDs)
                     .mapToObj(tagID ->
                             FieldConstants.aprilTagLayout.getTagPose(tagID).orElse(Pose3d.kZero))

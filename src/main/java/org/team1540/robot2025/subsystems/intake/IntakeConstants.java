@@ -3,10 +3,13 @@ package org.team1540.robot2025.subsystems.intake;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 
-public class CoralIntakeConstants {
+public class IntakeConstants {
     public static final int SPIN_MOTOR_ID = 6;
     public static final int PIVOT_MOTOR_ID = 5;
     public static final int FUNNEL_MOTOR_ID = 4;
+    public static final int LASER_CAN_ID = 33;
+
+    public static final double LASER_CAN_DETECT_DISTANCE_MM = 50.0;
 
     public static final double SPIN_GEAR_RATIO = 2.0;
     public static final double FUNNEL_GEAR_RATIO = 1.0;
@@ -19,8 +22,8 @@ public class CoralIntakeConstants {
     public static final double PIVOT_KI = 0;
     public static final double PIVOT_KD = 0;
 
-    public static final double PIVOT_CRUISE_VELOCITY_RPS = 1.5;
-    public static final double PIVOT_ACCELERATION_RPS2 = 5.0;
+    public static final double PIVOT_CRUISE_VELOCITY_RPS = 2.0;
+    public static final double PIVOT_ACCELERATION_RPS2 = 10.0;
 
     public static final Rotation2d PIVOT_MIN_ANGLE = Rotation2d.fromDegrees(2.5);
     public static final Rotation2d PIVOT_MAX_ANGLE = Rotation2d.fromDegrees(86);

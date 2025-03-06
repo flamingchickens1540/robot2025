@@ -71,6 +71,9 @@ public class FieldConstants {
         public static final List<ReefFace> faces =
                 new ArrayList<>(); // Starting facing the driver station in counterclockwise order
 
+        private static final int[] blueFaceTagIDs = {18, 17, 22, 21, 20, 19};
+        private static final int[] redFaceTagIDs = {7, 8, 9, 10, 11, 6};
+
         static {
             // Initialize branch positions
             for (int face = 0; face < 6; face++) {
@@ -127,17 +130,24 @@ public class FieldConstants {
                 faces.add(new ReefFace(
                         centerFaces[face],
                         scorePositions.get(scorePositions.size() - 2),
-                        scorePositions.get(scorePositions.size() - 1)));
+                        scorePositions.get(scorePositions.size() - 1),
+                        centerFaces[face].transformBy(new Transform2d(
+                                Constants.BUMPER_LENGTH_X_METERS / 2,
+                                GrabberConstants.Y_OFFSET_METERS,
+                                Rotation2d.kZero)),
+                        face % 2 == 0,
+                        blueFaceTagIDs[face],
+                        redFaceTagIDs[face]));
             }
         }
 
-        public static Supplier<Pose2d> closestBranch() {
+        public static Supplier<ReefBranch> closestBranch() {
             return () -> {
-                Pose2d closestBranch = new Pose2d();
+                ReefBranch closestBranch = ReefBranch.A;
                 double closestDistance = Double.MAX_VALUE;
 
-                for (Pose2d pose : FieldConstants.Reef.scorePositions) {
-                    pose = AllianceFlipUtil.maybeFlipPose(pose);
+                for (ReefBranch branch : ReefBranch.values()) {
+                    Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
                     double distance = RobotState.getInstance()
                             .getEstimatedPose()
                             .minus(pose)
@@ -145,20 +155,21 @@ public class FieldConstants {
                             .getNorm();
                     if (distance < closestDistance) {
                         closestDistance = distance;
-                        closestBranch = pose;
+                        closestBranch = branch;
                     }
                 }
+
                 return closestBranch;
             };
         }
 
-        public static Supplier<Pose2d> closestFace() {
+        public static Supplier<ReefFace> closestFace() {
             return () -> {
-                Pose2d closestFace = new Pose2d();
+                ReefFace closestFace = Reef.faces.get(0);
                 double closestDistance = Double.MAX_VALUE;
 
-                for (Pose2d pose : Reef.centerFaces) {
-                    pose = AllianceFlipUtil.maybeFlipPose(pose);
+                for (ReefFace face : Reef.faces) {
+                    Pose2d pose = AllianceFlipUtil.maybeFlipPose(face.pose);
                     double distance = RobotState.getInstance()
                             .getEstimatedPose()
                             .minus(pose)
@@ -166,9 +177,10 @@ public class FieldConstants {
                             .getNorm();
                     if (distance < closestDistance) {
                         closestDistance = distance;
-                        closestFace = pose;
+                        closestFace = face;
                     }
                 }
+
                 return closestFace;
             };
         }
@@ -218,9 +230,11 @@ public class FieldConstants {
         L;
 
         public final Pose2d scorePosition;
+        public final ReefFace face;
 
         ReefBranch() {
             scorePosition = Reef.scorePositions.get(ordinal());
+            face = Reef.faces.get(ordinal() / 2);
         }
 
         public static ReefBranch fromOrdinal(int value) {
@@ -228,7 +242,14 @@ public class FieldConstants {
         }
     }
 
-    public record ReefFace(Pose2d pose, Pose2d leftBranchScore, Pose2d rightBranchScore) {}
+    public record ReefFace(
+            Pose2d pose,
+            Pose2d leftBranchScore,
+            Pose2d rightBranchScore,
+            Pose2d dealgifyPosition,
+            boolean highDealgify,
+            int blueTagID,
+            int redTagID) {}
 
     public static final double aprilTagWidth = Units.inchesToMeters(6.50);
     public static final int aprilTagCount = 22;

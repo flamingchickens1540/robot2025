@@ -19,7 +19,7 @@ public class Grabber extends SubsystemBase {
             new Alert("Before sensor is disconnected", Alert.AlertType.kWarning);
     private final Alert afterSensorDisconnectedAlert =
             new Alert("After sensor is disconnected", Alert.AlertType.kWarning);
-    private final Debouncer algaeDebounce = new Debouncer(0.2);
+    private final Debouncer algaeDebounce = new Debouncer(0.3);
     private boolean hasAlgae = false;
 
     private Grabber(GrabberIO grabberIO, SensorIO sensorIO) {
@@ -39,7 +39,7 @@ public class Grabber extends SubsystemBase {
         beforeSensorDisconnectedAlert.set(!sensorInputs.beforeSensorConnected);
         afterSensorDisconnectedAlert.set(!sensorInputs.afterSensorConnected);
         hasAlgae = algaeDebounce.calculate(
-                !reverseSensorTripped() && getStatorCurrent() > 30 && grabberInputs.motorVelocityRPM < 100);
+                !reverseSensorTripped() && getStatorCurrent() > 60 && grabberInputs.motorVelocityRPM < 10);
 
         if (RobotState.isDisabled()) {
             stop();

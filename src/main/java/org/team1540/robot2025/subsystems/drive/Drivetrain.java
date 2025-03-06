@@ -12,6 +12,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
 import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -50,13 +51,22 @@ public class Drivetrain extends SubsystemBase {
     private static boolean hasInstance;
     static final Lock odometryLock = new ReentrantLock();
 
-    private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 4.0);
+    private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 6.0);
     private static final LoggedTunableNumber translationKI = new LoggedTunableNumber("Drivetrain/Translation/kI", 0.0);
     private static final LoggedTunableNumber translationKD = new LoggedTunableNumber("Drivetrain/Translation/kD", 0.0);
 
-    private static final LoggedTunableNumber headingKP = new LoggedTunableNumber("Drivetrain/Heading/kP", 6.5);
+    private static final LoggedTunableNumber headingKP = new LoggedTunableNumber("Drivetrain/Heading/kP", 4.0);
     private static final LoggedTunableNumber headingKI = new LoggedTunableNumber("Drivetrain/Heading/kI", 0.0);
     private static final LoggedTunableNumber headingKD = new LoggedTunableNumber("Drivetrain/Heading/kD", 0.0);
+
+    private static final LoggedTunableNumber autoAlignLinearSpeedFactor =
+            new LoggedTunableNumber("AutoAlign/LinearSpeedFactor", 0.4);
+    private static final LoggedTunableNumber autoAlignLinearAccelFactor =
+            new LoggedTunableNumber("AutoAlign/LinearAccelFactor", 0.5);
+    private static final LoggedTunableNumber autoAlignRotationSpeedFactor =
+            new LoggedTunableNumber("AutoAlign/RotationSpeedFactor", 0.5);
+    private static final LoggedTunableNumber autoAlignRotationAccelFactor =
+            new LoggedTunableNumber("AutoAlign/RotationAccelFactor", 0.5);
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -76,6 +86,9 @@ public class Drivetrain extends SubsystemBase {
     private final SwerveSetpointGenerator setpointGenerator =
             new SwerveSetpointGenerator(ROBOT_CONFIG, MAX_STEER_SPEED_RAD_PER_SEC);
 
+    private boolean isAutoAligning = false;
+    private final Debouncer atAutoAlignGoalDebounce = new Debouncer(0.1, Debouncer.DebounceType.kRising);
+
     private boolean isFFCharacterizing = false;
     private double ffCharacterizationInput = 0.0;
 
@@ -94,10 +107,10 @@ public class Drivetrain extends SubsystemBase {
             headingKP.get(),
             headingKI.get(),
             headingKD.get(),
-            MAX_LINEAR_SPEED_MPS * 0.5,
-            MAX_LINEAR_ACCEL_MPS2 * 0.5,
-            MAX_ANGULAR_SPEED_RAD_PER_SEC * 0.5,
-            MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * 0.5);
+            MAX_LINEAR_SPEED_MPS * autoAlignLinearSpeedFactor.get(),
+            MAX_LINEAR_ACCEL_MPS2 * autoAlignLinearAccelFactor.get(),
+            MAX_ANGULAR_SPEED_RAD_PER_SEC * autoAlignRotationSpeedFactor.get(),
+            MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * autoAlignRotationAccelFactor.get());
 
     private final ProfiledPIDController headingController = new ProfiledPIDController(
             headingKP.get(),
@@ -268,6 +281,20 @@ public class Drivetrain extends SubsystemBase {
                 headingKP,
                 headingKI,
                 headingKD);
+        LoggedTunableNumber.ifChanged(
+                hashCode(),
+                () -> {
+                    autoAlignController.setTranslationConstraints(
+                            autoAlignLinearSpeedFactor.get() * MAX_LINEAR_SPEED_MPS,
+                            autoAlignLinearAccelFactor.get() * MAX_LINEAR_ACCEL_MPS2);
+                    autoAlignController.setRotationConstraints(
+                            autoAlignRotationSpeedFactor.get() * MAX_ANGULAR_SPEED_RAD_PER_SEC,
+                            autoAlignRotationAccelFactor.get() * MAX_ANGULAR_ACCEL_RAD_PER_SEC2);
+                },
+                autoAlignLinearSpeedFactor,
+                autoAlignLinearAccelFactor,
+                autoAlignRotationSpeedFactor,
+                autoAlignRotationAccelFactor);
     }
 
     /**
@@ -284,7 +311,9 @@ public class Drivetrain extends SubsystemBase {
         runVelocity(trajectoryController.calculate(RobotState.getInstance().getEstimatedPose(), trajectorySample));
     }
 
-    /** Stops the drive. */
+    /**
+     * Stops the drive.
+     */
     public void stop() {
         runVelocity(new ChassisSpeeds());
     }
@@ -301,49 +330,65 @@ public class Drivetrain extends SubsystemBase {
         stop();
     }
 
-    /** Zeroes field-oriented drive to the direction the robot is facing */
+    /**
+     * Zeroes field-oriented drive to the direction the robot is facing
+     */
     public void zeroFieldOrientationManual() {
         fieldOrientationOffset = rawGyroRotation;
     }
 
-    /** Zeroes field-oriented drive to the field based on the calculated odometry yaw */
+    /**
+     * Zeroes field-oriented drive to the field based on the calculated odometry yaw
+     */
     public void zeroFieldOrientation() {
         fieldOrientationOffset = rawGyroRotation.minus(
                 AllianceFlipUtil.maybeFlipRotation(RobotState.getInstance().getRobotRotation()));
     }
 
-    /** Sets the brake mode of all modules */
+    /**
+     * Sets the brake mode of all modules
+     */
     public void setBrakeMode(boolean enabled) {
         for (Module module : modules) module.setBrakeMode(enabled);
     }
 
-    /** Orients all modules forward and applies the specified voltage to the drive motors */
+    /**
+     * Orients all modules forward and applies the specified voltage to the drive motors
+     */
     private void runFFCharacterization(double volts) {
         ffCharacterizationInput = volts;
         isFFCharacterizing = true;
     }
 
-    /** Ends characterization and returns to default drive behavior */
+    /**
+     * Ends characterization and returns to default drive behavior
+     */
     private void endFFCharacterization() {
         ffCharacterizationInput = 0;
         isFFCharacterizing = false;
     }
 
-    /** Returns the average velocity of each module in rot/s */
+    /**
+     * Returns the average velocity of each module in rot/s
+     */
     private double getFFCharacterizationVelocity() {
         double driveVelocityAverage = 0;
         for (Module module : modules) driveVelocityAverage += module.getFFCharacterizationVelocity();
         return driveVelocityAverage / modules.length;
     }
 
-    /** Returns the position of each module in radians */
+    /**
+     * Returns the position of each module in radians
+     */
     private double[] getWheelRadiusCharacterizationPositions() {
         return Arrays.stream(modules)
                 .mapToDouble(Module::getWheelRadiusCharacterizationPosition)
                 .toArray();
     }
 
-    /** Returns the module states (turn angles and drive velocities) for all the modules. */
+    /**
+     * Returns the module states (turn angles and drive velocities) for all the modules.
+     */
     @AutoLogOutput(key = "Drivetrain/SwerveStates/Measured")
     public SwerveModuleState[] getModuleStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
@@ -351,6 +396,16 @@ public class Drivetrain extends SubsystemBase {
             states[i] = modules[i].getState();
         }
         return states;
+    }
+
+    @AutoLogOutput(key = "AutoAlign/IsRunning")
+    public boolean isAutoAligning() {
+        return isAutoAligning;
+    }
+
+    @AutoLogOutput(key = "AutoAlign/AtGoal")
+    public boolean atAutoAlignGoal() {
+        return atAutoAlignGoalDebounce.calculate(autoAlignController.atGoal(0.01, Rotation2d.fromDegrees(1.0)));
     }
 
     public Command percentDriveCommand(
@@ -398,15 +453,25 @@ public class Drivetrain extends SubsystemBase {
                 .until(() -> Math.abs(controller.getRightX()) >= 0.1);
     }
 
-    public Command alignToPoseCommand(Pose2d pose) {
+    public Command driveToPoseCommand(Supplier<Pose2d> goalPose, Supplier<Pose2d> poseEstimateSource) {
         return Commands.startRun(
-                        () -> autoAlignController.setGoal(pose),
+                        () -> {
+                            autoAlignController.setGoal(goalPose);
+                            isAutoAligning = true;
+                        },
                         () -> runVelocity(autoAlignController.calculate(
-                                RobotState.getInstance().getEstimatedPose(),
+                                poseEstimateSource.get(),
                                 RobotState.getInstance().getRobotVelocity())),
                         this)
-                .until(() -> autoAlignController.atGoal(0.01, Rotation2d.fromDegrees(1.0)))
-                .finallyDo(this::stop);
+                .until(this::atAutoAlignGoal)
+                .finallyDo(() -> {
+                    isAutoAligning = false;
+                    stop();
+                });
+    }
+
+    public Command driveToPoseCommand(Supplier<Pose2d> goalPose) {
+        return driveToPoseCommand(goalPose, RobotState.getInstance()::getEstimatedPose);
     }
 
     public Command feedforwardCharacterization() {

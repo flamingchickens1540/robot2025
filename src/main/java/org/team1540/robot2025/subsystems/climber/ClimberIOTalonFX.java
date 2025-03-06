@@ -34,14 +34,9 @@ public class ClimberIOTalonFX implements ClimberIO {
     // constructor
     public ClimberIOTalonFX() {
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         motorConfig.Feedback.SensorToMechanismRatio = GEAR_RATIO;
-
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = MAX_ANGLE.getRotations();
-        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = MIN_ANGLE.getRotations();
 
         motorConfig.Slot0.kP = KP;
         motorConfig.Slot0.kI = KI;
@@ -50,13 +45,6 @@ public class ClimberIOTalonFX implements ClimberIO {
         motorConfig.Slot0.kG = KG;
         motorConfig.Slot0.kV = KV;
         motorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
-        /*
-        Note that the sensor offset and ratios must be
-        configured so that the sensor reports a position
-         of 0 when the mechanism is horizonal
-         (parallel to the ground), and the reported
-         sensor position is 1:1 with the mechanism.
-         */
 
         motorConfig.MotionMagic.MotionMagicCruiseVelocity = CRUISE_VELOCITY_RPS;
         motorConfig.MotionMagic.MotionMagicAcceleration = MAX_ACCEL_RPS2;
@@ -66,11 +54,6 @@ public class ClimberIOTalonFX implements ClimberIO {
         motorConfig.CurrentLimits.SupplyCurrentLimit = 50;
         motorConfig.CurrentLimits.SupplyCurrentLowerLimit = 0.1;
         motorConfig.CurrentLimits.SupplyCurrentLowerTime = 15;
-
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = MAX_ANGLE.getRotations();
-        motorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = MIN_ANGLE.getRotations();
-        motorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
         motor.getConfigurator().apply(motorConfig);
         BaseStatusSignal.setUpdateFrequencyForAll(
@@ -98,6 +81,11 @@ public class ClimberIOTalonFX implements ClimberIO {
     @Override
     public void setSetpoint(Rotation2d motorPosition) {
         motor.setControl(positionCtrlReq.withPosition(motorPosition.getRotations()));
+    }
+
+    @Override
+    public void resetPivotPosition(Rotation2d position) {
+        motor.setPosition(position.getRotations());
     }
 
     @Override
