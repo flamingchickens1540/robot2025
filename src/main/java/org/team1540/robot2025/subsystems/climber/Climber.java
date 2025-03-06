@@ -75,6 +75,10 @@ public class Climber extends SubsystemBase {
         io.setSetpoint(setpoint);
     }
 
+    public void resetPosition(Rotation2d position) {
+        io.resetPivotPosition(position);
+    }
+
     public Rotation2d getPosition() {
         return inputs.position;
     }
@@ -100,6 +104,13 @@ public class Climber extends SubsystemBase {
 
     public Command manualCommand(DoubleSupplier input) {
         return Commands.runEnd(() -> io.setVoltage(input.getAsDouble() * 12.0), () -> io.setVoltage(0), this);
+    }
+
+    public Command climbCommand(DoubleSupplier input) {
+        return Commands.runEnd(
+                        () -> io.setVoltage(Math.max(input.getAsDouble() * 12.0, 0)), () -> io.setVoltage(0), this)
+                .until(() -> getPosition().getDegrees()
+                        > ClimberState.CLIMB.position().getDegrees());
     }
 
     public static Climber createReal() {

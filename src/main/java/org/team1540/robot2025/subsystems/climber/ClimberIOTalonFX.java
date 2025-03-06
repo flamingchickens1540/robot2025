@@ -34,7 +34,7 @@ public class ClimberIOTalonFX implements ClimberIO {
     // constructor
     public ClimberIOTalonFX() {
         motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        motorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        motorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
         motorConfig.Feedback.SensorToMechanismRatio = GEAR_RATIO;
 
@@ -81,6 +81,11 @@ public class ClimberIOTalonFX implements ClimberIO {
     @Override
     public void setSetpoint(Rotation2d motorPosition) {
         motor.setControl(positionCtrlReq.withPosition(motorPosition.getRotations()));
+    }
+
+    @Override
+    public void resetPivotPosition(Rotation2d position) {
+        motor.setPosition(position.getRotations());
     }
 
     @Override

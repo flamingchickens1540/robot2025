@@ -30,6 +30,7 @@ import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.leds.CustomLEDPatterns;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
+import org.team1540.robot2025.util.AllianceFlipUtil;
 import org.team1540.robot2025.util.ButtonBoard;
 import org.team1540.robot2025.util.JoystickUtil;
 import org.team1540.robot2025.util.MatchTriggers;
@@ -110,6 +111,11 @@ public class RobotContainer {
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
+        driver.x()
+                .toggleOnTrue(drivetrain.teleopDriveWithHeadingCommand(
+                        driver.getHID(),
+                        () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
+                        () -> true));
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
@@ -129,7 +135,7 @@ public class RobotContainer {
                 .onFalse(superstructure.stow());
         driver.rightTrigger().onTrue(superstructure.score());
 
-        climber.setDefaultCommand(climber.manualCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
+        climber.setDefaultCommand(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
 
         copilot.start().whileTrue(superstructure.zeroCommand());
         copilot.back()

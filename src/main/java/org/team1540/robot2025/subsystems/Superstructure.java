@@ -333,6 +333,16 @@ public class Superstructure {
                 .unless(grabber::hasAlgae);
     }
 
+    public Command coralIntakeReverseHandoff() {
+        return Commands.sequence(
+                        commandToState(SuperstructureState.INTAKE_GROUND),
+                        grabber.commandRun(-0.1)
+                                .until(() -> !grabber.forwardSensorTripped())
+                                .deadlineFor(intake.commandRunRollerFunnel(0.25, -0.25)),
+                        stow())
+                .unless(grabber::hasAlgae);
+    }
+
     public Command sourceIntake() {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_SOURCE),
