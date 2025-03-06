@@ -145,9 +145,9 @@ public class RobotContainer {
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
-        copilot.y().onTrue(superstructure.L4(RobotState.getInstance()::shouldReverseCoral));
-        copilot.x().onTrue(superstructure.L3(RobotState.getInstance()::shouldReverseCoral));
-        copilot.a().onTrue(superstructure.L2(RobotState.getInstance()::shouldReverseCoral));
+        copilot.y().onTrue(superstructure.L4(()->true));
+        copilot.x().onTrue(superstructure.L3(()->true));
+        copilot.a().onTrue(superstructure.L2(()->true));
         copilot.povRight().onTrue(superstructure.L1());
         copilot.b().onTrue(superstructure.net());
 
