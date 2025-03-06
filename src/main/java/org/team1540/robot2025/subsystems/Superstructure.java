@@ -264,13 +264,7 @@ public class Superstructure {
     }
 
     public Command dealgifyHigh() {
-        return Commands.sequence(
-                        commandToState(SuperstructureState.DEALGIFY_HIGH_BACK),
-                        Commands.runOnce(() -> grabber.setPercent(0.25)),
-                        Commands.waitUntil(grabber::hasAlgae))
-                //                        commandToState(SuperstructureState.STOW))
-                .unless(grabber::reverseSensorTripped)
-                .handleInterrupt(grabber::stop);
+        return dealgify(SuperstructureState.DEALGIFY_HIGH_BACK);
     }
 
     public Command dealgifyHighFront() {
