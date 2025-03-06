@@ -165,6 +165,8 @@ public class Drivetrain extends SubsystemBase {
 
     @Override
     public void periodic() {
+        LoggedTracer.reset();
+
         odometryLock.lock(); // Prevents odometry updates while reading data
         gyroIO.updateInputs(gyroInputs);
         for (Module module : modules) module.periodic();
@@ -295,6 +297,8 @@ public class Drivetrain extends SubsystemBase {
                 autoAlignLinearAccelFactor,
                 autoAlignRotationSpeedFactor,
                 autoAlignRotationAccelFactor);
+
+        LoggedTracer.record("Drivetrain");
     }
 
     /**

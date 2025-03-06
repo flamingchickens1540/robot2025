@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.team1540.robot2025.util.LoggedTracer;
 
 public class Grabber extends SubsystemBase {
     private final GrabberIO grabberIO;
@@ -29,6 +30,8 @@ public class Grabber extends SubsystemBase {
 
     @Override
     public void periodic() {
+        LoggedTracer.reset();
+
         grabberIO.updateInputs(grabberInputs);
         sensorIO.updateInputs(sensorInputs);
 
@@ -44,6 +47,8 @@ public class Grabber extends SubsystemBase {
         if (RobotState.isDisabled()) {
             stop();
         }
+
+        LoggedTracer.record("Grabber");
     }
 
     public void setPercent(double percent) {

@@ -20,6 +20,7 @@ import org.littletonrobotics.junction.AutoLogOutputManager;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.generated.TunerConstants;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
+import org.team1540.robot2025.util.LoggedTracer;
 
 public class SimState {
     private static SimState instance = null;
@@ -64,6 +65,8 @@ public class SimState {
     }
 
     public void update() {
+        LoggedTracer.reset();
+
         Logger.recordOutput(
                 "SimState/Coral",
                 SimulatedArena.getInstance().getGamePiecesByType("Coral").toArray(new Pose3d[0]));
@@ -72,6 +75,8 @@ public class SimState {
                 SimulatedArena.getInstance().getGamePiecesByType("Algae").toArray(new Pose3d[0]));
 
         SimulatedArena.getInstance().simulationPeriodic();
+
+        LoggedTracer.record("Simulation");
     }
 
     public SwerveDriveSimulation getDriveSim() {

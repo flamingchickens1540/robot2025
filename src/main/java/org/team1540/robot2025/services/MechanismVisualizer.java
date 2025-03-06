@@ -9,6 +9,7 @@ import org.team1540.robot2025.subsystems.arm.ArmConstants;
 import org.team1540.robot2025.subsystems.climber.ClimberConstants;
 import org.team1540.robot2025.subsystems.elevator.ElevatorConstants;
 import org.team1540.robot2025.subsystems.intake.IntakeConstants;
+import org.team1540.robot2025.util.LoggedTracer;
 
 public class MechanismVisualizer {
     private static MechanismVisualizer instance = null;
@@ -24,6 +25,8 @@ public class MechanismVisualizer {
     private double elevatorPositionMeters = 0.0;
 
     public void update() {
+        LoggedTracer.reset();
+
         Pose3d elevatorCarriage = new Pose3d(0.0, 0.0, elevatorPositionMeters, Rotation3d.kZero);
         Pose3d elevatorStage1 = new Pose3d(
                 0.0, 0.0, Math.max(0.0, elevatorPositionMeters - ElevatorConstants.STAGE_1_HEIGHT_M), Rotation3d.kZero);
@@ -41,6 +44,8 @@ public class MechanismVisualizer {
                 new Rotation3d(0.0, Math.toRadians(90) - climberPosition.getRadians(), 0.0));
 
         Logger.recordOutput("Mechanisms", elevatorCarriage, elevatorStage1, arm, intake, climber);
+
+        LoggedTracer.record("MechanismVisualizer");
     }
 
     public void setElevatorPosition(double positionMeters) {
