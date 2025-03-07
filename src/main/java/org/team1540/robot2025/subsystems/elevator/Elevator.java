@@ -5,6 +5,7 @@ import static org.team1540.robot2025.subsystems.arm.ArmConstants.MAX_ACCEL_RPS2;
 import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -32,7 +33,7 @@ public class Elevator extends SubsystemBase {
         L1_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L1Front", 0.2)),
         L2_BACK(new LoggedTunableNumber("Elevator/Setpoints/L2Back", 0.55)),
         L2_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L2Front", 0.60)),
-        L3_BACK(new LoggedTunableNumber("Elevator/Setpoints/L3Back", 0.98)),
+        L3_BACK(new LoggedTunableNumber("Elevator/Setpoints/L3Back", 1.0)),
         L3_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L3Front", 0.95)),
         L4_BACK(new LoggedTunableNumber("Elevator/Setpoints/L4Back", MAX_HEIGHT_M)),
         L4_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L4Front", MAX_HEIGHT_M)),
@@ -52,10 +53,6 @@ public class Elevator extends SubsystemBase {
         }
     }
 
-    private final ElevatorIO io;
-    private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
-    private double setpointMeters;
-
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Elevator/kP", KP);
     private final LoggedTunableNumber kI = new LoggedTunableNumber("Elevator/kI", KI);
     private final LoggedTunableNumber kD = new LoggedTunableNumber("Elevator/kD", KD);
@@ -69,6 +66,13 @@ public class Elevator extends SubsystemBase {
     private final TrapezoidProfile trapezoidProfile =
             new TrapezoidProfile(new TrapezoidProfile.Constraints(CRUISE_VELOCITY_RPS, MAX_ACCEL_RPS2));
 
+    private final ElevatorIO io;
+    private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+    private double setpointMeters;
+
+    private final Debouncer atBottomDebounce = new Debouncer(0.25);
+    private boolean atBottom = false;
+
     private Elevator(ElevatorIO elevatorIO) {
         if (hasInstance) throw new IllegalStateException("Instance of elevator already exists");
         hasInstance = true;
@@ -81,6 +85,10 @@ public class Elevator extends SubsystemBase {
 
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
+
+        atBottom =
+                atBottomDebounce.calculate(inputs.statorCurrentAmps[0] >= 80
+                        && Math.abs(inputs.velocityMPS[0]) <= 0.05);
 
         if (RobotState.isDisabled()) stop();
 
@@ -177,8 +185,8 @@ public class Elevator extends SubsystemBase {
 
     public Command zeroCommand() {
         return Commands.deadline(
-                        Commands.waitUntil(() -> inputs.statorCurrentAmps[0] > 40)
-                                .andThen(Commands.waitSeconds(0.5)),
+                        Commands.waitUntil(() -> atBottom)
+                                .andThen(Commands.waitSeconds(0.25)),
                         commandToSetpoint(ElevatorState.STOW)
                                 .onlyIf(() -> getPosition() > ElevatorState.STOW.height.getAsDouble())
                                 .withTimeout(0.5)
