@@ -253,8 +253,7 @@ public class Superstructure {
                                     commandToState(state),
                                     Commands.runOnce(() -> grabber.setPercent(0.25)),
                                     Commands.waitUntil(grabber::hasAlgae))
-                            .unless(grabber::reverseSensorTripped)
-                            .handleInterrupt(grabber::stop);
+                            .unless(grabber::reverseSensorTripped);
                 },
                 Set.of(elevator, arm, intake, grabber));
     }
@@ -352,8 +351,7 @@ public class Superstructure {
                         Commands.waitUntil(grabber::hasAlgae),
                         Commands.runOnce(() -> grabber.setPercent(0.25)),
                         stow())
-                .unless(grabber::reverseSensorTripped)
-                .handleInterrupt(grabber::stop);
+                .unless(grabber::reverseSensorTripped);
     }
 
     public Command processor() {

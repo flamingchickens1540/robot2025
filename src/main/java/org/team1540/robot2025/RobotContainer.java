@@ -106,7 +106,7 @@ public class RobotContainer {
         // Sim testing binding
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             driver.y()
-                    .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain, superstructure));
+                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
@@ -183,8 +183,6 @@ public class RobotContainer {
                     .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(
                             buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
         }
-
-        new Trigger(() -> climber.getPosition().getDegrees() > 10).onTrue(superstructure.processor());
     }
 
     private void configureAutoRoutines() {
@@ -235,7 +233,8 @@ public class RobotContainer {
         RobotModeTriggers.teleop()
                 .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(
                         leds.viewFull.commandShowPattern(
-                                () -> LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0))))));
+                                () -> LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0))))))
+                .onFalse(Commands.runOnce(leds.viewFull::removeDefaultCommand));
 
         new Trigger(grabber::reverseSensorTripped)
                 .and(DriverStation::isEnabled)

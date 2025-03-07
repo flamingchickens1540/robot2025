@@ -21,8 +21,7 @@ public class Climber extends SubsystemBase {
     private static boolean hasInstance = false;
 
     public enum ClimberState {
-        CLIMB(new LoggedTunableNumber("Climber/Setpoints/ClimbDegrees", 700)),
-        ;
+        CLIMB(new LoggedTunableNumber("Climber/Setpoints/ClimbDegrees", 700));
 
         private final DoubleSupplier positionDegrees;
 
