@@ -21,8 +21,7 @@ public class Climber extends SubsystemBase {
     private static boolean hasInstance = false;
 
     public enum ClimberState {
-        CLIMB(new LoggedTunableNumber("Climber/Setpoints/ClimbDegrees", 700)),
-        ;
+        CLIMB(new LoggedTunableNumber("Climber/Setpoints/ClimbDegrees", 40));
 
         private final DoubleSupplier positionDegrees;
 
@@ -113,14 +112,13 @@ public class Climber extends SubsystemBase {
 
     public Command climbCommand(DoubleSupplier input) {
         return Commands.runEnd(
-                        () -> io.setVoltage(
-                                Constants.isTuningMode()
-                                        ? input.getAsDouble() * 12.0
-                                        : Math.max(input.getAsDouble() * 12.0, 0)),
-                        () -> io.setVoltage(0),
-                        this)
-                .until(() -> getPosition().getDegrees()
-                        > ClimberState.CLIMB.position().getDegrees());
+                () -> io.setVoltage(
+                        getPosition().getDegrees()
+                                        > ClimberState.CLIMB.position().getDegrees()
+                                ? Math.min(input.getAsDouble(), 0.0)
+                                : input.getAsDouble() * 12.0),
+                () -> io.setVoltage(0),
+                this);
     }
 
     public static Climber createReal() {

@@ -236,7 +236,7 @@ public class Superstructure {
                             case PROCESSOR_BACK -> grabber.commandRun(-0.5).withTimeout(0.5);
                             case SCORE_BARGE_FRONT, SCORE_BARGE_BACK -> grabber.commandRun(-0.8)
                                     .withTimeout(0.5);
-                            default -> Commands.none();
+                            default -> grabber.hasAlgae() ? grabber.commandRun(-0.5) : Commands.none();
                         },
                         Set.of(elevator, arm, intake, grabber))
                 .andThen(stow().onlyIf(() -> stow));
@@ -253,8 +253,7 @@ public class Superstructure {
                                     commandToState(state),
                                     Commands.runOnce(() -> grabber.setPercent(0.25)),
                                     Commands.waitUntil(grabber::hasAlgae))
-                            .unless(grabber::reverseSensorTripped)
-                            .handleInterrupt(grabber::stop);
+                            .unless(grabber::reverseSensorTripped);
                 },
                 Set.of(elevator, arm, intake, grabber));
     }
@@ -305,7 +304,7 @@ public class Superstructure {
 
     public Command coralGroundIntake() {
         return Commands.sequence(
-                        commandToState(SuperstructureState.INTAKE_GROUND),
+                        commandToState(SuperstructureState.INTAKE_GROUND).withTimeout(1.0),
                         grabber.commandRun(0.3)
                                 .until(grabber::forwardSensorTripped)
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
@@ -347,13 +346,12 @@ public class Superstructure {
 
     public Command algaeIntake() {
         return Commands.sequence(
-                        commandToState(SuperstructureState.INTAKE_ALGAE),
+                        commandToState(SuperstructureState.INTAKE_ALGAE).withTimeout(1.0),
                         Commands.runOnce(() -> grabber.setPercent(1.0)),
                         Commands.waitUntil(grabber::hasAlgae),
                         Commands.runOnce(() -> grabber.setPercent(0.25)),
                         stow())
-                .unless(grabber::reverseSensorTripped)
-                .handleInterrupt(grabber::stop);
+                .unless(grabber::reverseSensorTripped);
     }
 
     public Command processor() {

@@ -2,6 +2,7 @@ package org.team1540.robot2025.commands;
 
 import static org.team1540.robot2025.FieldConstants.*;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
@@ -21,17 +22,23 @@ public class AutoScoreCommands {
         return Commands.defer(
                 () -> {
                     boolean reverse = RobotState.getInstance().shouldReverseCoral(branch)
-                            //                            || height == ReefHeight.L4
+                            || height == ReefHeight.L4
+                            || height == ReefHeight.L3
+                            || height == ReefHeight.L2
                             || height == ReefHeight.L1;
                     return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse)
                             .asProxy()
-                            .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
-                                                    .getEstimatedPose()
-                                                    .getTranslation()
-                                                    .getDistance(AllianceFlipUtil.maybeFlipTranslation(
-                                                            branch.scorePosition.getTranslation()))
-                                            <= prepareDistanceMeters.get())
-                                    .andThen(superstructure.scoreCoral(height, () -> reverse)));
+                            .alongWith(superstructure
+                                    .stow()
+                                    .unless(DriverStation::isAutonomousEnabled)
+                                    .andThen(
+                                            Commands.waitUntil(() -> RobotState.getInstance()
+                                                            .getEstimatedPose()
+                                                            .getTranslation()
+                                                            .getDistance(AllianceFlipUtil.maybeFlipTranslation(
+                                                                    branch.scorePosition.getTranslation()))
+                                                    <= prepareDistanceMeters.get()),
+                                            superstructure.scoreCoral(height, () -> reverse)));
                 },
                 Set.of(superstructure.intake, superstructure.elevator, superstructure.arm, superstructure.grabber));
     }

@@ -14,7 +14,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -113,9 +112,7 @@ public class RobotState {
                 XY_STD_DEV_COEFF * Math.pow(poseObservation.avgTagDistance(), 2.0) / poseObservation.numTagsSeen();
         double rotStdDev =
                 ROT_STD_DEV_COEFF * Math.pow(poseObservation.avgTagDistance(), 2.0) / poseObservation.numTagsSeen();
-        boolean acceptYaw =
-                poseObservation.numTagsSeen() > 1 || (poseObservation.numTagsSeen() > 0 && DriverStation.isDisabled());
-        return VecBuilder.fill(xyStdDev, xyStdDev, acceptYaw ? rotStdDev : Double.POSITIVE_INFINITY);
+        return VecBuilder.fill(xyStdDev, xyStdDev, rotStdDev);
     }
 
     private boolean shouldAcceptVision(AprilTagVisionIO.PoseObservation poseObservation) {
