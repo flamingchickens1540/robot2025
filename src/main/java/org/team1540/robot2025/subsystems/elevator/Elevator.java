@@ -171,8 +171,8 @@ public class Elevator extends SubsystemBase {
 
     public Command commandToSetpoint(ElevatorState state) {
         return (Commands.run(() -> setPosition(state.height.getAsDouble()), this)
-                        .until(this::isAtSetpoint))
-                .handleInterrupt(this::holdPosition);
+                        .until(this::isAtSetpoint));
+//                .handleInterrupt(this::holdPosition);
     }
 
     public Command manualCommand(DoubleSupplier input) {
