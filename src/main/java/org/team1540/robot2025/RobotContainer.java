@@ -228,29 +228,27 @@ public class RobotContainer {
     private void configureLEDBindings() {
         // RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
         RobotModeTriggers.disabled()
-                .whileTrue(leds.viewFull.commandShowPattern(CustomLEDPatterns.movingRainbow(Hertz.of(0.2))));
+                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultPattern(CustomLEDPatterns.movingRainbow(Hertz.of(0.2)))));
         RobotModeTriggers.autonomous()
-                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(
-                        leds.viewFull.commandShowPattern(LEDPattern.solid(Leds.getAllianceColor())))));
+                .onTrue(
+                        Commands.runOnce(() -> leds.viewFull.setDefaultPattern(LEDPattern.solid(Leds.getAllianceColor()))));
         RobotModeTriggers.teleop()
-                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(leds.viewFull.commandShowPattern(
-                        LEDPattern.solid(Leds.getAllianceColor()).breathe(Seconds.of(3))))));
+                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(
+                        leds.viewFull.commandShowPattern(
+                                () -> LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0))))));
 
-        new Trigger(drivetrain::isAutoAligning)
-                .and(DriverStation::isEnabled)
-                .whileTrue(leds.viewFull.commandShowPattern(CustomLEDPatterns.movingRainbow(Hertz.of(1.5))));
         new Trigger(grabber::reverseSensorTripped)
                 .and(DriverStation::isEnabled)
                 .whileTrue(leds.viewFull
                         .commandShowPattern(CustomLEDPatterns.strobe(Color.kPurple))
                         .withTimeout(0.5)
-                        .alongWith(leds.viewTop.commandShowPattern(LEDPattern.solid(Color.kPurple))));
+                        .andThen(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kPurple))));
         new Trigger(grabber::forwardSensorTripped)
                 .and(DriverStation::isEnabled)
-                .whileTrue(leds.viewTop.commandShowPattern(LEDPattern.solid(Color.kYellow)));
+                .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kYellow)));
         new Trigger(intake::hasCoral)
                 .and(DriverStation::isEnabled)
-                .whileTrue(leds.viewTop.commandShowPattern(LEDPattern.solid(Color.kOrangeRed)));
+                .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kOrangeRed)));
 
         MatchTriggers.endgame()
                 .onTrue(leds.viewFull
