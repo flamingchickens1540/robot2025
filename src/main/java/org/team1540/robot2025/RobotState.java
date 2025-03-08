@@ -25,6 +25,7 @@ import org.team1540.robot2025.FieldConstants.ReefFace;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO;
 import org.team1540.robot2025.util.AllianceFlipUtil;
+import org.team1540.robot2025.util.LoggedTracer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class RobotState {
@@ -283,12 +284,11 @@ public class RobotState {
     }
 
     public void periodicLog() {
+        LoggedTracer.reset();
         for (int i = 0; i < singleTagPoses.length; i++) {
-            Optional<Pose2d> singleTagEstimate = getSingleTagPose(i + 1);
-            if (singleTagEstimate.isPresent()) {
-                Logger.recordOutput("Odometry/SingleTagPoses/" + (i + 1), singleTagEstimate.get());
-            }
+            Logger.recordOutput("Odometry/SingleTagPoses/" + (i + 1), singleTagPoses[i]);
         }
+        LoggedTracer.record("RobotState");
     }
 
     public record SingleTagPoseEstimate(Pose2d pose, double distance, double timestamp) {}

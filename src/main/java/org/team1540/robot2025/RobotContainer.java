@@ -129,12 +129,11 @@ public class RobotContainer {
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
                 .whileTrue(superstructure.coralGroundIntake())
-                .onFalse(superstructure.stow().unless(drivetrain::isAutoAligning));
+                .onFalse(superstructure.stow().asProxy().unless(drivetrain::isAutoAligning));
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1))
-                //                .and(() -> !grabber.forwardSensorTripped() && !grabber.reverseSensorTripped())
                 .whileTrue(superstructure.coralGroundIntakeL1())
-                .onFalse(superstructure.stow().unless(drivetrain::isAutoAligning));
+                .onFalse(superstructure.stow().asProxy().unless(drivetrain::isAutoAligning));
         //        driver.leftTrigger()
         //                .and(buttonBoard.branchHeightAt(ReefHeight.L1))
         //                .and(() -> grabber.forwardSensorTripped() || grabber.reverseSensorTripped())
@@ -156,7 +155,7 @@ public class RobotContainer {
         copilot.back()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
         copilot.rightTrigger().whileTrue(superstructure.coralGroundIntake()).onFalse(superstructure.stow());
-        copilot.leftTrigger().whileTrue(superstructure.algaeIntake()).onFalse(superstructure.stow());
+        copilot.leftTrigger().onTrue(superstructure.stow());
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
@@ -168,7 +167,6 @@ public class RobotContainer {
 
         copilot.povLeft().onTrue(superstructure.processor());
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
-        copilot.rightStick().onTrue(superstructure.stow());
 
         for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {
             for (ReefHeight height : ReefHeight.values()) {

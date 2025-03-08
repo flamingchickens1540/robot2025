@@ -18,9 +18,9 @@ import org.team1540.robot2025.util.AllianceFlipUtil;
 
 public class Autos {
     private static final double AUTO_ALIGN_SWITCH_TIME = 0.6;
-    private static final double ALIGN_TIMEOUT = 3.0;
-    private static final double INTAKE_DEPLOY_TIME = 2.0;
-    private static final double SCORE_WAIT_TIME = 1.0;
+    private static final double ALIGN_TIMEOUT = 2.5;
+    private static final double INTAKE_DEPLOY_TIME = 2.5;
+    private static final double SCORE_WAIT_TIME = 0.3;
 
     private final RobotState robotState = RobotState.getInstance();
 
