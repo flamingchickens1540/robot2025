@@ -129,11 +129,11 @@ public class RobotContainer {
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
                 .whileTrue(superstructure.coralGroundIntake())
-                .onFalse(superstructure.stow().unless(drivetrain::isAutoAligning));
+                .onFalse(superstructure.stow().asProxy().unless(drivetrain::isAutoAligning));
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1))
                 .whileTrue(superstructure.coralGroundIntakeL1())
-                .onFalse(superstructure.stow().unless(drivetrain::isAutoAligning));
+                .onFalse(superstructure.stow().asProxy().unless(drivetrain::isAutoAligning));
         //        driver.leftTrigger()
         //                .and(buttonBoard.branchHeightAt(ReefHeight.L1))
         //                .and(() -> grabber.forwardSensorTripped() || grabber.reverseSensorTripped())

@@ -142,7 +142,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         StatusCode turnEncoderStatus = BaseStatusSignal.refreshAll(turnAbsolutePosition);
 
         // Update drive inputs
-        inputs.driveConnected = driveConnectedDebounce.calculate(driveStatus.isOK());
+        inputs.driveConnected = driveStatus.isOK();
         inputs.drivePositionRads = Units.rotationsToRadians(drivePosition.getValueAsDouble());
         inputs.driveVelocityRadPerSec = Units.rotationsToRadians(driveVelocity.getValueAsDouble());
         inputs.driveAppliedVolts = driveAppliedVolts.getValueAsDouble();
@@ -151,8 +151,8 @@ public class ModuleIOTalonFX implements ModuleIO {
         inputs.driveTempCelsius = driveTemp.getValueAsDouble();
 
         // Update turn inputs
-        inputs.turnConnected = turnConnectedDebounce.calculate(turnStatus.isOK());
-        inputs.turnEncoderConnected = turnEncoderConnectedDebounce.calculate(turnEncoderStatus.isOK());
+        inputs.turnConnected = turnStatus.isOK();
+        inputs.turnEncoderConnected = turnEncoderStatus.isOK();
         inputs.turnAbsolutePosition = Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble());
         inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValueAsDouble());
         inputs.turnVelocityRadPerSec = Units.rotationsToRadians(turnVelocity.getValueAsDouble());
