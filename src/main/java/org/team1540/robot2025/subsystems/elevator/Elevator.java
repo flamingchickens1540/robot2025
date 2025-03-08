@@ -40,10 +40,10 @@ public class Elevator extends SubsystemBase {
         L4_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L4Front", MAX_HEIGHT_M - Units.inchesToMeters(2.25))),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
         GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.42)),
-        REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowBack", 0.75)),
-        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowFront", 0.75)),
-        REEF_ALGAE_HIGH_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighBack", 1.15)),
-        REEF_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighFront", 1.15)),
+        REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowBack", 0.8)),
+        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowFront", 0.8)),
+        REEF_ALGAE_HIGH_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighBack", 1.2)),
+        REEF_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighFront", 1.2)),
         PROCESSOR(new LoggedTunableNumber("Elevator/Setpoints/Processor", 0.254)), // TODO: get value
         STOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/StowAlgae", 0.03));
 
