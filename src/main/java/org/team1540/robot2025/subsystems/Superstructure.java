@@ -321,7 +321,7 @@ public class Superstructure {
 
     public Command coralGroundIntakeL1() {
         return Commands.sequence(
-                commandToState(SuperstructureState.INTAKE_GROUND_L1),
+                commandToState(SuperstructureState.INTAKE_GROUND_L1).withTimeout(1.0),
                 intake.commandRunRollerFunnel(0.8, 0.5).until(intake::hasCoral),
                 stow());
     }
