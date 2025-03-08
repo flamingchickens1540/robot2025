@@ -28,14 +28,16 @@ public class AutoScoreCommands {
                             || height == ReefHeight.L1;
                     return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse)
                             .asProxy()
-                            .alongWith(
-                                    superstructure.stow().unless(DriverStation::isAutonomousEnabled)
-                                            .andThen(Commands.waitUntil(() -> RobotState.getInstance()
-                                                    .getEstimatedPose()
-                                                    .getTranslation()
-                                                    .getDistance(AllianceFlipUtil.maybeFlipTranslation(
-                                                            branch.scorePosition.getTranslation()))
-                                            <= prepareDistanceMeters.get()),
+                            .alongWith(superstructure
+                                    .stow()
+                                    .unless(DriverStation::isAutonomousEnabled)
+                                    .andThen(
+                                            Commands.waitUntil(() -> RobotState.getInstance()
+                                                            .getEstimatedPose()
+                                                            .getTranslation()
+                                                            .getDistance(AllianceFlipUtil.maybeFlipTranslation(
+                                                                    branch.scorePosition.getTranslation()))
+                                                    <= prepareDistanceMeters.get()),
                                             superstructure.scoreCoral(height, () -> reverse)));
                 },
                 Set.of(superstructure.intake, superstructure.elevator, superstructure.arm, superstructure.grabber));

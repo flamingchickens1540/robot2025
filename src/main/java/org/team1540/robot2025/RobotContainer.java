@@ -106,7 +106,8 @@ public class RobotContainer {
         // Sim testing binding
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             driver.y()
-                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
+                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
+                            ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
@@ -140,7 +141,9 @@ public class RobotContainer {
         //                .whileTrue(superstructure.coralIntakeReverseHandoff())
         //                .onFalse(superstructure.stow());
 
-        driver.leftBumper().whileTrue(superstructure.algaeIntake()).onFalse(superstructure.stow().unless(drivetrain::isAutoAligning));
+        driver.leftBumper()
+                .whileTrue(superstructure.algaeIntake())
+                .onFalse(superstructure.stow().unless(drivetrain::isAutoAligning));
 
         driver.rightTrigger().onTrue(superstructure.score());
 
@@ -227,14 +230,14 @@ public class RobotContainer {
     private void configureLEDBindings() {
         // RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
         RobotModeTriggers.disabled()
-                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultPattern(CustomLEDPatterns.movingRainbow(Hertz.of(0.2)))));
+                .onTrue(Commands.runOnce(
+                        () -> leds.viewFull.setDefaultPattern(CustomLEDPatterns.movingRainbow(Hertz.of(0.2)))));
         RobotModeTriggers.autonomous()
-                .onTrue(
-                        Commands.runOnce(() -> leds.viewFull.setDefaultPattern(LEDPattern.solid(Leds.getAllianceColor()))));
+                .onTrue(Commands.runOnce(
+                        () -> leds.viewFull.setDefaultPattern(LEDPattern.solid(Leds.getAllianceColor()))));
         RobotModeTriggers.teleop()
-                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(
-                        leds.viewFull.commandShowPattern(
-                                () -> LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0))))))
+                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(leds.viewFull.commandShowPattern(
+                        () -> LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0))))))
                 .onFalse(Commands.runOnce(leds.viewFull::removeDefaultCommand));
 
         new Trigger(grabber::reverseSensorTripped)

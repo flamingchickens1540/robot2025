@@ -87,9 +87,8 @@ public class Elevator extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
 
-        atBottom =
-                atBottomDebounce.calculate(inputs.statorCurrentAmps[0] >= 80
-                        && Math.abs(inputs.velocityMPS[0]) <= 0.05);
+        atBottom = atBottomDebounce.calculate(
+                inputs.statorCurrentAmps[0] >= 80 && Math.abs(inputs.velocityMPS[0]) <= 0.05);
 
         if (RobotState.isDisabled()) stop();
 
@@ -172,8 +171,8 @@ public class Elevator extends SubsystemBase {
 
     public Command commandToSetpoint(ElevatorState state) {
         return (Commands.run(() -> setPosition(state.height.getAsDouble()), this)
-                        .until(this::isAtSetpoint));
-//                .handleInterrupt(this::holdPosition);
+                .until(this::isAtSetpoint));
+        //                .handleInterrupt(this::holdPosition);
     }
 
     public Command manualCommand(DoubleSupplier input) {
@@ -186,8 +185,7 @@ public class Elevator extends SubsystemBase {
 
     public Command zeroCommand() {
         return Commands.deadline(
-                        Commands.waitUntil(() -> atBottom)
-                                .andThen(Commands.waitSeconds(0.25)),
+                        Commands.waitUntil(() -> atBottom).andThen(Commands.waitSeconds(0.25)),
                         commandToSetpoint(ElevatorState.STOW)
                                 .onlyIf(() -> getPosition() > ElevatorState.STOW.height.getAsDouble())
                                 .withTimeout(0.5)
