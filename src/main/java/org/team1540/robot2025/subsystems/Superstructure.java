@@ -236,7 +236,7 @@ public class Superstructure {
                             case PROCESSOR_BACK -> grabber.commandRun(-0.5).withTimeout(0.5);
                             case SCORE_BARGE_FRONT, SCORE_BARGE_BACK -> grabber.commandRun(-0.8)
                                     .withTimeout(0.5);
-                            default -> Commands.none();
+                            default -> grabber.hasAlgae() ? grabber.commandRun(-0.5) : Commands.none();
                         },
                         Set.of(elevator, arm, intake, grabber))
                 .andThen(stow().onlyIf(() -> stow));
