@@ -7,6 +7,7 @@ import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
@@ -32,11 +33,11 @@ public class Elevator extends SubsystemBase {
         L1_BACK(new LoggedTunableNumber("Elevator/Setpoints/L1Back", 0.2)),
         L1_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L1Front", 0.2)),
         L2_BACK(new LoggedTunableNumber("Elevator/Setpoints/L2Back", 0.55)),
-        L2_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L2Front", 0.60)),
+        L2_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L2Front", 0.56)),
         L3_BACK(new LoggedTunableNumber("Elevator/Setpoints/L3Back", 1.0)),
         L3_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L3Front", 0.95)),
         L4_BACK(new LoggedTunableNumber("Elevator/Setpoints/L4Back", MAX_HEIGHT_M)),
-        L4_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L4Front", MAX_HEIGHT_M)),
+        L4_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L4Front", MAX_HEIGHT_M - Units.inchesToMeters(2.25))),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
         GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.42)),
         REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowBack", 0.75)),

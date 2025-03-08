@@ -115,6 +115,7 @@ public class RobotContainer {
                         driver.getHID(),
                         () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
                         () -> true));
+        driver.a().onTrue(superstructure.coralIntakeEject().withTimeout(2.0));
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
