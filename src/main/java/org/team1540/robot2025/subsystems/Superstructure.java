@@ -251,7 +251,7 @@ public class Superstructure {
                             && state != SuperstructureState.DEALGIFY_LOW_FRONT) return Commands.none();
                     return Commands.sequence(
                                     commandToState(state),
-                                    Commands.runOnce(() -> grabber.setPercent(0.25)),
+                                    Commands.runOnce(() -> grabber.setPercent(0.5)),
                                     Commands.waitUntil(grabber::hasAlgae))
                             .unless(grabber::reverseSensorTripped);
                 },
