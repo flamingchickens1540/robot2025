@@ -112,10 +112,7 @@ public class Climber extends SubsystemBase {
 
     public Command climbCommand(DoubleSupplier input) {
         return Commands.runEnd(
-                        () -> io.setVoltage(
-                                Constants.isTuningMode()
-                                        ? input.getAsDouble() * 12.0
-                                        : Math.max(input.getAsDouble() * 12.0, 0)),
+                        () -> io.setVoltage(input.getAsDouble() * 12.0),
                         () -> io.setVoltage(0),
                         this)
                 .until(() -> getPosition().getDegrees()
