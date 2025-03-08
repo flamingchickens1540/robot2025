@@ -231,17 +231,16 @@ public class Superstructure {
                                     .until(grabber::reverseSensorTripped)
                                     .withTimeout(0.1)
                                     .onlyIf(() -> grabber.forwardSensorTripped() && !grabber.reverseSensorTripped())
-                                    .andThen(
-                                            grabber.commandRun(-0.3)
-                                                    .withDeadline(
-                                                            Commands.waitUntil(() -> !grabber.forwardSensorTripped())),
-                                            Commands.waitSeconds(0.25));
+                                    .andThen(grabber.commandRun(-0.3)
+                                            .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
+                                                    .andThen(Commands.waitSeconds(0.25))));
                             case L1_BACK, L2_BACK, L3_BACK, L4_BACK -> grabber.commandRun(0.3)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
                             case PROCESSOR_BACK -> grabber.commandRun(-0.5).withTimeout(0.5);
                             case SCORE_BARGE_FRONT, SCORE_BARGE_BACK -> grabber.commandRun(-0.8)
-                                    .withTimeout(0.5).alongWith(Commands.runOnce(arm::holdPosition));
+                                    .withTimeout(0.5)
+                                    .alongWith(Commands.runOnce(arm::holdPosition));
                             default -> grabber.hasAlgae() ? grabber.commandRun(-0.5) : Commands.none();
                         },
                         Set.of(elevator, arm, intake, grabber))

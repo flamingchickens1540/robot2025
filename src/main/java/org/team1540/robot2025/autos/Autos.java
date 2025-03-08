@@ -178,7 +178,7 @@ public class Autos {
         jToLeftSrcToK
                 .atTime("DeployIntake")
                 .onTrue(superstructure
-                        .coralGroundIntakeL1()
+                        .coralGroundIntake()
                         .withTimeout(INTAKE_DEPLOY_TIME)
                         .andThen(superstructure.stow()));
         jToLeftSrcToK
@@ -198,7 +198,7 @@ public class Autos {
         kToLeftSrcToL
                 .atTime("DeployIntake")
                 .onTrue(superstructure
-                        .coralGroundIntakeL1()
+                        .coralGroundIntake()
                         .withTimeout(INTAKE_DEPLOY_TIME)
                         .andThen(superstructure.stow()));
         kToLeftSrcToL
@@ -243,7 +243,7 @@ public class Autos {
         eToRightSrcToD
                 .atTime("DeployIntake")
                 .onTrue(superstructure
-                        .coralGroundIntakeL1()
+                        .coralGroundIntake()
                         .withTimeout(INTAKE_DEPLOY_TIME)
                         .andThen(superstructure.stow()));
         eToRightSrcToD
@@ -263,7 +263,7 @@ public class Autos {
         dToRightSrcToC
                 .atTime("DeployIntake")
                 .onTrue(superstructure
-                        .coralGroundIntakeL1()
+                        .coralGroundIntake()
                         .withTimeout(INTAKE_DEPLOY_TIME)
                         .andThen(superstructure.stow()));
         dToRightSrcToC
