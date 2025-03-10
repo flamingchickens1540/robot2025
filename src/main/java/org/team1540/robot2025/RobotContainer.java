@@ -158,7 +158,18 @@ public class RobotContainer {
         copilot.x().onTrue(superstructure.L3(() -> true));
         copilot.a().onTrue(superstructure.L2(() -> true));
         copilot.povRight().onTrue(superstructure.L1());
-        copilot.b().onTrue(superstructure.net());
+        copilot.b()
+                .onTrue(drivetrain
+                        .teleopDriveWithHeadingCommand(
+                                driver.getHID(),
+                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg),
+                                () -> true)
+                        .alongWith(Commands.waitUntil(() -> Math.abs(RobotState.getInstance()
+                                                .getRobotRotation()
+                                                .minus(AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg))
+                                                .getDegrees())
+                                        < 10)
+                                .andThen(superstructure.net())));
 
         copilot.povLeft().onTrue(superstructure.processor());
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
