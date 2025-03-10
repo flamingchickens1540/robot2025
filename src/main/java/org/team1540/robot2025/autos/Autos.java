@@ -73,8 +73,8 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
-                                superstructure.score(false),
-                                superstructure.stow().alongWith(eToRightLPToD.spawnCmd())));
+                                superstructure.score(false).asProxy(),
+                                superstructure.stow().asProxy().alongWith(eToRightLPToD.spawnCmd())));
         eToRightLPToD
                 .atTime("DeployIntake")
                 .onTrue(superstructure
@@ -87,8 +87,8 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
-                                superstructure.score(false),
-                                superstructure.stow().alongWith(dToCenterLPtoC.spawnCmd())));
+                                superstructure.score(false).asProxy(),
+                                superstructure.stow().asProxy().alongWith(dToCenterLPtoC.spawnCmd())));
         dToCenterLPtoC
                 .atTime("DeployIntake")
                 .onTrue(superstructure
@@ -99,7 +99,9 @@ public class Autos {
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.C, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
-                        .andThen(Commands.waitSeconds(SCORE_WAIT_TIME), superstructure.score()));
+                        .andThen(
+                                Commands.waitSeconds(SCORE_WAIT_TIME),
+                                superstructure.score().asProxy()));
         return routine;
     }
 
@@ -120,8 +122,8 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
-                                superstructure.score(false),
-                                superstructure.stow().alongWith(jToLeftLPtoK.spawnCmd())));
+                                superstructure.score(false).asProxy(),
+                                superstructure.stow().asProxy().alongWith(jToLeftLPtoK.spawnCmd())));
         jToLeftLPtoK
                 .atTime("DeployIntake")
                 .onTrue(superstructure
@@ -134,8 +136,8 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
-                                superstructure.score(false),
-                                superstructure.stow().alongWith(kToCenterLPtoL.spawnCmd())));
+                                superstructure.score(false).asProxy(),
+                                superstructure.stow().asProxy().alongWith(kToCenterLPtoL.spawnCmd())));
         kToCenterLPtoL
                 .atTime("DeployIntake")
                 .onTrue(superstructure
@@ -146,7 +148,9 @@ public class Autos {
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.L, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
-                        .andThen(Commands.waitSeconds(SCORE_WAIT_TIME), superstructure.score()));
+                        .andThen(
+                                Commands.waitSeconds(SCORE_WAIT_TIME),
+                                superstructure.score().asProxy()));
         return routine;
     }
 
@@ -173,8 +177,8 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
-                                superstructure.score(false),
-                                superstructure.stow().alongWith(jToLeftSrcToK.spawnCmd())));
+                                superstructure.score(false).asProxy(),
+                                superstructure.stow().asProxy().alongWith(jToLeftSrcToK.spawnCmd())));
         jToLeftSrcToK
                 .atTime("DeployIntake")
                 .onTrue(superstructure
@@ -193,8 +197,8 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
-                                superstructure.score(false),
-                                superstructure.stow().alongWith(kToLeftSrcToL.spawnCmd())));
+                                superstructure.score(false).asProxy(),
+                                superstructure.stow().asProxy().alongWith(kToLeftSrcToL.spawnCmd())));
         kToLeftSrcToL
                 .atTime("DeployIntake")
                 .onTrue(superstructure
@@ -211,7 +215,9 @@ public class Autos {
                                 () -> !superstructure.grabber.forwardSensorTripped()
                                         && !superstructure.grabber.reverseSensorTripped())
                         .withTimeout(ALIGN_TIMEOUT)
-                        .andThen(Commands.waitSeconds(SCORE_WAIT_TIME), superstructure.score()));
+                        .andThen(
+                                Commands.waitSeconds(SCORE_WAIT_TIME),
+                                superstructure.score().asProxy()));
         return routine;
     }
 
@@ -238,8 +244,8 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
-                                superstructure.score(false),
-                                superstructure.stow().alongWith(eToRightSrcToD.spawnCmd())));
+                                superstructure.score(false).asProxy(),
+                                superstructure.stow().asProxy().alongWith(eToRightSrcToD.spawnCmd())));
         eToRightSrcToD
                 .atTime("DeployIntake")
                 .onTrue(superstructure
@@ -258,8 +264,8 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
-                                superstructure.score(false),
-                                superstructure.stow().alongWith(dToRightSrcToC.spawnCmd())));
+                                superstructure.score(false).asProxy(),
+                                superstructure.stow().asProxy().alongWith(dToRightSrcToC.spawnCmd())));
         dToRightSrcToC
                 .atTime("DeployIntake")
                 .onTrue(superstructure
@@ -276,7 +282,9 @@ public class Autos {
                                 () -> !superstructure.grabber.forwardSensorTripped()
                                         && !superstructure.grabber.reverseSensorTripped())
                         .withTimeout(ALIGN_TIMEOUT)
-                        .andThen(Commands.waitSeconds(SCORE_WAIT_TIME), superstructure.score()));
+                        .andThen(
+                                Commands.waitSeconds(SCORE_WAIT_TIME),
+                                superstructure.score().asProxy()));
         return routine;
     }
 
@@ -302,7 +310,7 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
-                                superstructure.score(false),
+                                superstructure.score(false).asProxy(),
                                 AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.H.face, drivetrain, superstructure)
                                         .withTimeout(ALIGN_TIMEOUT),
                                 hToBarge.spawnCmd()));
@@ -334,7 +342,7 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
-                                superstructure.score(false),
+                                superstructure.score(false).asProxy(),
                                 AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.H.face, drivetrain, superstructure)
                                         .withTimeout(ALIGN_TIMEOUT),
                                 gToProcessor.spawnCmd()));

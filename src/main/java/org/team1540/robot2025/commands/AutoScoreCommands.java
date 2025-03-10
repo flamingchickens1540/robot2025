@@ -2,7 +2,6 @@ package org.team1540.robot2025.commands;
 
 import static org.team1540.robot2025.FieldConstants.*;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
@@ -21,26 +20,20 @@ public class AutoScoreCommands {
             ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
         return Commands.defer(
                 () -> {
-                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch)
-                            || height == ReefHeight.L4
-                            || height == ReefHeight.L3
-                            || height == ReefHeight.L2
-                            || height == ReefHeight.L1;
+                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch);
                     return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse)
                             .asProxy()
-                            .alongWith(superstructure
-                                    .stow()
-                                    .unless(DriverStation::isAutonomousEnabled)
-                                    .andThen(
-                                            Commands.waitUntil(() -> RobotState.getInstance()
-                                                            .getEstimatedPose()
-                                                            .getTranslation()
-                                                            .getDistance(AllianceFlipUtil.maybeFlipTranslation(
-                                                                    branch.scorePosition.getTranslation()))
-                                                    <= prepareDistanceMeters.get()),
-                                            superstructure.scoreCoral(height, () -> reverse)));
+                            .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
+                                                    .getEstimatedPose()
+                                                    .getTranslation()
+                                                    .getDistance(AllianceFlipUtil.maybeFlipTranslation(
+                                                            branch.scorePosition.getTranslation()))
+                                            <= prepareDistanceMeters.get())
+                                    .andThen(superstructure
+                                            .scoreCoral(height, () -> reverse)
+                                            .asProxy()));
                 },
-                Set.of(superstructure.intake, superstructure.elevator, superstructure.arm, superstructure.grabber));
+                Set.of());
     }
 
     public static Command alignToBranchAndScoreL1Fallback(
@@ -64,6 +57,7 @@ public class AutoScoreCommands {
                                         .getDistance(AllianceFlipUtil.maybeFlipTranslation(
                                                 face.dealgifyPosition().getTranslation()))
                                 <= prepareDistanceMeters.get())
-                        .andThen(face.highDealgify() ? superstructure.dealgifyHigh() : superstructure.dealgifyLow()));
+                        .andThen((face.highDealgify() ? superstructure.dealgifyHigh() : superstructure.dealgifyLow())
+                                .asProxy()));
     }
 }
