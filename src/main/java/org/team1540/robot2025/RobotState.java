@@ -119,6 +119,8 @@ public class RobotState {
     private boolean shouldAcceptVision(AprilTagVisionIO.PoseObservation poseObservation) {
         Pose3d estimatedPose = poseObservation.estimatedPoseMeters();
         return poseObservation.numTagsSeen() >= MIN_ACCEPTED_NUM_TAGS // Must see sufficient tags
+                && (poseObservation.numTagsSeen() > 1
+                        || poseObservation.ambiguity() < MAX_AMBIGUITY) // Must be multiple tags or low ambiguity
                 // Must be within field roughly
                 && estimatedPose.getX() >= -MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 && estimatedPose.getX() <= FieldConstants.fieldLength + MAX_OUTSIDE_OF_FIELD_TOLERANCE

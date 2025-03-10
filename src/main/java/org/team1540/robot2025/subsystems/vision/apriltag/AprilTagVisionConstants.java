@@ -36,7 +36,8 @@ public class AprilTagVisionConstants {
     public static final double ROT_STD_DEV_COEFF = 0.25;
 
     public static final double MIN_ACCEPTED_NUM_TAGS = 1;
-    public static final double MAX_OUTSIDE_OF_FIELD_TOLERANCE = 1;
+    public static final double MAX_AMBIGUITY = 0.2;
+    public static final double MAX_OUTSIDE_OF_FIELD_TOLERANCE = 0.1;
     public static final double MAX_ROBOT_Z_TOLERANCE = 0.5;
 
     public static final int SIM_RES_WIDTH = 1280;
