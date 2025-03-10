@@ -13,5 +13,5 @@ public class GrabberConstants {
     public static final double MOI = 0.025;
     public static final double GEAR_RATIO = 24.0 / 36.0;
 
-    public static final double Y_OFFSET_METERS = Units.inchesToMeters(-2.900);
+    public static final double Y_OFFSET_METERS = Units.inchesToMeters(-3.9);
 }

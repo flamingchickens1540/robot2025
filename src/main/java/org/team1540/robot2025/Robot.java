@@ -24,7 +24,7 @@ import org.team1540.robot2025.util.LocalADStarAK;
  */
 public class Robot extends LoggedRobot {
     private Command autonomousCommand;
-    private RobotContainer robotContainer;
+    private final RobotContainer robotContainer;
 
     public Robot() {
         Pathfinding.setPathfinder(new LocalADStarAK());

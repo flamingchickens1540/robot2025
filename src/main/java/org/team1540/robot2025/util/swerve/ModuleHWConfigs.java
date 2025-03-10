@@ -24,9 +24,7 @@ public record ModuleHWConfigs(
         driveConfig.TorqueCurrent.PeakReverseTorqueCurrent = constants.SlipCurrent;
         driveConfig.CurrentLimits.StatorCurrentLimit = constants.SlipCurrent;
         driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-        driveConfig.CurrentLimits.SupplyCurrentLimit = 70;
-        driveConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
-        driveConfig.CurrentLimits.SupplyCurrentLowerTime = 0.5;
+        driveConfig.CurrentLimits.SupplyCurrentLimit = 40;
         driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         driveConfig.Slot0 = constants.DriveMotorGains;
 
@@ -50,9 +48,7 @@ public record ModuleHWConfigs(
         turnConfig.Feedback.FeedbackRemoteSensorID = constants.EncoderId;
         turnConfig.Feedback.RotorToSensorRatio = constants.SteerMotorGearRatio;
         turnConfig.Feedback.SensorToMechanismRatio = 1.0;
-        turnConfig.CurrentLimits.SupplyCurrentLimit = 70;
-        turnConfig.CurrentLimits.SupplyCurrentLowerLimit = 40;
-        turnConfig.CurrentLimits.SupplyCurrentLowerTime = 0.5;
+        turnConfig.CurrentLimits.SupplyCurrentLimit = 40;
         turnConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         turnConfig.Slot0 = constants.SteerMotorGains;
         turnConfig.MotionMagic.MotionMagicCruiseVelocity = Units.radiansToRotations(

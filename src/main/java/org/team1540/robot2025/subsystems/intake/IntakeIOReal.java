@@ -71,9 +71,7 @@ public class IntakeIOReal implements IntakeIO {
 
         spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimitEnable(true);
         spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimit(120);
-        spinTalonFXConfigs.CurrentLimits.withSupplyCurrentLimit(70);
-        spinTalonFXConfigs.CurrentLimits.withSupplyCurrentLowerLimit(40);
-        spinTalonFXConfigs.CurrentLimits.withSupplyCurrentLowerTime(0.5);
+        spinTalonFXConfigs.CurrentLimits.withSupplyCurrentLimit(55);
         spinTalonFXConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         spinTalonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         spinTalonFXConfigs.Feedback.SensorToMechanismRatio = SPIN_GEAR_RATIO;
@@ -106,7 +104,6 @@ public class IntakeIOReal implements IntakeIO {
         pivotFalcon.getConfigurator().apply(pivotTalonFXConfigs);
         pivotFalcon.setPosition(PIVOT_MAX_ANGLE.getRotations());
 
-        funnelNEOConfig.secondaryCurrentLimit(80);
         funnelNEOConfig.smartCurrentLimit(40);
         funnelNEOConfig.inverted(false);
         funnelNEOConfig.idleMode(SparkBaseConfig.IdleMode.kCoast);

@@ -20,9 +20,7 @@ public class AutoScoreCommands {
             ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
         return Commands.defer(
                 () -> {
-                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch)
-                            //                            || height == ReefHeight.L4
-                            || height == ReefHeight.L1;
+                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch);
                     return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse)
                             .asProxy()
                             .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
@@ -31,9 +29,11 @@ public class AutoScoreCommands {
                                                     .getDistance(AllianceFlipUtil.maybeFlipTranslation(
                                                             branch.scorePosition.getTranslation()))
                                             <= prepareDistanceMeters.get())
-                                    .andThen(superstructure.scoreCoral(height, () -> reverse)));
+                                    .andThen(superstructure
+                                            .scoreCoral(height, () -> reverse)
+                                            .asProxy()));
                 },
-                Set.of(superstructure.intake, superstructure.elevator, superstructure.arm, superstructure.grabber));
+                Set.of());
     }
 
     public static Command alignToBranchAndScoreL1Fallback(
@@ -57,6 +57,7 @@ public class AutoScoreCommands {
                                         .getDistance(AllianceFlipUtil.maybeFlipTranslation(
                                                 face.dealgifyPosition().getTranslation()))
                                 <= prepareDistanceMeters.get())
-                        .andThen(face.highDealgify() ? superstructure.dealgifyHigh() : superstructure.dealgifyLow()));
+                        .andThen((face.highDealgify() ? superstructure.dealgifyHigh() : superstructure.dealgifyLow())
+                                .asProxy()));
     }
 }

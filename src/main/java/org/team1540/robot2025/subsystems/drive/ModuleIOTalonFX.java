@@ -136,13 +136,13 @@ public class ModuleIOTalonFX implements ModuleIO {
     public void updateInputs(ModuleIOInputs inputs) {
         // Refresh all signals
         StatusCode driveStatus = BaseStatusSignal.refreshAll(
-                drivePosition, driveVelocity, driveAppliedVolts, driveStatorCurrent, driveTemp);
-        StatusCode turnStatus =
-                BaseStatusSignal.refreshAll(turnPosition, turnVelocity, turnAppliedVolts, turnStatorCurrent, driveTemp);
+                drivePosition, driveVelocity, driveAppliedVolts, driveStatorCurrent, driveSupplyCurrent, driveTemp);
+        StatusCode turnStatus = BaseStatusSignal.refreshAll(
+                turnPosition, turnVelocity, turnAppliedVolts, turnStatorCurrent, turnSupplyCurrent, driveTemp);
         StatusCode turnEncoderStatus = BaseStatusSignal.refreshAll(turnAbsolutePosition);
 
         // Update drive inputs
-        inputs.driveConnected = driveConnectedDebounce.calculate(driveStatus.isOK());
+        inputs.driveConnected = driveStatus.isOK();
         inputs.drivePositionRads = Units.rotationsToRadians(drivePosition.getValueAsDouble());
         inputs.driveVelocityRadPerSec = Units.rotationsToRadians(driveVelocity.getValueAsDouble());
         inputs.driveAppliedVolts = driveAppliedVolts.getValueAsDouble();
@@ -151,8 +151,8 @@ public class ModuleIOTalonFX implements ModuleIO {
         inputs.driveTempCelsius = driveTemp.getValueAsDouble();
 
         // Update turn inputs
-        inputs.turnConnected = turnConnectedDebounce.calculate(turnStatus.isOK());
-        inputs.turnEncoderConnected = turnEncoderConnectedDebounce.calculate(turnEncoderStatus.isOK());
+        inputs.turnConnected = turnStatus.isOK();
+        inputs.turnEncoderConnected = turnEncoderStatus.isOK();
         inputs.turnAbsolutePosition = Rotation2d.fromRotations(turnAbsolutePosition.getValueAsDouble());
         inputs.turnPosition = Rotation2d.fromRotations(turnPosition.getValueAsDouble());
         inputs.turnVelocityRadPerSec = Units.rotationsToRadians(turnVelocity.getValueAsDouble());

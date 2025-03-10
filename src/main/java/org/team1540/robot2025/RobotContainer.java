@@ -106,7 +106,8 @@ public class RobotContainer {
         // Sim testing binding
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             driver.y()
-                    .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain, superstructure));
+                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
+                            ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
@@ -115,6 +116,7 @@ public class RobotContainer {
                         driver.getHID(),
                         () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
                         () -> true));
+        driver.a().onTrue(superstructure.coralIntakeEject().withTimeout(2.0));
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
@@ -130,16 +132,12 @@ public class RobotContainer {
                 .onFalse(superstructure.stow());
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1))
-                //                .and(() -> !grabber.forwardSensorTripped() && !grabber.reverseSensorTripped())
                 .whileTrue(superstructure.coralGroundIntakeL1())
                 .onFalse(superstructure.stow());
-        //        driver.leftTrigger()
-        //                .and(buttonBoard.branchHeightAt(ReefHeight.L1))
-        //                .and(() -> grabber.forwardSensorTripped() || grabber.reverseSensorTripped())
-        //                .whileTrue(superstructure.coralIntakeReverseHandoff())
-        //                .onFalse(superstructure.stow());
 
-        driver.leftBumper().whileTrue(superstructure.algaeIntake()).onFalse(superstructure.stow());
+        driver.leftBumper()
+                .whileTrue(superstructure.algaeIntake())
+                .onFalse(superstructure.stow().unless(drivetrain::isAutoAligning));
 
         driver.rightTrigger().onTrue(superstructure.score());
 
@@ -152,7 +150,7 @@ public class RobotContainer {
         copilot.back()
                 .toggleOnTrue(elevator.manualCommand(() -> 0.5 * -JoystickUtil.smartDeadzone(copilot.getLeftY(), 0.1)));
         copilot.rightTrigger().whileTrue(superstructure.coralGroundIntake()).onFalse(superstructure.stow());
-        copilot.leftTrigger().whileTrue(superstructure.algaeIntake()).onFalse(superstructure.stow());
+        copilot.leftTrigger().onTrue(superstructure.stow());
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
 
@@ -164,7 +162,6 @@ public class RobotContainer {
 
         copilot.povLeft().onTrue(superstructure.processor());
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
-        copilot.rightStick().onTrue(superstructure.stow());
 
         for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {
             for (ReefHeight height : ReefHeight.values()) {
@@ -183,8 +180,6 @@ public class RobotContainer {
                     .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(
                             buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
         }
-
-        new Trigger(() -> climber.getPosition().getDegrees() > 10).onTrue(superstructure.processor());
     }
 
     private void configureAutoRoutines() {
@@ -228,29 +223,28 @@ public class RobotContainer {
     private void configureLEDBindings() {
         // RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
         RobotModeTriggers.disabled()
-                .whileTrue(leds.viewFull.commandShowPattern(CustomLEDPatterns.movingRainbow(Hertz.of(0.2))));
+                .onTrue(Commands.runOnce(
+                        () -> leds.viewFull.setDefaultPattern(CustomLEDPatterns.movingRainbow(Hertz.of(0.2)))));
         RobotModeTriggers.autonomous()
-                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(
-                        leds.viewFull.commandShowPattern(LEDPattern.solid(Leds.getAllianceColor())))));
+                .onTrue(Commands.runOnce(
+                        () -> leds.viewFull.setDefaultPattern(LEDPattern.solid(Leds.getAllianceColor()))));
         RobotModeTriggers.teleop()
                 .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(leds.viewFull.commandShowPattern(
-                        LEDPattern.solid(Leds.getAllianceColor()).breathe(Seconds.of(3))))));
+                        () -> LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0))))))
+                .onFalse(Commands.runOnce(leds.viewFull::removeDefaultCommand));
 
-        new Trigger(drivetrain::isAutoAligning)
-                .and(DriverStation::isEnabled)
-                .whileTrue(leds.viewFull.commandShowPattern(CustomLEDPatterns.movingRainbow(Hertz.of(1.5))));
         new Trigger(grabber::reverseSensorTripped)
                 .and(DriverStation::isEnabled)
                 .whileTrue(leds.viewFull
                         .commandShowPattern(CustomLEDPatterns.strobe(Color.kPurple))
                         .withTimeout(0.5)
-                        .alongWith(leds.viewTop.commandShowPattern(LEDPattern.solid(Color.kPurple))));
+                        .andThen(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kPurple))));
         new Trigger(grabber::forwardSensorTripped)
                 .and(DriverStation::isEnabled)
-                .whileTrue(leds.viewTop.commandShowPattern(LEDPattern.solid(Color.kYellow)));
+                .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kYellow)));
         new Trigger(intake::hasCoral)
                 .and(DriverStation::isEnabled)
-                .whileTrue(leds.viewTop.commandShowPattern(LEDPattern.solid(Color.kOrangeRed)));
+                .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kOrangeRed)));
 
         MatchTriggers.endgame()
                 .onTrue(leds.viewFull

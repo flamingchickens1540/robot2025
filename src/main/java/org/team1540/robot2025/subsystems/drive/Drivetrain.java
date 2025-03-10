@@ -60,7 +60,7 @@ public class Drivetrain extends SubsystemBase {
     private static final LoggedTunableNumber headingKD = new LoggedTunableNumber("Drivetrain/Heading/kD", 0.0);
 
     private static final LoggedTunableNumber autoAlignLinearSpeedFactor =
-            new LoggedTunableNumber("AutoAlign/LinearSpeedFactor", 0.4);
+            new LoggedTunableNumber("AutoAlign/LinearSpeedFactor", 0.75);
     private static final LoggedTunableNumber autoAlignLinearAccelFactor =
             new LoggedTunableNumber("AutoAlign/LinearAccelFactor", 0.5);
     private static final LoggedTunableNumber autoAlignRotationSpeedFactor =
@@ -409,7 +409,7 @@ public class Drivetrain extends SubsystemBase {
 
     @AutoLogOutput(key = "AutoAlign/AtGoal")
     public boolean atAutoAlignGoal() {
-        return atAutoAlignGoalDebounce.calculate(autoAlignController.atGoal(0.01, Rotation2d.fromDegrees(1.0)));
+        return atAutoAlignGoalDebounce.calculate(autoAlignController.atGoal(0.03, Rotation2d.fromDegrees(1.0)));
     }
 
     public Command percentDriveCommand(
@@ -432,9 +432,9 @@ public class Drivetrain extends SubsystemBase {
 
     public Command teleopDriveCommand(XboxController controller, BooleanSupplier fieldRelative) {
         return percentDriveCommand(
-                () -> JoystickUtil.squareDeadzonedJoystickTranslation(
+                () -> JoystickUtil.deadzonedJoystickTranslation(
                         -controller.getLeftY(), -controller.getLeftX(), 0.1),
-                () -> JoystickUtil.squaredSmartDeadzone(-controller.getRightX(), 0.1),
+                () -> JoystickUtil.smartDeadzone(-controller.getRightX(), 0.1),
                 fieldRelative);
     }
 

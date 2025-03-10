@@ -14,7 +14,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -26,6 +25,7 @@ import org.team1540.robot2025.FieldConstants.ReefFace;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO;
 import org.team1540.robot2025.util.AllianceFlipUtil;
+import org.team1540.robot2025.util.LoggedTracer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 
 public class RobotState {
@@ -113,14 +113,14 @@ public class RobotState {
                 XY_STD_DEV_COEFF * Math.pow(poseObservation.avgTagDistance(), 2.0) / poseObservation.numTagsSeen();
         double rotStdDev =
                 ROT_STD_DEV_COEFF * Math.pow(poseObservation.avgTagDistance(), 2.0) / poseObservation.numTagsSeen();
-        boolean acceptYaw =
-                poseObservation.numTagsSeen() > 1 || (poseObservation.numTagsSeen() > 0 && DriverStation.isDisabled());
-        return VecBuilder.fill(xyStdDev, xyStdDev, acceptYaw ? rotStdDev : Double.POSITIVE_INFINITY);
+        return VecBuilder.fill(xyStdDev, xyStdDev, rotStdDev);
     }
 
     private boolean shouldAcceptVision(AprilTagVisionIO.PoseObservation poseObservation) {
         Pose3d estimatedPose = poseObservation.estimatedPoseMeters();
         return poseObservation.numTagsSeen() >= MIN_ACCEPTED_NUM_TAGS // Must see sufficient tags
+                && (poseObservation.numTagsSeen() > 1
+                        || poseObservation.ambiguity() < MAX_AMBIGUITY) // Must be multiple tags or low ambiguity
                 // Must be within field roughly
                 && estimatedPose.getX() >= -MAX_OUTSIDE_OF_FIELD_TOLERANCE
                 && estimatedPose.getX() <= FieldConstants.fieldLength + MAX_OUTSIDE_OF_FIELD_TOLERANCE
@@ -286,12 +286,11 @@ public class RobotState {
     }
 
     public void periodicLog() {
+        LoggedTracer.reset();
         for (int i = 0; i < singleTagPoses.length; i++) {
-            Optional<Pose2d> singleTagEstimate = getSingleTagPose(i + 1);
-            if (singleTagEstimate.isPresent()) {
-                Logger.recordOutput("Odometry/SingleTagPoses/" + (i + 1), singleTagEstimate.get());
-            }
+            Logger.recordOutput("Odometry/SingleTagPoses/" + (i + 1), singleTagPoses[i]);
         }
+        LoggedTracer.record("RobotState");
     }
 
     public record SingleTagPoseEstimate(Pose2d pose, double distance, double timestamp) {}
