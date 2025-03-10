@@ -432,9 +432,9 @@ public class Drivetrain extends SubsystemBase {
 
     public Command teleopDriveCommand(XboxController controller, BooleanSupplier fieldRelative) {
         return percentDriveCommand(
-                () -> JoystickUtil.squareDeadzonedJoystickTranslation(
+                () -> JoystickUtil.deadzonedJoystickTranslation(
                         -controller.getLeftY(), -controller.getLeftX(), 0.1),
-                () -> JoystickUtil.squaredSmartDeadzone(-controller.getRightX(), 0.1),
+                () -> JoystickUtil.smartDeadzone(-controller.getRightX(), 0.1),
                 fieldRelative);
     }
 
