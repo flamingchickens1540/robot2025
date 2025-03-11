@@ -108,6 +108,7 @@ public class RobotContainer {
             driver.y()
                     .whileTrue(AutoScoreCommands.alignToBranchAndScore(
                             ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
+            driver.b().whileTrue(AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
@@ -170,7 +171,6 @@ public class RobotContainer {
                                                 .getDegrees())
                                         < 10)
                                 .andThen(superstructure.net())));
-
         copilot.povLeft().onTrue(superstructure.processor());
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
 

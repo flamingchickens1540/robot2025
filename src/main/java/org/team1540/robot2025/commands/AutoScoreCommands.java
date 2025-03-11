@@ -2,15 +2,20 @@ package org.team1540.robot2025.commands;
 
 import static org.team1540.robot2025.FieldConstants.*;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.Superstructure;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
 import org.team1540.robot2025.util.AllianceFlipUtil;
 import org.team1540.robot2025.util.LoggedTunableNumber;
+import org.team1540.robot2025.util.math.MathUtils;
 
 public class AutoScoreCommands {
     private static final LoggedTunableNumber prepareDistanceMeters =
@@ -59,5 +64,22 @@ public class AutoScoreCommands {
                                 <= prepareDistanceMeters.get())
                         .andThen((face.highDealgify() ? superstructure.dealgifyHigh() : superstructure.dealgifyLow())
                                 .asProxy()));
+    }
+
+    public static Command alignToBargeAndScore(Drivetrain drivetrain, Superstructure superstructure) {
+        return drivetrain
+                .driveToPoseCommand(() -> new Pose2d(
+                        AllianceFlipUtil.maybeFlipTranslation(
+                                        Barge.middleCage.plus(new Translation2d(-Constants.BUMPER_LENGTH_X_METERS, 0)))
+                                .getX(),
+                        MathUtils.clamp(
+                                RobotState.getInstance().getEstimatedPose().getY(),
+                                AllianceFlipUtil.maybeFlipTranslation(Barge.rightCage)
+                                        .getY(),
+                                AllianceFlipUtil.maybeFlipTranslation(Barge.leftCage)
+                                        .getY()),
+                        AllianceFlipUtil.maybeFlipRotation(Rotation2d.k180deg)))
+                .asProxy()
+                .andThen(superstructure.net().asProxy());
     }
 }
