@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -66,6 +67,8 @@ public class Arm extends SubsystemBase {
     private final TrapezoidProfile trapezoidProfile =
             new TrapezoidProfile(new TrapezoidProfile.Constraints(CRUISE_VELOCITY_RPS, MAX_ACCEL_RPS2));
 
+    private BooleanSupplier armDisable = () -> false;
+
     private Arm(ArmIO io) {
         if (hasInstance) throw new IllegalStateException("Instance of arm already exists");
         hasInstance = true;
@@ -119,7 +122,9 @@ public class Arm extends SubsystemBase {
     }
 
     public Command commandToSetpoint(ArmState state) {
-        return Commands.run(() -> setPosition(state.position()), this).until(this::isAtSetpoint);
+        return Commands.run(() -> setPosition(state.position()), this)
+                .until(this::isAtSetpoint)
+                .unless(armDisable);
     }
 
     @AutoLogOutput(key = "Arm/TimeToSetpoint")
@@ -133,6 +138,15 @@ public class Arm extends SubsystemBase {
                 new TrapezoidProfile.State(getPosition().getRotations(), inputs.velocityRPM),
                 new TrapezoidProfile.State(setpoint.getRotations(), 0));
         return trapezoidProfile.totalTime();
+    }
+
+    public void armOverride(BooleanSupplier armDisable) {
+        this.armDisable = armDisable;
+    }
+
+    public void toggleArmOverride() {
+        boolean armDisable = this.armDisable.getAsBoolean();
+        armOverride(() -> !armDisable);
     }
 
     public static Arm createReal() {

@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -44,6 +45,8 @@ public class Climber extends SubsystemBase {
     private final LoggedTunableNumber kG = new LoggedTunableNumber("Climber/kG", KG);
     private final LoggedTunableNumber kS = new LoggedTunableNumber("Climber/kS", KS);
     private final LoggedTunableNumber kV = new LoggedTunableNumber("Climber/kV", KV);
+
+    private BooleanSupplier climberDisable = () -> false;
 
     private Climber(ClimberIO io) {
         if (hasInstance) throw new IllegalStateException("Instance of climber already exists");
@@ -103,22 +106,34 @@ public class Climber extends SubsystemBase {
 
     public Command commandToSetpoint(ClimberState state) {
         return (Commands.run(() -> setPosition(state.position()), this).until(this::isAtSetpoint))
-                .handleInterrupt(this::holdPosition);
+                .handleInterrupt(this::holdPosition)
+                .unless(climberDisable);
     }
 
     public Command manualCommand(DoubleSupplier input) {
-        return Commands.runEnd(() -> io.setVoltage(input.getAsDouble() * 12.0), () -> io.setVoltage(0), this);
+        return Commands.runEnd(() -> io.setVoltage(input.getAsDouble() * 12.0), () -> io.setVoltage(0), this)
+                .unless(climberDisable);
     }
 
     public Command climbCommand(DoubleSupplier input) {
         return Commands.runEnd(
-                () -> io.setVoltage(
-                        getPosition().getDegrees()
-                                        > ClimberState.CLIMB.position().getDegrees()
-                                ? Math.min(input.getAsDouble(), 0.0)
-                                : input.getAsDouble() * 12.0),
-                () -> io.setVoltage(0),
-                this);
+                        () -> io.setVoltage(
+                                getPosition().getDegrees()
+                                                > ClimberState.CLIMB.position().getDegrees()
+                                        ? Math.min(input.getAsDouble(), 0.0)
+                                        : input.getAsDouble() * 12.0),
+                        () -> io.setVoltage(0),
+                        this)
+                .unless(climberDisable);
+    }
+
+    public void climberOverride(BooleanSupplier climberDisable) {
+        this.climberDisable = climberDisable;
+    }
+
+    public void toggleClimberOverride() {
+        boolean climberDisable = this.climberDisable.getAsBoolean();
+        climberOverride(() -> !climberDisable);
     }
 
     public static Climber createReal() {

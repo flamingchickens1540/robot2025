@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.util.LoggedTracer;
@@ -22,6 +23,8 @@ public class Grabber extends SubsystemBase {
             new Alert("After sensor is disconnected", Alert.AlertType.kWarning);
     private final Debouncer algaeDebounce = new Debouncer(0.3);
     private boolean hasAlgae = false;
+
+    private BooleanSupplier disableGrabber = () -> false;
 
     private Grabber(GrabberIO grabberIO, SensorIO sensorIO) {
         this.grabberIO = grabberIO;
@@ -83,11 +86,12 @@ public class Grabber extends SubsystemBase {
     }
 
     public Command commandRun(double percent) {
-        return Commands.startEnd(() -> this.setPercent(percent), () -> this.setPercent(0), this);
+        return Commands.startEnd(() -> this.setPercent(percent), () -> this.setPercent(0), this)
+                .unless(disableGrabber);
     }
 
     public Command commandStartRun(double percent) {
-        return Commands.runOnce(() -> setPercent(percent));
+        return Commands.runOnce(() -> setPercent(percent)).unless(disableGrabber);
     }
 
     public Command centerCoral() {
@@ -95,6 +99,15 @@ public class Grabber extends SubsystemBase {
                 commandRun(0.3).until(this::reverseSensorTripped),
                 commandRun(-0.1).until(() -> !this.reverseSensorTripped()),
                 commandRun(0.05).until(this::reverseSensorTripped));
+    }
+
+    public void grabberOverride(BooleanSupplier disableGrabber) {
+        this.disableGrabber = disableGrabber;
+    }
+
+    public void toggleGrabberOverride() {
+        boolean disableGrabber = this.disableGrabber.getAsBoolean();
+        grabberOverride(() -> !disableGrabber);
     }
 
     public static Grabber createReal() {

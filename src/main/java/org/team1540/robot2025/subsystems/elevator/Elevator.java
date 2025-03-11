@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -73,6 +74,8 @@ public class Elevator extends SubsystemBase {
 
     private final Debouncer atBottomDebounce = new Debouncer(0.25);
     private boolean atBottom = false;
+
+    public BooleanSupplier elevatorDisable = () -> false;
 
     private Elevator(ElevatorIO elevatorIO) {
         if (hasInstance) throw new IllegalStateException("Instance of elevator already exists");
@@ -171,16 +174,18 @@ public class Elevator extends SubsystemBase {
 
     public Command commandToSetpoint(ElevatorState state) {
         return (Commands.run(() -> setPosition(state.height.getAsDouble()), this)
-                .until(this::isAtSetpoint));
+                        .until(this::isAtSetpoint))
+                .until(elevatorDisable);
         //                .handleInterrupt(this::holdPosition);
     }
 
     public Command manualCommand(DoubleSupplier input) {
-        return Commands.runEnd(() -> setVoltage(input.getAsDouble() * 12.0), this::holdPosition, this);
+        return Commands.runEnd(() -> setVoltage(input.getAsDouble() * 12.0), this::holdPosition, this)
+                .unless(elevatorDisable);
     }
 
     public Command runSetpointCommand(ElevatorState state) {
-        return Commands.run(() -> setPosition(state.height.getAsDouble()), this);
+        return Commands.run(() -> setPosition(state.height.getAsDouble()), this).unless(elevatorDisable);
     }
 
     public Command zeroCommand() {
@@ -189,12 +194,23 @@ public class Elevator extends SubsystemBase {
                         commandToSetpoint(ElevatorState.STOW)
                                 .onlyIf(() -> getPosition() > ElevatorState.STOW.height.getAsDouble())
                                 .withTimeout(0.5)
-                                .andThen(Commands.runOnce(() -> setVoltage(-2.5), this)))
+                                .andThen(Commands.runOnce(() -> setVoltage(-2.5), this)
+                                        .unless(elevatorDisable)))
                 .andThen(Commands.runOnce(() -> resetPosition(0)), commandToSetpoint(ElevatorState.STOW));
     }
 
     public Command feedforwardCharacterizationCommand() {
-        return CharacterizationCommands.feedforward(this::setVoltage, this::getVelocity, this);
+        return CharacterizationCommands.feedforward(this::setVoltage, this::getVelocity, this)
+                .unless(elevatorDisable);
+    }
+
+    public void elevatorOverride(BooleanSupplier elevatorDisable) {
+        this.elevatorDisable = elevatorDisable;
+    }
+
+    public void toggleElevatorOverride() {
+        boolean elevatorDisable = this.elevatorDisable.getAsBoolean();
+        elevatorOverride(() -> !elevatorDisable);
     }
 
     public static Elevator createReal() {

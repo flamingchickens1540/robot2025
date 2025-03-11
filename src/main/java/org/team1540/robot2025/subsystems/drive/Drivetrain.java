@@ -120,6 +120,8 @@ public class Drivetrain extends SubsystemBase {
 
     private final Alert gyroDisconnected = new Alert("Gyro is disconnected", Alert.AlertType.kError);
 
+    private BooleanSupplier drivetrainDisable = () -> false;
+
     public Drivetrain(
             GyroIO gyroIO, ModuleIO flModuleIO, ModuleIO frModuleIO, ModuleIO blModuleIO, ModuleIO brModuleIO) {
         if (hasInstance) throw new IllegalStateException("Instance of drivetrain already exists");
@@ -427,7 +429,8 @@ public class Drivetrain extends SubsystemBase {
                             runVelocity(speeds);
                         },
                         this)
-                .finallyDo(this::stop);
+                .finallyDo(this::stop)
+                .unless(drivetrainDisable);
     }
 
     public Command teleopDriveCommand(XboxController controller, BooleanSupplier fieldRelative) {
@@ -470,7 +473,8 @@ public class Drivetrain extends SubsystemBase {
                 .finallyDo(() -> {
                     isAutoAligning = false;
                     stop();
-                });
+                })
+                .unless(drivetrainDisable);
     }
 
     public Command driveToPoseCommand(Supplier<Pose2d> goalPose) {
@@ -480,15 +484,26 @@ public class Drivetrain extends SubsystemBase {
     public Command feedforwardCharacterization() {
         return CharacterizationCommands.feedforward(
                         this::runFFCharacterization, this::getFFCharacterizationVelocity, this)
-                .finallyDo(this::endFFCharacterization);
+                .finallyDo(this::endFFCharacterization)
+                .unless(drivetrainDisable);
     }
 
     public Command wheelRadiusCharacterization() {
         return CharacterizationCommands.wheelRadius(
-                input -> runVelocity(new ChassisSpeeds(0.0, 0.0, input)),
-                () -> rawGyroRotation.getRadians(),
-                this::getWheelRadiusCharacterizationPositions,
-                this);
+                        input -> runVelocity(new ChassisSpeeds(0.0, 0.0, input)),
+                        () -> rawGyroRotation.getRadians(),
+                        this::getWheelRadiusCharacterizationPositions,
+                        this)
+                .unless(drivetrainDisable);
+    }
+
+    public void drivetrainOverride(BooleanSupplier drivetrainDisable) {
+        this.drivetrainDisable = drivetrainDisable;
+    }
+
+    public void toggleDrivetrainOverride() {
+        boolean drivetrainDisable = this.drivetrainDisable.getAsBoolean();
+        drivetrainOverride(() -> !drivetrainDisable);
     }
 
     public static Drivetrain createReal() {

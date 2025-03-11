@@ -256,7 +256,7 @@ public class Superstructure {
                             && state != SuperstructureState.DEALGIFY_LOW_FRONT) return Commands.none();
                     return Commands.sequence(
                                     commandToState(state),
-                                    Commands.runOnce(() -> grabber.setPercent(0.5)),
+                                    grabber.commandStartRun(0.5),
                                     Commands.waitUntil(grabber::hasAlgae))
                             .unless(grabber::reverseSensorTripped);
                 },
@@ -274,7 +274,7 @@ public class Superstructure {
     public Command dealgifyHighFront() {
         return Commands.sequence(
                         commandToState(SuperstructureState.DEALGIFY_HIGH_FRONT),
-                        Commands.runOnce(() -> grabber.setPercent(0.25)),
+                        grabber.commandStartRun(0.25),
                         Commands.waitUntil(grabber::hasAlgae))
                 //                        commandToState(SuperstructureState.STOW))
                 .unless(grabber::reverseSensorTripped)
@@ -352,9 +352,9 @@ public class Superstructure {
     public Command algaeIntake() {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_ALGAE).withTimeout(1.0),
-                        Commands.runOnce(() -> grabber.setPercent(1.0)),
+                        grabber.commandStartRun(1.0),
                         Commands.waitUntil(grabber::hasAlgae),
-                        Commands.runOnce(() -> grabber.setPercent(0.25)),
+                        grabber.commandRun(0.25),
                         stow())
                 .unless(grabber::reverseSensorTripped);
     }

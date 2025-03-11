@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -56,6 +57,10 @@ public class Intake extends SubsystemBase {
 
     private final TrapezoidProfile trapezoidProfile =
             new TrapezoidProfile(new TrapezoidProfile.Constraints(PIVOT_CRUISE_VELOCITY_RPS, PIVOT_ACCELERATION_RPS2));
+
+    private BooleanSupplier pivotDisable = () -> false;
+    private BooleanSupplier rollerDisable = () -> false;
+    private BooleanSupplier funnelDisable = () -> false;
 
     private Intake(IntakeIO io) {
         if (hasInstance) throw new IllegalStateException("Instance of intake already exists");
@@ -158,22 +163,25 @@ public class Intake extends SubsystemBase {
     public Command commandToSetpoint(IntakeState state) {
         return (Commands.run(() -> setPivotPosition(state.pivotPosition()), this)
                         .until(this::isPivotAtSetpoint))
-                .handleInterrupt(this::holdPivot);
+                .handleInterrupt(this::holdPivot)
+                .unless(pivotDisable);
     }
 
     public Command commandRunRoller(double percent) {
-        return Commands.startEnd(() -> this.setRollerVoltage(percent * 12), () -> this.setRollerVoltage(0), this);
+        return Commands.startEnd(() -> this.setRollerVoltage(percent * 12), () -> this.setRollerVoltage(0), this)
+                .unless(rollerDisable);
     }
 
     public Command commandRunFunnel(double percent) {
-        return Commands.startEnd(() -> this.setFunnelVoltage(percent * 12), () -> this.setFunnelVoltage(0), this);
+        return Commands.startEnd(() -> this.setFunnelVoltage(percent * 12), () -> this.setFunnelVoltage(0), this)
+                .unless(funnelDisable);
     }
 
     public Command commandRunRollerFunnel(double rollerPercent, double funnelPercent) {
         return Commands.startEnd(
                 () -> {
-                    this.setRollerVoltage(rollerPercent * 12);
-                    this.setFunnelVoltage(funnelPercent * 12);
+                    if (!rollerDisable.getAsBoolean()) this.setRollerVoltage(rollerPercent * 12);
+                    if (!funnelDisable.getAsBoolean()) this.setFunnelVoltage(funnelPercent * 12);
                 },
                 () -> {
                     this.setRollerVoltage(0);
@@ -183,10 +191,40 @@ public class Intake extends SubsystemBase {
 
     public Command zeroCommand() {
         return Commands.runOnce(() -> setPivotVoltage(0.3 * 12))
-                .andThen(Commands.waitSeconds(0.5))
-                .andThen(Commands.waitUntil(() -> Math.abs(inputs.pivotStatorCurrentAmps) > 20)
-                        .andThen(Commands.runOnce(() -> resetPivotPosition(Rotation2d.fromDegrees(90))))
-                        .andThen(commandToSetpoint(IntakeState.STOW)));
+                .unless(pivotDisable)
+                .andThen(
+                        Commands.waitSeconds(0.5),
+                        Commands.waitUntil(() -> Math.abs(inputs.pivotStatorCurrentAmps) > 20),
+                        Commands.runOnce(() -> resetPivotPosition(Rotation2d.fromDegrees(90))),
+                        commandToSetpoint(IntakeState.STOW))
+                .unless(pivotDisable);
+    }
+
+    public void pivotOverride(BooleanSupplier pivotDisable) {
+        this.pivotDisable = pivotDisable;
+    }
+
+    public void togglePivotOverride() {
+        boolean pivotDisable = this.pivotDisable.getAsBoolean();
+        pivotOverride(() -> !pivotDisable);
+    }
+
+    public void rollerOverride(BooleanSupplier rollerDisable) {
+        this.rollerDisable = rollerDisable;
+    }
+
+    public void toggleRollerOverride() {
+        boolean rollerDisable = this.rollerDisable.getAsBoolean();
+        rollerOverride(() -> !rollerDisable);
+    }
+
+    public void funnelOverride(BooleanSupplier funnelDisable) {
+        this.funnelDisable = funnelDisable;
+    }
+
+    public void toggleFunnelOverride() {
+        boolean funnelDisable = this.funnelDisable.getAsBoolean();
+        funnelOverride(() -> !funnelDisable);
     }
 
     public static Intake createReal() {

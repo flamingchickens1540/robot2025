@@ -40,6 +40,7 @@ public class RobotContainer {
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController copilot = new CommandXboxController(1);
     private final ButtonBoard buttonBoard = new ButtonBoard(2);
+    private final CommandXboxController tester = new CommandXboxController(3);
 
     private final Drivetrain drivetrain;
     private final AprilTagVision aprilTagVision;
@@ -109,6 +110,22 @@ public class RobotContainer {
                     .whileTrue(AutoScoreCommands.alignToBranchAndScore(
                             ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
             driver.b().whileTrue(AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure));
+        }
+
+        if (Constants.isTuningMode()) {
+            tester.a().onTrue(Commands.runOnce(grabber::toggleGrabberOverride));
+
+            tester.y().onTrue(Commands.runOnce(intake::togglePivotOverride));
+            tester.x().onTrue(Commands.runOnce(intake::toggleRollerOverride));
+            tester.b().onTrue(Commands.runOnce(intake::toggleFunnelOverride));
+
+            tester.rightTrigger().onTrue(Commands.runOnce(elevator::toggleElevatorOverride));
+
+            tester.leftTrigger().onTrue(Commands.runOnce(drivetrain::toggleDrivetrainOverride));
+
+            tester.rightTrigger().onTrue(Commands.runOnce(arm::toggleArmOverride));
+
+            tester.leftTrigger().onTrue(Commands.runOnce(climber::toggleClimberOverride));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
