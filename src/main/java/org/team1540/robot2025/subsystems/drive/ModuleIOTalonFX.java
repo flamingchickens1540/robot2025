@@ -138,7 +138,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         StatusCode driveStatus = BaseStatusSignal.refreshAll(
                 drivePosition, driveVelocity, driveAppliedVolts, driveStatorCurrent, driveSupplyCurrent, driveTemp);
         StatusCode turnStatus = BaseStatusSignal.refreshAll(
-                turnPosition, turnVelocity, turnAppliedVolts, turnStatorCurrent, turnSupplyCurrent, driveTemp);
+                turnPosition, turnVelocity, turnAppliedVolts, turnStatorCurrent, turnSupplyCurrent, turnTemp);
         StatusCode turnEncoderStatus = BaseStatusSignal.refreshAll(turnAbsolutePosition);
 
         // Update drive inputs
