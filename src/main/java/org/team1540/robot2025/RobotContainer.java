@@ -123,9 +123,9 @@ public class RobotContainer {
 
             prankster.leftTrigger().onTrue(Commands.runOnce(drivetrain::toggleDrivetrainOverride));
 
-            prankster.rightTrigger().onTrue(Commands.runOnce(arm::toggleArmOverride));
+            prankster.rightBumper().onTrue(Commands.runOnce(arm::toggleArmOverride));
 
-            prankster.leftTrigger().onTrue(Commands.runOnce(climber::toggleClimberOverride));
+            prankster.leftBumper().onTrue(Commands.runOnce(climber::toggleClimberOverride));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
