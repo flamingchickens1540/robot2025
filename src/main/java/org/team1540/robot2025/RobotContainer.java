@@ -232,7 +232,6 @@ public class RobotContainer {
     }
 
     private void configureLEDBindings() {
-        // RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
         RobotModeTriggers.disabled()
                 .onTrue(Commands.runOnce(
                         () -> leds.viewFull.setDefaultPattern(CustomLEDPatterns.movingRainbow(Hertz.of(0.2)))));
@@ -240,9 +239,8 @@ public class RobotContainer {
                 .onTrue(Commands.runOnce(
                         () -> leds.viewFull.setDefaultPattern(LEDPattern.solid(Leds.getAllianceColor()))));
         RobotModeTriggers.teleop()
-                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(leds.viewFull.commandShowPattern(
-                        () -> LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0))))))
-                .onFalse(Commands.runOnce(leds.viewFull::removeDefaultCommand));
+                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultPattern(
+                        LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0)))));
 
         new Trigger(grabber::reverseSensorTripped)
                 .and(DriverStation::isEnabled)
@@ -253,6 +251,12 @@ public class RobotContainer {
         new Trigger(grabber::forwardSensorTripped)
                 .and(DriverStation::isEnabled)
                 .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kYellow)));
+        new Trigger(grabber::hasAlgae)
+                .and(DriverStation::isEnabled)
+                .whileTrue(leds.viewFull
+                        .commandShowPattern(CustomLEDPatterns.strobe(Color.kAquamarine))
+                        .withTimeout(0.5)
+                        .andThen(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kAquamarine))));
         new Trigger(intake::hasCoral)
                 .and(DriverStation::isEnabled)
                 .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kOrangeRed)));

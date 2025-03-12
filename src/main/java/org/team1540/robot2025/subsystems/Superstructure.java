@@ -314,14 +314,26 @@ public class Superstructure {
                                 .until(grabber::forwardSensorTripped)
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
                                 .deadlineFor(intake.commandRunRollerFunnel(0.75, 0.75)),
-                        stow().alongWith(grabber.commandRun(0.0)))
+                        stow().alongWith(
+                                        grabber.commandRun(0.0),
+                                        Commands.startEnd(
+                                                        () -> {
+                                                            intake.setFunnelVoltage(-0.75 * 12);
+                                                            intake.setRollerVoltage(-0.75 * 12);
+                                                        },
+                                                        () -> {
+                                                            intake.setFunnelVoltage(0);
+                                                            intake.setRollerVoltage(0);
+                                                        })
+                                                .withTimeout(0.5)
+                                                .onlyIf(grabber::reverseSensorTripped)))
                 .unless(grabber::hasAlgae);
     }
 
     public Command coralGroundIntakeL1() {
         return Commands.sequence(
                 commandToState(SuperstructureState.INTAKE_GROUND_L1).withTimeout(1.0),
-                intake.commandRunRollerFunnel(0.8, 0.5).until(intake::hasCoral),
+                intake.commandRunRoller(0.8).until(intake::hasCoral),
                 stow());
     }
 
