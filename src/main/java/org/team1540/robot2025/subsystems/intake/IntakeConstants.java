@@ -17,12 +17,12 @@ public class IntakeConstants {
     public static final double PIVOT_GEAR_RATIO = 9.0 * (48.0 / 28.0) * (36.0 / 18.0);
     public static final double PIVOT_KS = 0.01;
     public static final double PIVOT_KV = 0.0;
-    public static final double PIVOT_KG = 0.0;
-    public static final double PIVOT_KP = 30;
+    public static final double PIVOT_KG = 0.1;
+    public static final double PIVOT_KP = 40;
     public static final double PIVOT_KI = 0;
     public static final double PIVOT_KD = 0;
 
-    public static final double PIVOT_CRUISE_VELOCITY_RPS = 2.0;
+    public static final double PIVOT_CRUISE_VELOCITY_RPS = 1.5;
     public static final double PIVOT_ACCELERATION_RPS2 = 10.0;
 
     public static final Rotation2d PIVOT_MIN_ANGLE = Rotation2d.fromDegrees(2.5);

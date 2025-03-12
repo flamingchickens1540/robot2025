@@ -36,5 +36,5 @@ public final class Constants {
     public static final double ROBOT_MOI_KGM2 = 7.74581;
 
     public static final double BUMPER_LENGTH_X_METERS = Units.inchesToMeters(37.0);
-    public static final double BUMPER_LENGTH_Y_METERS = Units.inchesToMeters(37.0);
+    public static final double BUMPER_LENGTH_Y_METERS = Units.inchesToMeters(36.5);
 }

@@ -22,6 +22,10 @@ public class AutoAlignCommands {
             "AutoAlign/ReefAvoidanceRadiusMeters", Reef.faceLength + DrivetrainConstants.DRIVEBASE_RADIUS + 0.5);
     private static final LoggedTunableNumber reefAvoidanceLookaheadDeg =
             new LoggedTunableNumber("AutoAlign/ReefAvoidanceLookaheadDeg", 20);
+    private static final LoggedTunableNumber finalReefAvoidanceLookaheadDeg =
+            new LoggedTunableNumber("AutoAlign/FinalReefAvoidanceLookaheadDeg", 5);
+    private static final LoggedTunableNumber finalReefAvoidanceSectorDeg =
+            new LoggedTunableNumber("AutoAlign/FinalReefAvoidanceLookaheadDeg", 25);
     private static final LoggedTunableNumber finalAlignLookaheadMeters =
             new LoggedTunableNumber("AutoAlign/FinalAlignLookaheadMeters", 0.075);
     private static final LoggedTunableNumber finalAlignDistanceMeters =
@@ -48,8 +52,11 @@ public class AutoAlignCommands {
         // If the robot is within or near the reef avoidance radius, drive around the reef
         if (robotFromReef.getTranslation().getNorm() <= reefAvoidanceRadiusMeters.get() + 0.1) {
             Rotation2d angleFromReefCenter = robotFromReef.getTranslation().getAngle();
-            Rotation2d step =
-                    Rotation2d.fromDegrees(Math.copySign(reefAvoidanceLookaheadDeg.get(), angularError.getDegrees()));
+            Rotation2d step = Rotation2d.fromDegrees(Math.copySign(
+                    Math.abs(angularError.getDegrees()) <= finalReefAvoidanceSectorDeg.get()
+                            ? reefAvoidanceLookaheadDeg.get()
+                            : finalReefAvoidanceLookaheadDeg.get(),
+                    angularError.getDegrees()));
             Rotation2d nextAngle = Math.abs(angularError.getDegrees()) <= reefAvoidanceLookaheadDeg.get()
                     ? goalAngleFromReef
                     : angleFromReefCenter.plus(step);
