@@ -165,6 +165,7 @@ public class RobotContainer {
                                 driver.getHID(),
                                 () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg),
                                 () -> true)
+                        .asProxy()
                         .alongWith(Commands.waitUntil(() -> Math.abs(RobotState.getInstance()
                                                 .getRobotRotation()
                                                 .minus(AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg))
