@@ -30,9 +30,9 @@ public class ArmConstants {
     public static final double CANCODER_OFFSET_ROTS = -0.2080078125; // TODO: get offset
     public static final double DISCONTINUITY_POINT = 0.75;
 
-    public static final double CRUISE_VELOCITY_RPS = 2.0;
-    public static final double MAX_ACCEL_RPS2 = 4;
-    public static final double JERK_RPS = 50;
+    public static final double CRUISE_VELOCITY_RPS = 1.75;
+    public static final double MAX_ACCEL_RPS2 = 3.5;
+    public static final double JERK_RPS = 35;
 
     public static final Rotation2d ERROR_TOLERANCE = Rotation2d.fromDegrees(3);
 }

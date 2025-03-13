@@ -119,11 +119,11 @@ public class FieldConstants {
                 branchPositions.add(fillRight);
 
                 scorePositions.add(centerFaces[face].transformBy(new Transform2d(
-                        Constants.BUMPER_LENGTH_X_METERS / 2,
+                        Units.inchesToMeters(4.5) + Constants.BUMPER_LENGTH_X_METERS / 2,
                         GrabberConstants.Y_OFFSET_METERS - Units.inchesToMeters(6.469),
                         Rotation2d.kZero)));
                 scorePositions.add(centerFaces[face].transformBy(new Transform2d(
-                        Constants.BUMPER_LENGTH_X_METERS / 2,
+                        Units.inchesToMeters(4.5) + Constants.BUMPER_LENGTH_X_METERS / 2,
                         GrabberConstants.Y_OFFSET_METERS + Units.inchesToMeters(6.469),
                         Rotation2d.kZero)));
 
