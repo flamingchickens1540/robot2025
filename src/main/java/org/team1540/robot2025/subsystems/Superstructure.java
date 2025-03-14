@@ -100,6 +100,9 @@ public class Superstructure {
                     if (grabber.hasAlgae() && goalState.armState == ArmState.STOW) {
                         armState = ArmState.STOW_ALGAE;
                     } else armState = goalState.armState;
+                    if(grabber.hasAlgae() && goalState.elevatorState == ElevatorState.STOW){
+                        elevatorState = ElevatorState.STOW_ALGAE;
+                    } else elevatorState = goalState.elevatorState;
 
                     if (grabber.hasAlgae()
                             && !((armState.position().getDegrees()
@@ -110,15 +113,15 @@ public class Superstructure {
                                                     >= ArmState.STOW.position().getDegrees())
                                     || (armState.position().getDegrees() <= 100
                                             && arm.getPosition().getDegrees() <= 100))
-                            && (goalState.elevatorState.height.getAsDouble() < clearanceHeight)) {
+                            && (elevatorState.height.getAsDouble() < clearanceHeight)) {
                         command = command.andThen(
                                 elevator.commandToSetpoint(ElevatorState.L2_FRONT), arm.commandToSetpoint(armState));
                     }
-                    if (goalState.elevatorState.height.getAsDouble() >= clearanceHeight) {
+                    if (elevatorState.height.getAsDouble() >= clearanceHeight) {
                         if (armState.position().getDegrees()
                                 >= ArmState.STOW.position().getDegrees()) {
                             command = command.andThen(Commands.parallel(
-                                    elevator.commandToSetpoint(goalState.elevatorState),
+                                    elevator.commandToSetpoint(elevatorState),
                                     Commands.waitUntil(() ->
                                                     getEndEffectorPosition(elevator.getPosition(), armState.position())
                                                                             .getY()
@@ -129,7 +132,7 @@ public class Superstructure {
                                     intake.commandToSetpoint(goalState.intakeState)));
                         } else {
                             command = command.andThen(Commands.parallel(
-                                    elevator.commandToSetpoint(goalState.elevatorState),
+                                    elevator.commandToSetpoint(elevatorState),
                                     Commands.waitUntil(() ->
                                                     getEndEffectorPosition(elevator.getPosition(), armState.position())
                                                                             .getY()
@@ -156,7 +159,7 @@ public class Superstructure {
                                                                                 <= 150)
                                                                 || arm.timeToSetpoint() + 0.1
                                                                         <= elevator.timeToSetpoint(clearanceHeight))
-                                                        .andThen(elevator.commandToSetpoint(goalState.elevatorState))),
+                                                        .andThen(elevator.commandToSetpoint(elevatorState))),
                                         Commands.waitUntil(() -> (arm.getPosition()
                                                                         .getDegrees()
                                                                 >= ArmState.STOW
@@ -173,12 +176,12 @@ public class Superstructure {
                                 Commands.waitUntil(() -> intake.timeToSetpoint() + 0.1
                                                 <= arm.timeToSetpoint(armState.position()))
                                         .andThen(Commands.parallel(
-                                                elevator.commandToSetpoint(goalState.elevatorState),
+                                                elevator.commandToSetpoint(elevatorState),
                                                 arm.commandToSetpoint(armState)))));
                     } else {
                         command = command.andThen(
                                 commandStowArm(),
-                                elevator.commandToSetpoint(goalState.elevatorState),
+                                elevator.commandToSetpoint(elevatorState),
                                 intake.commandToSetpoint(goalState.intakeState),
                                 arm.commandToSetpoint(armState));
                     }

@@ -2,6 +2,7 @@ package org.team1540.robot2025.commands;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
@@ -116,7 +117,7 @@ public class AutoAlignCommands {
         return alignToReefPose(
                 branch.face,
                 () -> {
-                    if (!shouldReverse.getAsBoolean()) return AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
+                    if (!shouldReverse.getAsBoolean() || DriverStation.isTeleop()) return AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
                     else {
                         Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
                         return new Pose2d(
