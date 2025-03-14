@@ -1,12 +1,11 @@
 package org.team1540.robot2025.subsystems.vision.coral;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import static org.team1540.robot2025.subsystems.vision.coral.CoralVisionConstants.*;
+
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
-
-import static org.team1540.robot2025.subsystems.vision.coral.CoralVisionConstants.*;
+import org.team1540.robot2025.RobotState;
 
 public class CoralVision extends SubsystemBase {
     private final CoralVisionIO io;
@@ -22,6 +21,9 @@ public class CoralVision extends SubsystemBase {
     public void periodic() {
         io.updateInputs(inputs);
         Logger.processInputs("CoralVision", inputs);
+
+        if (inputs.hasDetection) RobotState.getInstance().addCoralObservation(inputs.latestObservation);
+
         disconnectedAlert.set(!inputs.connected);
     }
 
@@ -29,26 +31,8 @@ public class CoralVision extends SubsystemBase {
         return inputs.hasDetection;
     }
 
-     public ChassisSpeeds getIntakeAssistVelocity(ChassisSpeeds currentVelocity) {
-        ChassisSpeeds assistVelocity = new ChassisSpeeds(0,0,0);
-        if (inputs.hasDetection) {
-            Rotation2d xRotation = inputs.latestDetection.tx();
-
-            assistVelocity = new ChassisSpeeds(
-                    currentVelocity.vyMetersPerSecond,
-                    -currentVelocity.vxMetersPerSecond,
-                    0).times(xRotation.getTan()*TRANSLATION_KP);
-        }
-        Logger.recordOutput("CoralVision/AssistVelocity", assistVelocity);
-        return assistVelocity;
-    }
-
     public static CoralVision createReal() {
         return new CoralVision(new CoralVisionIOLimelight(CAMERA_NAME));
-    }
-
-    public static CoralVision createSim() {
-        return new CoralVision(new CoralVisionIO() {});
     }
 
     public static CoralVision createDummy() {

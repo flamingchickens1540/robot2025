@@ -1,6 +1,7 @@
 package org.team1540.robot2025;
 
 import static org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionConstants.*;
+import static org.team1540.robot2025.subsystems.vision.coral.CoralVisionConstants.TRANSLATION_KP;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
@@ -25,6 +26,7 @@ import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.FieldConstants.ReefFace;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO;
+import org.team1540.robot2025.subsystems.vision.coral.CoralVisionIO.CoralObservation;
 import org.team1540.robot2025.util.AllianceFlipUtil;
 import org.team1540.robot2025.util.LoggedTracer;
 import org.team1540.robot2025.util.LoggedTunableNumber;
@@ -36,6 +38,11 @@ public class RobotState {
             new LoggedTunableNumber("Odometry/TagPoseMinBlendDistanceMeters", Units.inchesToMeters(24.0));
     private static final LoggedTunableNumber tagPoseMaxBlendDistanceMeters =
             new LoggedTunableNumber("Odometry/TagPoseMaxBlendDistanceMeters", Units.inchesToMeters(36.0));
+
+    private static final LoggedTunableNumber coralDetectionStaleSecs =
+            new LoggedTunableNumber("IntakeAssist/CoralDetectionStaleSecs", 0.2);
+    private static final LoggedTunableNumber intakeAssistTranslationKP =
+            new LoggedTunableNumber("IntakeAssist/TranslationKP", 0.6);
 
     private static RobotState instance = null;
 
@@ -60,9 +67,11 @@ public class RobotState {
         new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()
     };
 
+    private Pose2d[] activeTrajectory;
+
     private final SingleTagPoseEstimate[] singleTagPoses = new SingleTagPoseEstimate[FieldConstants.aprilTagCount];
 
-    private Pose2d[] activeTrajectory;
+    private CoralObservation latestCoralObservation = null;
 
     private final Field2d field = new Field2d();
 
@@ -134,6 +143,54 @@ public class RobotState {
                 && Math.abs(estimatedPose.getZ()) <= MAX_ROBOT_Z_TOLERANCE;
     }
 
+    public void addVelocityData(ChassisSpeeds velocity) {
+        robotVelocity = velocity;
+    }
+
+    public void setActiveTrajectory(Pose2d... poses) {
+        activeTrajectory = poses;
+        field.getObject("trajectory").setPoses(activeTrajectory);
+        Logger.recordOutput("Odometry/Trajectory/ActiveTrajectory", activeTrajectory);
+    }
+
+    public void clearActiveTrajectory() {
+        field.getObject("trajectory").setPoses();
+        Logger.recordOutput("Odometry/Trajectory/ActiveTrajectory", new Pose2d[0]);
+        activeTrajectory = null;
+    }
+
+    public void setTrajectoryTarget(Pose2d target) {
+        Logger.recordOutput("Odometry/Trajectory/TargetPose", target);
+    }
+
+    public void resetPose(Pose2d newPose) {
+        if (Constants.CURRENT_MODE == Constants.Mode.SIM) SimState.getInstance().resetSimPose(newPose);
+        poseEstimator.resetPosition(lastGyroRotation, lastModulePositions, newPose);
+        odometryPose = newPose;
+        odometryPoseBuffer.clear();
+        fusedPoseBuffer.clear();
+        resetTimer.restart();
+    }
+
+    @AutoLogOutput(key = "Odometry/EstimatedPose")
+    public Pose2d getEstimatedPose() {
+        return poseEstimator.getEstimatedPosition();
+    }
+
+    public Rotation2d getRobotRotation() {
+        return getEstimatedPose().getRotation();
+    }
+
+    @AutoLogOutput(key = "Odometry/RobotVelocity")
+    public ChassisSpeeds getRobotVelocity() {
+        return robotVelocity;
+    }
+
+    @AutoLogOutput(key = "Odometry/FieldRelativeVelocity")
+    public ChassisSpeeds getFieldRelativeVelocity() {
+        return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotVelocity(), getRobotRotation());
+    }
+
     public void addSingleTagMeasurement(AprilTagVisionIO.SingleTagObservation observation) {
         int tagIndex = observation.id() - 1;
 
@@ -179,44 +236,6 @@ public class RobotState {
                 new SingleTagPoseEstimate(robotPose, observation.distanceMeters(), observation.timestampSecs());
     }
 
-    public void addVelocityData(ChassisSpeeds velocity) {
-        robotVelocity = velocity;
-    }
-
-    public void setActiveTrajectory(Pose2d... poses) {
-        activeTrajectory = poses;
-        field.getObject("trajectory").setPoses(activeTrajectory);
-        Logger.recordOutput("Odometry/Trajectory/ActiveTrajectory", activeTrajectory);
-    }
-
-    public void clearActiveTrajectory() {
-        field.getObject("trajectory").setPoses();
-        Logger.recordOutput("Odometry/Trajectory/ActiveTrajectory", new Pose2d[0]);
-        activeTrajectory = null;
-    }
-
-    public void setTrajectoryTarget(Pose2d target) {
-        Logger.recordOutput("Odometry/Trajectory/TargetPose", target);
-    }
-
-    public void resetPose(Pose2d newPose) {
-        if (Constants.CURRENT_MODE == Constants.Mode.SIM) SimState.getInstance().resetSimPose(newPose);
-        poseEstimator.resetPosition(lastGyroRotation, lastModulePositions, newPose);
-        odometryPose = newPose;
-        odometryPoseBuffer.clear();
-        fusedPoseBuffer.clear();
-        resetTimer.restart();
-    }
-
-    @AutoLogOutput(key = "Odometry/EstimatedPose")
-    public Pose2d getEstimatedPose() {
-        return poseEstimator.getEstimatedPosition();
-    }
-
-    public Rotation2d getRobotRotation() {
-        return getEstimatedPose().getRotation();
-    }
-
     public Optional<Pose2d> getSingleTagPose(int tagID) {
         int tagIndex = tagID - 1;
         if (singleTagPoses[tagIndex] == null) {
@@ -232,14 +251,24 @@ public class RobotState {
         return odometryPoseAtTime.map(pose -> poseEstimate.pose().plus(new Transform2d(pose, odometryPose)));
     }
 
-    @AutoLogOutput(key = "Odometry/RobotVelocity")
-    public ChassisSpeeds getRobotVelocity() {
-        return robotVelocity;
+    public void addCoralObservation(CoralObservation observation) {
+        if (latestCoralObservation == null || observation.timestampSecs() > latestCoralObservation.timestampSecs()) {
+            latestCoralObservation = observation;
+        }
     }
 
-    @AutoLogOutput(key = "Odometry/FieldRelativeVelocity")
-    public ChassisSpeeds getFieldRelativeVelocity() {
-        return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotVelocity(), getRobotRotation());
+    public ChassisSpeeds getIntakeAssistVelocity() {
+        ChassisSpeeds assistVelocity = new ChassisSpeeds(0, 0, 0);
+        ChassisSpeeds currentVelocity = getRobotVelocity();
+        if (latestCoralObservation != null
+                && Timer.getFPGATimestamp() - latestCoralObservation.timestampSecs() < coralDetectionStaleSecs.get()
+                && currentVelocity.vxMetersPerSecond > 0) {
+            Rotation2d xRotation = latestCoralObservation.tx();
+
+            assistVelocity = new ChassisSpeeds(currentVelocity.vyMetersPerSecond, -currentVelocity.vxMetersPerSecond, 0)
+                    .times(xRotation.getTan() * TRANSLATION_KP);
+        }
+        return assistVelocity;
     }
 
     public Pose2d predictRobotPose(double lookaheadSeconds) {

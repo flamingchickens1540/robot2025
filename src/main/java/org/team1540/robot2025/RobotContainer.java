@@ -30,6 +30,7 @@ import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.leds.CustomLEDPatterns;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
+import org.team1540.robot2025.subsystems.vision.coral.CoralVision;
 import org.team1540.robot2025.util.AllianceFlipUtil;
 import org.team1540.robot2025.util.ButtonBoard;
 import org.team1540.robot2025.util.JoystickUtil;
@@ -43,6 +44,7 @@ public class RobotContainer {
 
     private final Drivetrain drivetrain;
     private final AprilTagVision aprilTagVision;
+    private final CoralVision coralVision;
     private final Elevator elevator;
     private final Arm arm;
     private final Intake intake;
@@ -64,6 +66,7 @@ public class RobotContainer {
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
                 aprilTagVision = AprilTagVision.createReal();
+                coralVision = CoralVision.createDummy();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
                 intake = Intake.createReal();
@@ -74,6 +77,7 @@ public class RobotContainer {
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
                 aprilTagVision = AprilTagVision.createSim();
+                coralVision = CoralVision.createDummy();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
                 intake = Intake.createSim();
@@ -86,6 +90,7 @@ public class RobotContainer {
                 // Replayed robot, disable IO implementations
                 drivetrain = Drivetrain.createDummy();
                 aprilTagVision = AprilTagVision.createDummy();
+                coralVision = CoralVision.createDummy();
                 elevator = Elevator.createDummy();
                 arm = Arm.createDummy();
                 intake = Intake.createDummy();

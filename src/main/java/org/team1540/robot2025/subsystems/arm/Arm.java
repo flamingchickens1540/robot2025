@@ -119,7 +119,7 @@ public class Arm extends SubsystemBase {
         return setpoint;
     }
 
-    public Command commandToSetpoint(Rotation2d position){
+    public Command commandToSetpoint(Rotation2d position) {
         return Commands.run(() -> setPosition(position), this).until(this::isAtSetpoint);
     }
 
