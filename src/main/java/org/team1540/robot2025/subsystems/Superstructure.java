@@ -96,6 +96,7 @@ public class Superstructure {
                     Command command = Commands.none();
                     this.goalState = goalState;
                     final ArmState armState;
+                    final ElevatorState elevatorState;
                     if (grabber.hasAlgae() && goalState.armState == ArmState.STOW) {
                         armState = ArmState.STOW_ALGAE;
                     } else armState = goalState.armState;
@@ -108,7 +109,8 @@ public class Superstructure {
                                             && arm.getPosition().getDegrees()
                                                     >= ArmState.STOW.position().getDegrees())
                                     || (armState.position().getDegrees() <= 100
-                                            && arm.getPosition().getDegrees() <= 100))) {
+                                            && arm.getPosition().getDegrees() <= 100))
+                            && (goalState.elevatorState.height.getAsDouble() < clearanceHeight)) {
                         command = command.andThen(
                                 elevator.commandToSetpoint(ElevatorState.L2_FRONT), arm.commandToSetpoint(armState));
                     }
@@ -141,18 +143,30 @@ public class Superstructure {
                     } else if (armState.position().getDegrees()
                                     >= ArmState.STOW.position().getDegrees()
                             && armState.position().getDegrees() <= 150) {
-                        command = command.andThen(Commands.parallel(
-                                arm.commandToSetpoint(armState),
-                                Commands.waitUntil(() -> (arm.getPosition().getDegrees()
+                        command = command.andThen(
+                                        Commands.parallel(
+                                                arm.commandToSetpoint(armState),
+                                                Commands.waitUntil(() -> (arm.getPosition()
+                                                                                        .getDegrees()
+                                                                                >= ArmState.STOW
+                                                                                        .position()
+                                                                                        .getDegrees()
+                                                                        && arm.getPosition()
+                                                                                        .getDegrees()
+                                                                                <= 150)
+                                                                || arm.timeToSetpoint() + 0.1
+                                                                        <= elevator.timeToSetpoint(clearanceHeight))
+                                                        .andThen(elevator.commandToSetpoint(goalState.elevatorState))),
+                                        Commands.waitUntil(() -> (arm.getPosition()
+                                                                        .getDegrees()
                                                                 >= ArmState.STOW
                                                                         .position()
                                                                         .getDegrees()
                                                         && arm.getPosition().getDegrees() <= 150)
                                                 || arm.timeToSetpoint() + 0.1
-                                                        <= elevator.timeToSetpoint(clearanceHeight))
-                                        .andThen(Commands.parallel(
-                                                intake.commandToSetpoint(goalState.intakeState),
-                                                elevator.commandToSetpoint(goalState.elevatorState)))));
+                                                        <= intake.timeToSetpoint(
+                                                                goalState.intakeState.pivotPosition())))
+                                .andThen(intake.commandToSetpoint(goalState.intakeState));
                     } else if (goalState.intakeState.pivotPosition().getDegrees() < 80) {
                         command = command.andThen(Commands.parallel(
                                 intake.commandToSetpoint(goalState.intakeState),
@@ -240,7 +254,17 @@ public class Superstructure {
                                             .alongWith(
                                                     Commands.waitSeconds(0.1),
                                                     arm.commandToSetpoint(ArmState.SCORE_L4_FRONT_BACKOFF)));
-                            case L1_BACK, L2_BACK, L3_BACK, L4_BACK -> grabber.commandRun(0.4)
+                            case L4_BACK -> grabber.commandRun(-0.1)
+                                    .until(grabber::forwardSensorTripped)
+                                    .withTimeout(0.1)
+                                    .onlyIf(() -> !grabber.forwardSensorTripped() && grabber.reverseSensorTripped())
+                                    .andThen(grabber.commandRun(0.4)
+                                            .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
+                                                    .andThen(Commands.waitSeconds(0.25)))
+                                            .alongWith(
+                                                    Commands.waitSeconds(0.1),
+                                                    arm.commandToSetpoint(ArmState.SCORE_L4_FRONT_BACKOFF)));
+                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.4)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
                             case PROCESSOR_BACK -> grabber.commandRun(-0.5).withTimeout(0.5);

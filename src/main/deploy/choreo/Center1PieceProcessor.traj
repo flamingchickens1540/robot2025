@@ -19,8 +19,8 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"7.127391815185547 m", "val":7.127391815185547}, "y":{"exp":"G.y", "val":3.7879782}, "heading":{"exp":"180 deg", "val":3.141592653589793}, "intervals":20, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"G.x", "val":5.7964832}, "y":{"exp":"G.y", "val":3.7879782}, "heading":{"exp":"180 deg", "val":3.141592653589793}, "intervals":43, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"7.127391815185547 m", "val":7.127391815185547}, "y":{"exp":"G.y", "val":3.7879782}, "heading":{"exp":"180 deg", "val":3.141592653589793}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"G.x", "val":5.7964832}, "y":{"exp":"G.y", "val":3.7879782}, "heading":{"exp":"180 deg", "val":3.141592653589793}, "intervals":39, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"6.31355094909668 m", "val":6.31355094909668}, "y":{"exp":"1.5 m", "val":1.5}, "heading":{"exp":"90 deg", "val":1.5707963267948966}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"6.31355094909668 m", "val":6.31355094909668}, "y":{"exp":"0.7 m", "val":0.7}, "heading":{"exp":"90 deg", "val":1.5707963267948966}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
@@ -29,7 +29,7 @@
     {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":{"exp":"0 m", "val":0.0}, "y":{"exp":"0 m", "val":0.0}, "w":{"exp":"17.548 m", "val":17.548}, "h":{"exp":"8.052 m", "val":8.052}}}, "enabled":true},
     {"from":1, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":1, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
-    {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MaxV", "val":2.0}}}, "enabled":true},
+    {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MaxV", "val":2.54}}}, "enabled":true},
     {"from":2, "to":3, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"1 m / s", "val":1.0}}}, "enabled":true}],
   "targetDt":{
    "exp":"0.05 s",

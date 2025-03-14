@@ -4,6 +4,20 @@
  "type":"Swerve",
  "variables":{
   "expressions":{
+   "IntakeEndDistance":{
+    "dimension":"Length",
+    "var":{
+     "exp":"30 in",
+     "val":0.762
+    }
+   },
+   "IntakeStartDistance":{
+    "dimension":"Length",
+    "var":{
+     "exp":"60 in",
+     "val":1.524
+    }
+   },
    "IntakeV":{
     "dimension":"LinVel",
     "var":{
@@ -14,8 +28,29 @@
    "MaxV":{
     "dimension":"LinVel",
     "var":{
-     "exp":"2 m / s",
-     "val":2.0
+     "exp":"2.54 m / s",
+     "val":2.54
+    }
+   },
+   "SrcRAngle":{
+    "dimension":"Angle",
+    "var":{
+     "exp":"(90 + 144) deg",
+     "val":4.084070449666731
+    }
+   },
+   "SrcRAngleX":{
+    "dimension":"Number",
+    "var":{
+     "exp":"-cos(SrcRAngle)",
+     "val":0.5877852522924732
+    }
+   },
+   "SrcRAngleY":{
+    "dimension":"Number",
+    "var":{
+     "exp":"-sin(SrcRAngle)",
+     "val":0.8090169943749473
     }
    }
   },
@@ -216,6 +251,34 @@
      "val":-4.084070449666731
     }
    },
+   "SrcLOutApproach":{
+    "x":{
+     "exp":"SrcROutApproach.x",
+     "val":2.464817393561112
+    },
+    "y":{
+     "exp":"7.35754919052124 m + IntakeStartDistance * -SrcRAngleY",
+     "val":6.12460729109382
+    },
+    "heading":{
+     "exp":"(360 deg - SrcRAngle)",
+     "val":2.199114857512855
+    }
+   },
+   "SrcLOutIntake":{
+    "x":{
+     "exp":"SrcROutIntake.x",
+     "val":2.0169250313142473
+    },
+    "y":{
+     "exp":"7.35754919052124 m + IntakeEndDistance * -SrcRAngleY",
+     "val":6.74107824080753
+    },
+    "heading":{
+     "exp":"(360 deg - SrcRAngle)",
+     "val":2.199114857512855
+    }
+   },
    "SrcRIn":{
     "x":{
      "exp":"0.9226627945899963 m",
@@ -238,6 +301,34 @@
     "y":{
      "exp":"0.6762703657150269 m",
      "val":0.6762703657150269
+    },
+    "heading":{
+     "exp":"(90 + 144) deg",
+     "val":4.084070449666731
+    }
+   },
+   "SrcROutApproach":{
+    "x":{
+     "exp":"1.5690326690673828 m + IntakeStartDistance * SrcRAngleX",
+     "val":2.464817393561112
+    },
+    "y":{
+     "exp":"0.6762703657150269 m + IntakeStartDistance * SrcRAngleY",
+     "val":1.9092122651424464
+    },
+    "heading":{
+     "exp":"(90 + 144) deg",
+     "val":4.084070449666731
+    }
+   },
+   "SrcROutIntake":{
+    "x":{
+     "exp":"1.5690326690673828 m + IntakeEndDistance * SrcRAngleX",
+     "val":2.0169250313142473
+    },
+    "y":{
+     "exp":"0.6762703657150269 m + IntakeEndDistance * SrcRAngleY",
+     "val":1.2927413154287368
     },
     "heading":{
      "exp":"(90 + 144) deg",

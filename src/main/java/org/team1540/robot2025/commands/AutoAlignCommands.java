@@ -1,6 +1,7 @@
 package org.team1540.robot2025.commands;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
@@ -121,8 +122,10 @@ public class AutoAlignCommands {
                         return new Pose2d(
                                         pose.getTranslation(),
                                         pose.getRotation().rotateBy(Rotation2d.k180deg))
-                                .transformBy(
-                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                                .transformBy(new Transform2d(
+                                        Units.inchesToMeters(4.5),
+                                        GrabberConstants.Y_OFFSET_METERS * 2,
+                                        Rotation2d.kZero));
                     }
                 },
                 drivetrain);
@@ -140,8 +143,10 @@ public class AutoAlignCommands {
                         pose = new Pose2d(
                                         pose.getTranslation(),
                                         pose.getRotation().rotateBy(Rotation2d.k180deg))
-                                .transformBy(
-                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                                .transformBy(new Transform2d(
+                                        Units.inchesToMeters(4.5),
+                                        GrabberConstants.Y_OFFSET_METERS * 2,
+                                        Rotation2d.kZero));
                     Pose2d finalPose = pose;
                     return alignToReefPose(branch.face, () -> finalPose, drivetrain);
                 },

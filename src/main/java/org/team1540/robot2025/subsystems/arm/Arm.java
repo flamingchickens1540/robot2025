@@ -39,6 +39,7 @@ public class Arm extends SubsystemBase {
         SCORE_L4_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontDegrees", 60)),
         SCORE_L4_FRONT_BACKOFF(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontBackoffDegrees", 80)),
         SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 108)),
+        SCORE_L4_BACK_BACKOFF(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackBackoffDegrees", 98)),
         SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 90)),
         SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 120));
 

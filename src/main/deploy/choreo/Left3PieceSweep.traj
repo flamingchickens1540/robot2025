@@ -47,7 +47,7 @@
     {"from":8, "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":6, "to":7, "data":{"type":"KeepInLane", "props":{"tolerance":{"exp":"0.1 m", "val":0.1}}}, "enabled":true},
     {"from":6, "to":7, "data":{"type":"MaxAngularVelocity", "props":{"max":{"exp":"1 rad / s", "val":1.0}}}, "enabled":true},
-    {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MaxV", "val":2.0}}}, "enabled":true},
+    {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MaxV", "val":2.54}}}, "enabled":true},
     {"from":3, "to":4, "data":{"type":"MaxAngularVelocity", "props":{"max":{"exp":"1 rad / s", "val":1.0}}}, "enabled":true},
     {"from":6, "to":7, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"IntakeV", "val":1.0}}}, "enabled":true},
     {"from":3, "to":4, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"IntakeV", "val":1.0}}}, "enabled":true}],
