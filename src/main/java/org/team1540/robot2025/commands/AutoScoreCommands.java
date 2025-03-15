@@ -5,6 +5,7 @@ import static org.team1540.robot2025.FieldConstants.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
@@ -25,7 +26,7 @@ public class AutoScoreCommands {
             ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
         return Commands.defer(
                 () -> {
-                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch);
+                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || DriverStation.isTeleop();
                     return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse)
                             .asProxy()
                             .alongWith(Commands.waitUntil(() -> RobotState.getInstance()

@@ -100,7 +100,7 @@ public class Superstructure {
                     if (grabber.hasAlgae() && goalState.armState == ArmState.STOW) {
                         armState = ArmState.STOW_ALGAE;
                     } else armState = goalState.armState;
-                    if(grabber.hasAlgae() && goalState.elevatorState == ElevatorState.STOW){
+                    if (grabber.hasAlgae() && goalState.elevatorState == ElevatorState.STOW) {
                         elevatorState = ElevatorState.STOW_ALGAE;
                     } else elevatorState = goalState.elevatorState;
 

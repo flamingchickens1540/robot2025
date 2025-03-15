@@ -134,7 +134,7 @@ public class RobotContainer {
 
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
-                .and(()->!grabber.hasAlgae())
+                .and(() -> !grabber.hasAlgae())
                 .whileTrue(superstructure.coralGroundIntake())
                 .onFalse(superstructure.stow());
         driver.leftTrigger()
