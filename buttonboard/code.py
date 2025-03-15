@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 """CircuitPython Essentials NeoPixel example"""
-import usb_hid
+import usb_hid # type: ignore
 import time
 import board
 import neopixel
@@ -57,46 +57,66 @@ BLUE = (0, 0, 255)
 PURPLE = (180, 0, 255)
 DIM = (50, 50, 50)
 
-pixels.fill(RED)
-pixels.show()
-time.sleep(0.4)
-pixels.fill((0, 0, 0))
-pixels.show()
-
-
+STEP=20
 class Selector:
     indexToKey: tuple
     active: int
 
-    def __init__(self, axis: int, step: float, onColor, offColor, keyNums: tuple) -> None:
+    def __init__(self, axis: int, default: int, onColor, offColor, keyNums: tuple) -> None:
         self.active = 0
         self.axis = axis
-        self.step = step
+        self.default = default
         self.indexToKey = keyNums
         self.keyToIndex = {}
         self.onColor = onColor
         self.offColor = offColor
-        for i, key in enumerate(keyNums):
+        self.refresh()
+
+    def refresh(self):
+        self.active = self.default
+        for i, key in enumerate(self.indexToKey):
             self.keyToIndex[key] = i
             pixels[ids_to_pixels[self.indexToKey[i]]] = self.offColor
-        pixels[ids_to_pixels[self.indexToKey[self.active]]] = self.onColor
+        self.setActive(self.active)
 
     def update(self, event: keypad.Event):
+        if not event.pressed:
+            return False
         index = self.keyToIndex.get(event.key_number)
         if index is not None:
-            if not self.active == -1:
-                pixels[ids_to_pixels[self.indexToKey[self.active]]] = self.offColor
-
-            if index == self.active:
-                self.active = -1
-                js.update_axis((self.axis, 0))
-            else:
-                self.active = index
-                pixels[ids_to_pixels[self.indexToKey[self.active]]] = self.onColor
-                js.update_axis((self.axis, self.step * (index + 1)))
+            self.setActive(index)
             return True
         return False
+    
+    def setActive(self, index:int):
+        pixels[ids_to_pixels[self.indexToKey[self.active]]] = self.offColor
+        self.active = index
+        pixels[ids_to_pixels[self.indexToKey[self.active]]] = self.onColor
+        js.update_axis((self.axis, int(STEP * index) ))
 
+
+class Button:
+    pressed:bool = False
+    def __init__(self, id, key, onColor, offColor) -> None:
+        self.key = key
+        self.id = id
+        self.onColor = onColor
+        self.offColor = offColor
+
+    def setActive(self, active:bool):
+        self.pressed = active
+        pixels[ids_to_pixels[self.key]] = self.onColor if active else self.offColor
+        js.update_button((self.id, active))
+
+    def update(self, event:keypad.Event):
+        # print("BUTTON", event)
+        if event.key_number == self.key:
+            self.setActive(event.pressed)
+            return True
+        return False
+    
+    def refresh(self):
+        self.setActive(self.pressed)
 
 ids_to_pixels = {
     KEY_INTAKE_L1: 19,  # INTAKE L1
@@ -131,7 +151,7 @@ ids_to_pixels = {
 }
 
 povs = [
-    Selector(0, 20, (210, 86, 255), (2, 0, 2), (
+    Selector(0, 0, (210, 86, 255), (2, 0, 2), (
         KEY_REEF_H,
         KEY_REEF_G,
         KEY_REEF_F,
@@ -145,36 +165,94 @@ povs = [
         KEY_REEF_J,
         KEY_REEF_I,
     )),
-    Selector(1, 20, (250, 200, 0), (2, 2, 0), (
+    Selector(1, 0, (250, 200, 0), (2, 2, 0), (
         KEY_L1,
         KEY_L2,
         KEY_L3,
         KEY_L4,
     )),
-    Selector(2, 20, (250, 0, 0), (3, 0, 0), (
+    Selector(2, 0, (250, 0, 0), (3, 0, 0), (
         KEY_INTAKE_L1,
         KEY_INTAKE_L2,
         KEY_INTAKE_R1,
         KEY_INTAKE_R2
     )),
-    Selector(3, 20, (0, 200, 100), (0, 2, 1), (
+    Selector(3, 0, (0, 0, 200), (0, 2, 1), (
         KEY_ALGAE_1,
         KEY_ALGAE_2,
         KEY_ALGAE_3,
         KEY_ALGAE_4
     )),
-    Selector(4, 20, (0, 0, 200), (0, 0, 3), (
-        KEY_NP_1,
-        KEY_NP_2
-    ))
+    Button(0,KEY_NP_1,(0,200,100),(0,0,0)),
+    Button(1,KEY_NP_2,(0,200,100),(0,0,0)),
 ]
 
-pixels.show()
+def refresh():
+    for pov in povs:
+        pov.refresh()
+    pixels.show()
+
+
+global activeMode
+activeMode = "startup"
+
+class KeyPattern():
+    def __init__(self, keys:tuple, mode:str) -> None:
+        self.keys = keys
+        self.index = 0
+        self.mode = mode
+
+    def add(self, key:int):
+        global activeMode
+        if self.keys[self.index] == key:
+            self.index+=1
+            if self.index == len(self.keys):
+                activeMode = self.mode
+                self.index = 0
+        else:
+            self.index = 0
+def campfire():
+    pass
+
+patterns = [
+    KeyPattern((KEY_ALGAE_1,KEY_ALGAE_1,KEY_ALGAE_4, KEY_ALGAE_4, KEY_ALGAE_1,KEY_ALGAE_1,KEY_ALGAE_4, KEY_ALGAE_4), "startup")
+]
+
+
+stageIndex = 0
+def startup_step():
+    global stageIndex
+    global activeMode
+    if stageIndex == 0:
+        pixels.fill((0,0,0))
+        pixels.show()
+    elif stageIndex >= 1 and stageIndex <=24:
+        povs[0].setActive((stageIndex-1)%len(povs[0].indexToKey))
+        pixels.show()
+        time.sleep(0.03)
+    elif stageIndex == 25:
+        pixels.fill(RED)
+        pixels.show()
+        time.sleep(0.2)
+    elif stageIndex == 26:
+        pixels.fill((0, 0, 0))
+        pixels.show()
+        time.sleep(0.2)
+    elif stageIndex == 27:
+        activeMode = "normal"
+        refresh()
+    stageIndex+=1
 
 while True:
     key_event = keys.events.get()
-    if key_event and key_event.pressed:
+    if key_event:
+        if key_event.pressed and activeMode != "normal":
+            activeMode = "normal"
+            refresh()
+            continue
         for pov in povs:
             if pov.update(key_event):
                 pixels.show()
                 break
+    if activeMode == "startup":
+        startup_step()
