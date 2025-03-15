@@ -257,10 +257,11 @@ public class Superstructure {
                                     .onlyIf(() -> !grabber.forwardSensorTripped() && grabber.reverseSensorTripped())
                                     .andThen(grabber.commandRun(0.4)
                                             .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
-                                                    .andThen(Commands.waitSeconds(0.25)))
-                                            .alongWith(
-                                                    Commands.waitSeconds(0.1),
-                                                    arm.commandToSetpoint(ArmState.SCORE_L4_FRONT_BACKOFF)));
+                                                    .andThen(Commands.waitSeconds(0.25))));
+                                //                                            .alongWith(
+                                //                                                    Commands.waitSeconds(0.1),
+                                //
+                                // arm.commandToSetpoint(ArmState.SCORE_L4_FRONT_BACKOFF)));
                             case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.4)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
@@ -336,7 +337,12 @@ public class Superstructure {
 
     public Command coralGroundIntake() {
         return Commands.sequence(
-                        commandToState(SuperstructureState.INTAKE_GROUND).withTimeout(1.0),
+                        commandToState(SuperstructureState.INTAKE_GROUND)
+                                .withTimeout(1.0)
+                                .deadlineFor(Commands.startEnd(
+                                                () -> intake.setRollerVoltage(0.75 * 12),
+                                                () -> intake.setRollerVoltage(0.0))
+                                        .unless(intake::hasCoral)),
                         grabber.commandRun(0.3)
                                 .until(grabber::forwardSensorTripped)
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
