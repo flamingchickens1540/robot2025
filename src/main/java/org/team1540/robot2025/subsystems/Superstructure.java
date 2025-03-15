@@ -146,30 +146,24 @@ public class Superstructure {
                     } else if (armState.position().getDegrees()
                                     >= ArmState.STOW.position().getDegrees()
                             && armState.position().getDegrees() <= 150) {
-                        command = command.andThen(
-                                        Commands.parallel(
-                                                arm.commandToSetpoint(armState),
-                                                Commands.waitUntil(() -> (arm.getPosition()
-                                                                                        .getDegrees()
-                                                                                >= ArmState.STOW
-                                                                                        .position()
-                                                                                        .getDegrees()
-                                                                        && arm.getPosition()
-                                                                                        .getDegrees()
-                                                                                <= 150)
-                                                                || arm.timeToSetpoint() + 0.1
-                                                                        <= elevator.timeToSetpoint(clearanceHeight))
-                                                        .andThen(elevator.commandToSetpoint(elevatorState))),
-                                        Commands.waitUntil(() -> (arm.getPosition()
-                                                                        .getDegrees()
+                        command = command.andThen(Commands.parallel(
+                                arm.commandToSetpoint(armState),
+                                Commands.waitUntil(() -> (arm.getPosition().getDegrees()
                                                                 >= ArmState.STOW
                                                                         .position()
                                                                         .getDegrees()
                                                         && arm.getPosition().getDegrees() <= 150)
                                                 || arm.timeToSetpoint() + 0.1
-                                                        <= intake.timeToSetpoint(
-                                                                goalState.intakeState.pivotPosition())))
-                                .andThen(intake.commandToSetpoint(goalState.intakeState));
+                                                        <= elevator.timeToSetpoint(clearanceHeight))
+                                        .andThen(elevator.commandToSetpoint(elevatorState)),
+                                Commands.waitUntil(() -> (arm.getPosition().getDegrees()
+                                                                >= ArmState.STOW
+                                                                        .position()
+                                                                        .getDegrees()
+                                                        && arm.getPosition().getDegrees() <= 150)
+                                                || arm.timeToSetpoint() - 0.1
+                                                        <= intake.timeToSetpoint(goalState.intakeState.pivotPosition()))
+                                        .andThen(intake.commandToSetpoint(goalState.intakeState))));
                     } else if (goalState.intakeState.pivotPosition().getDegrees() < 80) {
                         command = command.andThen(Commands.parallel(
                                 intake.commandToSetpoint(goalState.intakeState),

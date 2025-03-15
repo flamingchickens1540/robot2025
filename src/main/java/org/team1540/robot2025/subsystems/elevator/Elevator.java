@@ -137,7 +137,7 @@ public class Elevator extends SubsystemBase {
 
     @AutoLogOutput(key = "Elevator/TimeToSetpoint")
     public double timeToSetpoint() {
-        return timeToSetpoint(getSetpoint());
+        return isAtSetpoint() ? 0 : timeToSetpoint(getSetpoint());
     }
 
     public double getPosition() {

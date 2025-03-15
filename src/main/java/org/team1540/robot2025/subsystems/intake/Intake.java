@@ -144,7 +144,7 @@ public class Intake extends SubsystemBase {
 
     @AutoLogOutput(key = "Intake/TimeToSetpoint")
     public double timeToSetpoint() {
-        return timeToSetpoint(pivotSetpoint);
+        return isPivotAtSetpoint() ? 0 : timeToSetpoint(pivotSetpoint);
     }
 
     public double timeToSetpoint(Rotation2d setpoint) {

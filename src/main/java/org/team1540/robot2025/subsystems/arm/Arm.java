@@ -130,7 +130,7 @@ public class Arm extends SubsystemBase {
 
     @AutoLogOutput(key = "Arm/TimeToSetpoint")
     public double timeToSetpoint() {
-        return timeToSetpoint(getSetpoint());
+        return isAtSetpoint() ? 0 : timeToSetpoint(getSetpoint());
     }
 
     public double timeToSetpoint(Rotation2d setpoint) {
