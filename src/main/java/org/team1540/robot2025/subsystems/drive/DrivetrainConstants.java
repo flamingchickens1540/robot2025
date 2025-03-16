@@ -31,7 +31,7 @@ public class DrivetrainConstants {
     public static final double MAX_LINEAR_ACCEL_MPS2 = 10;
 
     public static final double MAX_ANGULAR_SPEED_RAD_PER_SEC = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS;
-    public static final double MAX_ANGULAR_ACCEL_RAD_PER_SEC2 = 40;
+    public static final double MAX_ANGULAR_ACCEL_RAD_PER_SEC2 = 30; // was 40
     public static final double MAX_STEER_SPEED_RAD_PER_SEC =
             DCMotor.getFalcon500Foc(1).withReduction(TunerConstants.FrontLeft.SteerMotorGearRatio).freeSpeedRadPerSec;
 

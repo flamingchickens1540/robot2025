@@ -62,20 +62,19 @@ public class ButtonBoard {
                 () -> this.getAxisState(BRANCH_FACE_AXIS_ID) == face.ordinal() && hid.isConnected());
     }
 
-    public Trigger flexFalse() {
-        return new Trigger(
-                CommandScheduler.getInstance().getDefaultButtonLoop(), () -> getAxisState(4) == 1 && hid.isConnected());
-    }
-
-    public Trigger flexTrue() {
-        return flexFalse().negate();
-    }
-
     public ReefButton getSelectedBranchFace() {
         return ReefButton.fromOrdinal(this.getAxisState(BRANCH_FACE_AXIS_ID));
     }
 
     public FieldConstants.ReefBranch reefButtonToBranch(ReefButton button) {
         return FieldConstants.ReefBranch.fromOrdinal(12 - ((button.ordinal() + 4) % 12) - 1);
+    }
+
+    public Trigger button0() {
+        return hid.button(0);
+    }
+
+    public Trigger button1() {
+        return hid.button(1);
     }
 }
