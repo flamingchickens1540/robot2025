@@ -259,13 +259,12 @@ public class RobotState {
 
     public ChassisSpeeds getIntakeAssistVelocity() {
         ChassisSpeeds assistVelocity = new ChassisSpeeds(0, 0, 0);
-        ChassisSpeeds currentVelocity = getRobotVelocity();
         if (latestCoralObservation != null
                 && Timer.getFPGATimestamp() - latestCoralObservation.timestampSecs() < coralDetectionStaleSecs.get()
-                && currentVelocity.vxMetersPerSecond > 0) {
+                && robotVelocity.vxMetersPerSecond > 0) {
             Rotation2d xRotation = latestCoralObservation.tx();
 
-            assistVelocity = new ChassisSpeeds(currentVelocity.vyMetersPerSecond, -currentVelocity.vxMetersPerSecond, 0)
+            assistVelocity = new ChassisSpeeds(robotVelocity.vyMetersPerSecond, -robotVelocity.vxMetersPerSecond, 0)
                     .times(xRotation.getTan() * TRANSLATION_KP);
         }
         return assistVelocity;
@@ -312,6 +311,15 @@ public class RobotState {
 
     public boolean shouldReverseCoral(FieldConstants.ReefBranch branch) {
         return Math.abs(AllianceFlipUtil.maybeFlipPose(branch.face.pose())
+                                .getRotation()
+                                .minus(RobotState.getInstance().getRobotRotation())
+                                .getDegrees())
+                        > 90
+                || DriverStation.isTeleop();
+    }
+
+    public boolean shouldReverseAlgae(FieldConstants.ReefFace face) {
+        return Math.abs(AllianceFlipUtil.maybeFlipPose(face.pose())
                         .getRotation()
                         .minus(RobotState.getInstance().getRobotRotation())
                         .getDegrees())

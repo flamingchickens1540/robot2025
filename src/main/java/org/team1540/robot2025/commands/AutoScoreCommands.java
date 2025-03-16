@@ -18,8 +18,10 @@ import org.team1540.robot2025.util.LoggedTunableNumber;
 import org.team1540.robot2025.util.math.MathUtils;
 
 public class AutoScoreCommands {
-    private static final LoggedTunableNumber prepareDistanceMeters =
-            new LoggedTunableNumber("AutoScore/PrepareDistanceMeters", 1.0);
+    private static final LoggedTunableNumber prepareDistanceMetersCoral =
+            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoral", 1.0);
+    private static final LoggedTunableNumber prepareDistanceMetersAlgae =
+            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersAlgae", 2.0);
 
     public static Command alignToBranchAndScore(
             ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
@@ -33,7 +35,7 @@ public class AutoScoreCommands {
                                                     .getTranslation()
                                                     .getDistance(AllianceFlipUtil.maybeFlipTranslation(
                                                             branch.scorePosition.getTranslation()))
-                                            <= prepareDistanceMeters.get())
+                                            <= prepareDistanceMetersCoral.get())
                                     .andThen(superstructure
                                             .scoreCoral(height, () -> reverse)
                                             .asProxy()));
@@ -54,16 +56,17 @@ public class AutoScoreCommands {
     }
 
     public static Command alignToFaceAndDealgify(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {
-        return AutoAlignCommands.alignToDealgifyPose(face, drivetrain)
+        return AutoAlignCommands.alignToDealgifyPose(
+                        face, drivetrain, () -> RobotState.getInstance().shouldReverseAlgae(face))
                 .asProxy()
                 .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
                                         .getEstimatedPose()
                                         .getTranslation()
                                         .getDistance(AllianceFlipUtil.maybeFlipTranslation(
                                                 face.dealgifyPosition().getTranslation()))
-                                <= prepareDistanceMeters.get())
-                        .andThen((face.highDealgify() ? superstructure.dealgifyHigh() : superstructure.dealgifyLow())
-                                .asProxy()));
+                                <= prepareDistanceMetersCoral.get())
+                        .andThen(superstructure.dealgify())
+                        .asProxy());
     }
 
     public static Command alignToBargeAndScore(Drivetrain drivetrain, Superstructure superstructure) {

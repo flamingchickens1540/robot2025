@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefHeight;
 import org.team1540.robot2025.autos.Autos;
-import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.commands.AutoScoreCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
@@ -116,6 +115,23 @@ public class RobotContainer {
             driver.b().whileTrue(AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure));
         }
 
+        RobotState.getInstance().resetPose(new Pose2d(0, 0, Rotation2d.kZero));
+        //        driver.x()
+        //                .onTrue(Commands.runOnce(() -> RobotState.getInstance().resetPose(new Pose2d(0, 0,
+        // Rotation2d.kZero))));
+        //        driver.y().onTrue(drivetrain.driveToPoseCommand(() -> new Pose2d(0, 0, Rotation2d.kZero)));
+        //        driver.b().onTrue(drivetrain.driveToPoseCommand(() -> new Pose2d(0, 0, Rotation2d.kCCW_90deg)));
+        //        driver.a().onTrue(drivetrain.driveToPoseCommand(() -> new Pose2d(0, 0, Rotation2d.k180deg)));
+        //
+        // driver.b().onTrue(drivetrain.driveToPoseCommand(()->FieldConstants.StagingPositions.leftIceCream.plus(new
+        // Transform2d(0, -1, Rotation2d.kZero))));
+        //
+        // driver.b().onTrue(drivetrain.driveToPoseCommand(()->FieldConstants.StagingPositions.leftIceCream.plus(new
+        // Transform2d(0, 0, Rotation2d.kCCW_90deg))));
+        //
+        // driver.b().onTrue(drivetrain.driveToPoseCommand(()->FieldConstants.StagingPositions.leftIceCream.plus(new
+        // Transform2d(1, 0, Rotation2d.kCCW_90deg))));
+
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.x()
                 .toggleOnTrue(drivetrain.teleopDriveWithHeadingCommand(
@@ -127,10 +143,6 @@ public class RobotContainer {
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
         driver.leftStick().onTrue(superstructure.stow());
-        driver.rightStick()
-                .and(buttonBoard.flexTrue())
-                .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
-                        .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
 
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
@@ -165,7 +177,9 @@ public class RobotContainer {
         copilot.x().onTrue(superstructure.L3(() -> true));
         copilot.a().onTrue(superstructure.L2(() -> true));
         copilot.povRight().onTrue(superstructure.L1());
-        copilot.b()
+        buttonBoard
+                .button0()
+                .or(copilot.b())
                 .onTrue(drivetrain
                         .teleopDriveWithHeadingCommand(
                                 driver.getHID(),
@@ -178,7 +192,7 @@ public class RobotContainer {
                                                 .getDegrees())
                                         < 10)
                                 .andThen(superstructure.net())));
-        copilot.povLeft().onTrue(superstructure.processor());
+        buttonBoard.button1().or(copilot.povRight()).onTrue(superstructure.processor());
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
 
         for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {
@@ -186,14 +200,12 @@ public class RobotContainer {
                 buttonBoard
                         .branchFaceAt(button)
                         .and(buttonBoard.branchHeightAt(height))
-                        .and(buttonBoard.flexFalse())
                         .and(driver.rightStick())
                         .whileTrue(AutoScoreCommands.alignToBranchAndScore(
                                 buttonBoard.reefButtonToBranch(button), height, drivetrain, superstructure));
             }
             buttonBoard
                     .branchFaceAt(button)
-                    .and(buttonBoard.flexFalse())
                     .and(driver.rightBumper())
                     .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(
                             buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
@@ -243,14 +255,12 @@ public class RobotContainer {
 
     private void configureLEDBindings() {
         RobotModeTriggers.disabled()
-                .onTrue(Commands.runOnce(
-                        () -> leds.viewFull.setDefaultPattern(CustomLEDPatterns.movingRainbow(Hertz.of(0.2)))));
+                .onTrue(leds.viewFull.commandDefaultPattern(() -> CustomLEDPatterns.movingRainbow(Hertz.of(0.2))));
         RobotModeTriggers.autonomous()
-                .onTrue(Commands.runOnce(
-                        () -> leds.viewFull.setDefaultPattern(LEDPattern.solid(Leds.getAllianceColor()))));
+                .onTrue(leds.viewFull.commandDefaultPattern(() -> LEDPattern.solid(Leds.getAllianceColor())));
         RobotModeTriggers.teleop()
-                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultPattern(
-                        LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0)))));
+                .onTrue(leds.viewFull.commandDefaultPattern(
+                        () -> LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0))));
 
         new Trigger(grabber::reverseSensorTripped)
                 .and(DriverStation::isEnabled)

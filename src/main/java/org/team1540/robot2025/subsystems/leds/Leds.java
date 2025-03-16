@@ -80,6 +80,10 @@ public class Leds extends SubsystemBase {
             this.defaultPattern = pattern;
         }
 
+        public Command commandDefaultPattern(Supplier<LEDPattern> pattern) {
+            return Commands.runOnce(() -> this.setDefaultPattern(pattern.get())).ignoringDisable(true);
+        }
+
         public Command showRSLState() {
             LEDPattern pattern = LEDPattern.solid(new Color("#ff3700"));
             return commandShowPattern(pattern.synchronizedBlink(RobotController::getRSLState));

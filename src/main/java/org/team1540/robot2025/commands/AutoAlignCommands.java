@@ -202,9 +202,20 @@ public class AutoAlignCommands {
                 Set.of(drivetrain));
     }
 
-    public static Command alignToDealgifyPose(ReefFace face, Drivetrain drivetrain) {
-        return Commands.defer(
-                () -> alignToReefPose(face, AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition()), drivetrain),
-                Set.of(drivetrain));
+    public static Command alignToDealgifyPose(ReefFace face, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
+        return alignToReefPose(
+                face,
+                () -> {
+                    if (!shouldReverse.getAsBoolean()) return AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition());
+                    else {
+                        Pose2d pose = AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition());
+                        return new Pose2d(
+                                        pose.getTranslation(),
+                                        pose.getRotation().rotateBy(Rotation2d.k180deg))
+                                .transformBy(
+                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                    }
+                },
+                drivetrain);
     }
 }
