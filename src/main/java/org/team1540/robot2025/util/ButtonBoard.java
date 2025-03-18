@@ -70,11 +70,7 @@ public class ButtonBoard {
         return FieldConstants.ReefBranch.fromOrdinal(12 - ((button.ordinal() + 4) % 12) - 1);
     }
 
-    public Trigger button0() {
-        return hid.button(0);
-    }
-
-    public Trigger button1() {
-        return hid.button(1);
+    public Trigger button(int id) {
+        return hid.button(id);
     }
 }

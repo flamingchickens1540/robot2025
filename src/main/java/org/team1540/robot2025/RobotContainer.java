@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefHeight;
 import org.team1540.robot2025.autos.Autos;
+import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.commands.AutoScoreCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
@@ -178,7 +179,7 @@ public class RobotContainer {
         copilot.a().onTrue(superstructure.L2(() -> true));
         copilot.povRight().onTrue(superstructure.L1());
         buttonBoard
-                .button0()
+                .button(0)
                 .or(copilot.b())
                 .onTrue(drivetrain
                         .teleopDriveWithHeadingCommand(
@@ -192,7 +193,31 @@ public class RobotContainer {
                                                 .getDegrees())
                                         < 10)
                                 .andThen(superstructure.net())));
-        buttonBoard.button1().or(copilot.povRight()).onTrue(superstructure.processor());
+        buttonBoard.button(1).or(copilot.povRight()).onTrue(superstructure.processor());
+
+        buttonBoard
+                .button(2)
+                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.leftCage, drivetrain)
+                        .andThen(drivetrain.teleopOrthogonalDriveWithHeadingCommand(
+                                driver.getHID(),
+                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
+                                () -> true)));
+        buttonBoard
+                .button(3)
+                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.middleCage, drivetrain)
+                        .andThen(drivetrain.teleopOrthogonalDriveWithHeadingCommand(
+                                driver.getHID(),
+                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
+                                () -> true)));
+        buttonBoard
+                .button(4)
+                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.rightCage, drivetrain)
+                        .andThen(drivetrain.teleopOrthogonalDriveWithHeadingCommand(
+                                driver.getHID(),
+                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
+                                () -> true)));
+
+
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
 
         for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {

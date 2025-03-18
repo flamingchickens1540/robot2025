@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
+import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.FieldConstants.Reef;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefFace;
@@ -217,5 +218,12 @@ public class AutoAlignCommands {
                     }
                 },
                 drivetrain);
+    }
+
+    public static Command alignToCage(Translation2d cage, Drivetrain drivetrain) {
+        return drivetrain.driveToPoseCommand(() -> new Pose2d(
+                AllianceFlipUtil.maybeFlipTranslation(
+                        cage.plus(new Translation2d(-Constants.BUMPER_LENGTH_X_METERS, 0))),
+                AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg)));
     }
 }
