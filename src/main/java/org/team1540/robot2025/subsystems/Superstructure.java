@@ -339,25 +339,15 @@ public class Superstructure {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_GROUND)
                                 .withTimeout(1.0)
-                                .deadlineFor(Commands.startEnd(
-                                                () -> intake.setRollerVoltage(0.75 * 12),
-                                                () -> intake.setRollerVoltage(0.0))
-                                        .unless(intake::hasCoral)),
+                                .deadlineFor(intake.commandRunRoller(0.75))
+                                        .unless(intake::hasCoral),
                         grabber.commandRun(0.3)
                                 .until(grabber::forwardSensorTripped)
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
                                 .deadlineFor(intake.commandRunRollerFunnel(0.75, 0.75)),
                         stow().alongWith(
                                         grabber.commandRun(0.0),
-                                        Commands.startEnd(
-                                                        () -> {
-                                                            intake.setFunnelVoltage(-0.75 * 12);
-                                                            intake.setRollerVoltage(-0.75 * 12);
-                                                        },
-                                                        () -> {
-                                                            intake.setFunnelVoltage(0);
-                                                            intake.setRollerVoltage(0);
-                                                        })
+                                        intake.commandRunRollerFunnel(-0.75, -0.75)
                                                 .withTimeout(0.5)
                                                 .onlyIf(grabber::reverseSensorTripped)))
                 .unless(grabber::hasAlgae);

@@ -456,6 +456,26 @@ public class Drivetrain extends SubsystemBase {
                 .until(() -> Math.abs(controller.getRightX()) >= 0.1);
     }
 
+    public Command teleopOrthogonalDriveWithHeadingCommand(
+            XboxController controller, Supplier<Rotation2d> heading, BooleanSupplier fieldRelative) {
+        return percentDriveCommand(
+                        () -> Math.abs(controller.getLeftX()) > Math.abs(controller.getLeftY())
+                                ? JoystickUtil.deadzonedJoystickTranslation(0, -controller.getLeftX(), 0.1)
+                                : JoystickUtil.deadzonedJoystickTranslation(-controller.getLeftY(), 0, 0.1),
+                        () -> headingController.calculate(
+                                        RobotState.getInstance()
+                                                .getRobotRotation()
+                                                .getRadians(),
+                                        new TrapezoidProfile.State(heading.get().getRadians(), 0.0))
+                                / MAX_ANGULAR_SPEED_RAD_PER_SEC,
+                        fieldRelative)
+                .beforeStarting(() -> headingController.reset(
+                        RobotState.getInstance().getRobotRotation().getRadians(),
+                        RobotState.getInstance().getRobotVelocity().omegaRadiansPerSecond))
+                .alongWith(Commands.run(() -> Logger.recordOutput("Drivetrain/HeadingGoal", heading.get())))
+                .until(() -> Math.abs(controller.getRightX()) >= 0.1);
+    }
+
     public Command driveToPoseCommand(Supplier<Pose2d> goalPose, Supplier<Pose2d> poseEstimateSource) {
         return Commands.startRun(
                         () -> {
