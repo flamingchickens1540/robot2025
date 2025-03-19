@@ -371,7 +371,11 @@ public class Autos {
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
                                 superstructure.score(false).asProxy(),
-                                superstructure.coralGroundIntake().asProxy().alongWith(jToLeftSrcToK.spawnCmd())));
+                                Commands.waitSeconds(0.25)
+                                        .andThen(superstructure
+                                                .coralGroundIntake()
+                                                .asProxy())
+                                        .alongWith(jToLeftSrcToK.spawnCmd())));
         jToLeftSrcToK
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.K, ReefHeight.L4, drivetrain, superstructure)
@@ -417,7 +421,11 @@ public class Autos {
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
                                 superstructure.score(false).asProxy(),
-                                superstructure.coralGroundIntake().asProxy().alongWith(eToLeftSrcToD.spawnCmd())));
+                                Commands.waitSeconds(0.25)
+                                        .andThen(superstructure
+                                                .coralGroundIntake()
+                                                .asProxy())
+                                        .alongWith(eToLeftSrcToD.spawnCmd())));
         eToLeftSrcToD
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.D, ReefHeight.L4, drivetrain, superstructure)

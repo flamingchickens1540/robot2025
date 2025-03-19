@@ -62,7 +62,7 @@ public class Drivetrain extends SubsystemBase {
     private static final LoggedTunableNumber autoAlignLinearSpeedFactor =
             new LoggedTunableNumber("AutoAlign/LinearSpeedFactor", 0.6);
     private static final LoggedTunableNumber autoAlignLinearAccelFactor =
-            new LoggedTunableNumber("AutoAlign/LinearAccelFactor", 0.5);
+            new LoggedTunableNumber("AutoAlign/LinearAccelFactor", 0.4);
     private static final LoggedTunableNumber autoAlignRotationSpeedFactor =
             new LoggedTunableNumber("AutoAlign/RotationSpeedFactor", 0.5);
     private static final LoggedTunableNumber autoAlignRotationAccelFactor =

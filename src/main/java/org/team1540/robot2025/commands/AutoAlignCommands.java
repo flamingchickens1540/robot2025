@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -76,24 +77,31 @@ public class AutoAlignCommands {
         double distanceFromCenter = robotFromReef.getTranslation().getNorm();
         Rotation2d tangentOffsetAngle =
                 Rotation2d.fromRadians(Math.acos(reefAvoidanceRadiusMeters.get() / distanceFromCenter));
-        Translation2d tangentPoint1 = reefCenter
-                .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
-                .getTranslation()
-                .rotateAround(
-                        reefCenter.getTranslation(),
-                        robotFromReef.getTranslation().getAngle().plus(tangentOffsetAngle));
-        Translation2d tangentPoint2 = reefCenter
-                .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
-                .getTranslation()
-                .rotateAround(
-                        reefCenter.getTranslation(),
-                        robotFromReef.getTranslation().getAngle().minus(tangentOffsetAngle));
-        if (tangentPoint1.getDistance(goalPose.getTranslation())
-                < tangentPoint2.getDistance(goalPose.getTranslation())) {
-            return new Pose2d(tangentPoint1, goalPose.getRotation());
-        } else {
-            return new Pose2d(tangentPoint2, goalPose.getRotation());
-        }
+        Pose2d tangentPoint1 = new Pose2d(
+                reefCenter
+                        .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
+                        .getTranslation()
+                        .rotateAround(
+                                reefCenter.getTranslation(),
+                                robotFromReef.getTranslation().getAngle().plus(tangentOffsetAngle)),
+                goalPose.getRotation());
+        Pose2d tangentPoint2 = new Pose2d(
+                reefCenter
+                        .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
+                        .getTranslation()
+                        .rotateAround(
+                                reefCenter.getTranslation(),
+                                robotFromReef.getTranslation().getAngle().minus(tangentOffsetAngle)),
+                goalPose.getRotation());
+        Pose2d targetOffsetPoint = new Pose2d(
+                reefCenter
+                        .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
+                        .getTranslation()
+                        .rotateAround(
+                                reefCenter.getTranslation(),
+                                goalFromReef.getTranslation().getAngle()),
+                goalPose.getRotation());
+        return robotPose.nearest(List.of(goalPose.nearest(List.of(tangentPoint1, tangentPoint2)), targetOffsetPoint));
     }
 
     public static Command alignToReefPose(ReefFace face, Supplier<Pose2d> pose, Drivetrain drivetrain) {

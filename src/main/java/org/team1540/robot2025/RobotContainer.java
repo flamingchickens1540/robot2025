@@ -116,23 +116,6 @@ public class RobotContainer {
             driver.b().whileTrue(AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure));
         }
 
-        RobotState.getInstance().resetPose(new Pose2d(0, 0, Rotation2d.kZero));
-        //        driver.x()
-        //                .onTrue(Commands.runOnce(() -> RobotState.getInstance().resetPose(new Pose2d(0, 0,
-        // Rotation2d.kZero))));
-        //        driver.y().onTrue(drivetrain.driveToPoseCommand(() -> new Pose2d(0, 0, Rotation2d.kZero)));
-        //        driver.b().onTrue(drivetrain.driveToPoseCommand(() -> new Pose2d(0, 0, Rotation2d.kCCW_90deg)));
-        //        driver.a().onTrue(drivetrain.driveToPoseCommand(() -> new Pose2d(0, 0, Rotation2d.k180deg)));
-        //
-        // driver.b().onTrue(drivetrain.driveToPoseCommand(()->FieldConstants.StagingPositions.leftIceCream.plus(new
-        // Transform2d(0, -1, Rotation2d.kZero))));
-        //
-        // driver.b().onTrue(drivetrain.driveToPoseCommand(()->FieldConstants.StagingPositions.leftIceCream.plus(new
-        // Transform2d(0, 0, Rotation2d.kCCW_90deg))));
-        //
-        // driver.b().onTrue(drivetrain.driveToPoseCommand(()->FieldConstants.StagingPositions.leftIceCream.plus(new
-        // Transform2d(1, 0, Rotation2d.kCCW_90deg))));
-
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.x()
                 .toggleOnTrue(drivetrain.teleopDriveWithHeadingCommand(
@@ -216,7 +199,6 @@ public class RobotContainer {
                                 driver.getHID(),
                                 () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
                                 () -> true)));
-
 
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
 
