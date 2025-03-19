@@ -238,7 +238,7 @@ public class Superstructure {
                             case L1_FRONT -> intake.commandRunRollerFunnel(-0.3, -0.3)
                                     .withDeadline(Commands.waitUntil(() -> !intake.hasCoral())
                                             .andThen(Commands.waitSeconds(0.5)));
-                            case L2_FRONT, L3_FRONT -> grabber.commandRun(-0.3)
+                            case L2_FRONT, L3_FRONT -> grabber.commandRun(-0.45)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
                             case L4_FRONT -> grabber.commandRun(0.1)
@@ -262,7 +262,7 @@ public class Superstructure {
                                 //                                                    Commands.waitSeconds(0.1),
                                 //
                                 // arm.commandToSetpoint(ArmState.SCORE_L4_FRONT_BACKOFF)));
-                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.4)
+                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.6)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
                             case PROCESSOR_BACK -> grabber.commandRun(-0.5).withTimeout(0.5);
@@ -339,15 +339,25 @@ public class Superstructure {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_GROUND)
                                 .withTimeout(1.0)
-                                .deadlineFor(intake.commandRunRoller(0.75))
-                                        .unless(intake::hasCoral),
+                                .deadlineFor(Commands.startEnd(
+                                                () -> intake.setRollerVoltage(0.75 * 12),
+                                                () -> intake.setRollerVoltage(0.0))
+                                        .unless(intake::hasCoral)),
                         grabber.commandRun(0.3)
                                 .until(grabber::forwardSensorTripped)
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
                                 .deadlineFor(intake.commandRunRollerFunnel(0.75, 0.75)),
                         stow().alongWith(
                                         grabber.commandRun(0.0),
-                                        intake.commandRunRollerFunnel(-0.75, -0.75)
+                                        Commands.startEnd(
+                                                        () -> {
+                                                            intake.setFunnelVoltage(-0.75 * 12);
+                                                            intake.setRollerVoltage(-0.75 * 12);
+                                                        },
+                                                        () -> {
+                                                            intake.setFunnelVoltage(0);
+                                                            intake.setRollerVoltage(0);
+                                                        })
                                                 .withTimeout(0.5)
                                                 .onlyIf(grabber::reverseSensorTripped)))
                 .unless(grabber::hasAlgae);

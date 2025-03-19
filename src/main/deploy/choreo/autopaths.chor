@@ -7,15 +7,15 @@
    "IntakeEndDistance":{
     "dimension":"Length",
     "var":{
-     "exp":"30 in",
-     "val":0.762
+     "exp":"20 in",
+     "val":0.508
     }
    },
    "IntakeStartDistance":{
     "dimension":"Length",
     "var":{
-     "exp":"60 in",
-     "val":1.524
+     "exp":"65 in",
+     "val":1.651
     }
    },
    "IntakeV":{
@@ -254,11 +254,11 @@
    "SrcLOutApproach":{
     "x":{
      "exp":"SrcROutApproach.x",
-     "val":2.464817393561112
+     "val":2.539466120602256
     },
     "y":{
      "exp":"7.35754919052124 m + IntakeStartDistance * -SrcRAngleY",
-     "val":6.12460729109382
+     "val":6.021862132808202
     },
     "heading":{
      "exp":"(360 deg - SrcRAngle)",
@@ -268,11 +268,11 @@
    "SrcLOutIntake":{
     "x":{
      "exp":"SrcROutIntake.x",
-     "val":2.0169250313142473
+     "val":1.8676275772319593
     },
     "y":{
      "exp":"7.35754919052124 m + IntakeEndDistance * -SrcRAngleY",
-     "val":6.74107824080753
+     "val":6.946568557378767
     },
     "heading":{
      "exp":"(360 deg - SrcRAngle)",
@@ -310,11 +310,11 @@
    "SrcROutApproach":{
     "x":{
      "exp":"1.5690326690673828 m + IntakeStartDistance * SrcRAngleX",
-     "val":2.464817393561112
+     "val":2.539466120602256
     },
     "y":{
      "exp":"0.6762703657150269 m + IntakeStartDistance * SrcRAngleY",
-     "val":1.9092122651424464
+     "val":2.011957423428065
     },
     "heading":{
      "exp":"(90 + 144) deg",
@@ -324,11 +324,11 @@
    "SrcROutIntake":{
     "x":{
      "exp":"1.5690326690673828 m + IntakeEndDistance * SrcRAngleX",
-     "val":2.0169250313142473
+     "val":1.8676275772319593
     },
     "y":{
      "exp":"0.6762703657150269 m + IntakeEndDistance * SrcRAngleY",
-     "val":1.2927413154287368
+     "val":1.0872509988575
     },
     "heading":{
      "exp":"(90 + 144) deg",
