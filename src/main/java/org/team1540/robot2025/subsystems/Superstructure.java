@@ -18,7 +18,6 @@ import org.team1540.robot2025.subsystems.elevator.Elevator.ElevatorState;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.intake.Intake.IntakeState;
-import org.team1540.robot2025.util.AllianceFlipUtil;
 
 public class Superstructure {
     public enum SuperstructureState {
@@ -309,27 +308,18 @@ public class Superstructure {
                 .handleInterrupt(grabber::stop);
     }
 
-    public Command dealgify() {
+    public Command dealgify(FieldConstants.ReefFace face) {
         return Commands.defer(
                 () -> {
-                    int degrees = (int) Math.round(AllianceFlipUtil.maybeFlipPose(
-                                    FieldConstants.Reef.closestFace().get().pose())
-                            .getRotation()
-                            .getDegrees());
-                    if (degrees == -180 || degrees == 60 || degrees == -60) {
-                        if (Math.abs(degrees
-                                        - RobotState.getInstance()
-                                                .getRobotRotation()
-                                                .getDegrees())
-                                < 90) return dealgify(SuperstructureState.DEALGIFY_LOW_BACK);
-                        return dealgify(SuperstructureState.DEALGIFY_LOW_FRONT);
+                    double degrees = face.pose().getRotation().getDegrees();
+                    if (!face.highDealgify()) {
+                        if (RobotState.getInstance().shouldReverseAlgae(face))
+                            return dealgify(SuperstructureState.DEALGIFY_LOW_FRONT);
+                        return dealgify(SuperstructureState.DEALGIFY_LOW_BACK);
                     } else {
-                        if (Math.abs(degrees
-                                        - RobotState.getInstance()
-                                                .getRobotRotation()
-                                                .getDegrees())
-                                < 90) return dealgify(SuperstructureState.DEALGIFY_HIGH_BACK);
-                        else return dealgify(SuperstructureState.DEALGIFY_HIGH_FRONT);
+                        if (RobotState.getInstance().shouldReverseAlgae(face))
+                            return dealgify(SuperstructureState.DEALGIFY_HIGH_FRONT);
+                        else return dealgify(SuperstructureState.DEALGIFY_HIGH_BACK);
                     }
                 },
                 Set.of(elevator, arm, intake, grabber));

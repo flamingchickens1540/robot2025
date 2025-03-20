@@ -311,18 +311,20 @@ public class RobotState {
 
     public boolean shouldReverseCoral(FieldConstants.ReefBranch branch) {
         return Math.abs(AllianceFlipUtil.maybeFlipPose(branch.face.pose())
-                                .getRotation()
-                                .minus(RobotState.getInstance().getRobotRotation())
-                                .getDegrees())
+                                        .getRotation()
+                                        .minus(RobotState.getInstance().getRobotRotation())
+                                        .getDegrees())
+                                % 180
                         > 90
                 || DriverStation.isTeleop();
     }
 
     public boolean shouldReverseAlgae(FieldConstants.ReefFace face) {
         return Math.abs(AllianceFlipUtil.maybeFlipPose(face.pose())
-                        .getRotation()
-                        .minus(RobotState.getInstance().getRobotRotation())
-                        .getDegrees())
+                                .getRotation()
+                                .minus(RobotState.getInstance().getRobotRotation())
+                                .getDegrees())
+                        % 180
                 > 90;
     }
 
