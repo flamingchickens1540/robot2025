@@ -413,17 +413,21 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public Command percentDriveCommand(
-            Supplier<Translation2d> linearPercent, DoubleSupplier omegaPercent, BooleanSupplier fieldRelative) {
+            Supplier<Translation2d> linearPercent,
+            DoubleSupplier omegaPercent,
+            BooleanSupplier fieldRelative,
+            Supplier<ChassisSpeeds> nudgeSpeeds) {
         return Commands.run(
                         () -> {
                             var speeds = new ChassisSpeeds(
-                                    linearPercent.get().getX() * MAX_LINEAR_SPEED_MPS,
-                                    linearPercent.get().getY() * MAX_LINEAR_SPEED_MPS,
-                                    omegaPercent.getAsDouble() * MAX_ANGULAR_SPEED_RAD_PER_SEC);
+                                            linearPercent.get().getX() * MAX_LINEAR_SPEED_MPS,
+                                            linearPercent.get().getY() * MAX_LINEAR_SPEED_MPS,
+                                            omegaPercent.getAsDouble() * MAX_ANGULAR_SPEED_RAD_PER_SEC);
                             if (fieldRelative.getAsBoolean()) {
                                 speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                                         speeds, rawGyroRotation.minus(fieldOrientationOffset));
                             }
+                             speeds = speeds.plus(nudgeSpeeds.get());
                             runVelocity(speeds);
                         },
                         this)
@@ -434,7 +438,8 @@ public class Drivetrain extends SubsystemBase {
         return percentDriveCommand(
                 () -> JoystickUtil.deadzonedJoystickTranslation(-controller.getLeftY(), -controller.getLeftX(), 0.1),
                 () -> JoystickUtil.smartDeadzone(-controller.getRightX(), 0.1),
-                fieldRelative);
+                fieldRelative,
+                ChassisSpeeds::new);
     }
 
     public Command teleopDriveWithHeadingCommand(
@@ -448,12 +453,22 @@ public class Drivetrain extends SubsystemBase {
                                                 .getRadians(),
                                         new TrapezoidProfile.State(heading.get().getRadians(), 0.0))
                                 / MAX_ANGULAR_SPEED_RAD_PER_SEC,
-                        fieldRelative)
+                        fieldRelative,
+                        ChassisSpeeds::new)
                 .beforeStarting(() -> headingController.reset(
                         RobotState.getInstance().getRobotRotation().getRadians(),
                         RobotState.getInstance().getRobotVelocity().omegaRadiansPerSecond))
                 .alongWith(Commands.run(() -> Logger.recordOutput("Drivetrain/HeadingGoal", heading.get())))
                 .until(() -> Math.abs(controller.getRightX()) >= 0.1);
+    }
+
+    public Command teleopDriveWithNudgeCommand(
+            XboxController controller, BooleanSupplier fieldRelative, Supplier<ChassisSpeeds> nudgeSpeeds) {
+        return percentDriveCommand(
+                () -> JoystickUtil.deadzonedJoystickTranslation(-controller.getLeftY(), -controller.getLeftX(), 0.1),
+                () -> JoystickUtil.smartDeadzone(-controller.getRightX(), 0.1),
+                fieldRelative,
+                nudgeSpeeds);
     }
 
     public Command teleopOrthogonalDriveWithHeadingCommand(
@@ -468,7 +483,8 @@ public class Drivetrain extends SubsystemBase {
                                                 .getRadians(),
                                         new TrapezoidProfile.State(heading.get().getRadians(), 0.0))
                                 / MAX_ANGULAR_SPEED_RAD_PER_SEC,
-                        fieldRelative)
+                        fieldRelative,
+                        ChassisSpeeds::new)
                 .beforeStarting(() -> headingController.reset(
                         RobotState.getInstance().getRobotRotation().getRadians(),
                         RobotState.getInstance().getRobotVelocity().omegaRadiansPerSecond))

@@ -227,6 +227,24 @@ public class AutoAlignCommands {
                 drivetrain);
     }
 
+    public static Command alignToDealgifyAwayPose(ReefFace face, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
+        return alignToReefPose(
+                face,
+                () -> {
+                    Pose2d pose = AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition());
+                    pose.transformBy(new Transform2d(1.0, 0, Rotation2d.kZero));
+                    if (!shouldReverse.getAsBoolean()) return pose;
+                    else {
+                        return new Pose2d(
+                                        pose.getTranslation(),
+                                        pose.getRotation().rotateBy(Rotation2d.k180deg))
+                                .transformBy(
+                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                    }
+                },
+                drivetrain);
+    }
+
     public static Command alignToCage(Translation2d cage, Drivetrain drivetrain) {
         return drivetrain.driveToPoseCommand(() -> new Pose2d(
                 AllianceFlipUtil.maybeFlipTranslation(

@@ -5,6 +5,7 @@ import static org.team1540.robot2025.FieldConstants.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.Set;
@@ -56,16 +57,16 @@ public class AutoScoreCommands {
     }
 
     public static Command alignToFaceAndDealgify(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {
-        return AutoAlignCommands.alignToDealgifyPose(
-                        face, drivetrain, () -> RobotState.getInstance().shouldReverseAlgae(face))
+        return Commands.sequence(AutoAlignCommands.alignToDealgifyPose(
+                        face, drivetrain, () -> RobotState.getInstance().shouldReverseAlgae(face)))
                 .asProxy()
                 .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
                                         .getEstimatedPose()
                                         .getTranslation()
                                         .getDistance(AllianceFlipUtil.maybeFlipTranslation(
                                                 face.dealgifyPosition().getTranslation()))
-                                <= prepareDistanceMetersCoral.get())
-                        .andThen(superstructure.dealgify())
+                                <= prepareDistanceMetersAlgae.get())
+                        .andThen(superstructure.dealgify(face))
                         .asProxy());
     }
 
@@ -84,5 +85,18 @@ public class AutoScoreCommands {
                         AllianceFlipUtil.maybeFlipRotation(Rotation2d.k180deg)))
                 .asProxy()
                 .andThen(superstructure.net().asProxy());
+    }
+
+    public static Command pointToBargeAndScore(
+            Drivetrain drivetrain, Superstructure superstructure, XboxController controller) {
+        return drivetrain
+                .teleopDriveWithHeadingCommand(controller, () -> Rotation2d.kZero, () -> true)
+                .asProxy()
+                .alongWith(Commands.waitUntil(() -> Math.abs(RobotState.getInstance()
+                                        .getRobotRotation()
+                                        .minus(AllianceFlipUtil.maybeReverseRotation(Rotation2d.kZero))
+                                        .getDegrees())
+                                < 10)
+                        .andThen(superstructure.net()));
     }
 }
