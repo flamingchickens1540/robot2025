@@ -177,7 +177,7 @@ public class RobotContainer {
         buttonBoard
                 .button(1)
                 .or(copilot.b())
-                .or(driver.x())
+                //                .or(driver.x())
                 .onTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure, driver.getHID()));
         buttonBoard.button(2).or(copilot.povRight()).onTrue(superstructure.processor());
 

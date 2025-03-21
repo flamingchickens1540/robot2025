@@ -94,7 +94,7 @@ public class AutoScoreCommands {
                 .asProxy()
                 .alongWith(Commands.waitUntil(() -> Math.abs(RobotState.getInstance()
                                         .getRobotRotation()
-                                        .minus(AllianceFlipUtil.maybeReverseRotation(Rotation2d.kZero))
+                                        .minus(AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg))
                                         .getDegrees())
                                 < 10)
                         .andThen(superstructure.net()));
