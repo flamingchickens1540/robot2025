@@ -1,7 +1,6 @@
 package org.team1540.robot2025;
 
 import static org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionConstants.*;
-import static org.team1540.robot2025.subsystems.vision.coral.CoralVisionConstants.TRANSLATION_KP;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
