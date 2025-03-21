@@ -53,7 +53,7 @@ public class Drivetrain extends SubsystemBase {
 
     private static final LoggedTunableNumber translationKP = new LoggedTunableNumber("Drivetrain/Translation/kP", 6.0);
     private static final LoggedTunableNumber translationKI = new LoggedTunableNumber("Drivetrain/Translation/kI", 0.0);
-    private static final LoggedTunableNumber translationKD = new LoggedTunableNumber("Drivetrain/Translation/kD", 0.2);
+    private static final LoggedTunableNumber translationKD = new LoggedTunableNumber("Drivetrain/Translation/kD", 0.0);
 
     private static final LoggedTunableNumber headingKP = new LoggedTunableNumber("Drivetrain/Heading/kP", 3.3);
     private static final LoggedTunableNumber headingKI = new LoggedTunableNumber("Drivetrain/Heading/kI", 0.0);
@@ -420,14 +420,14 @@ public class Drivetrain extends SubsystemBase {
         return Commands.run(
                         () -> {
                             var speeds = new ChassisSpeeds(
-                                            linearPercent.get().getX() * MAX_LINEAR_SPEED_MPS,
-                                            linearPercent.get().getY() * MAX_LINEAR_SPEED_MPS,
-                                            omegaPercent.getAsDouble() * MAX_ANGULAR_SPEED_RAD_PER_SEC);
+                                    linearPercent.get().getX() * MAX_LINEAR_SPEED_MPS,
+                                    linearPercent.get().getY() * MAX_LINEAR_SPEED_MPS,
+                                    omegaPercent.getAsDouble() * MAX_ANGULAR_SPEED_RAD_PER_SEC);
                             if (fieldRelative.getAsBoolean()) {
                                 speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                                         speeds, rawGyroRotation.minus(fieldOrientationOffset));
                             }
-                             speeds = speeds.plus(nudgeSpeeds.get());
+                            speeds = speeds.plus(nudgeSpeeds.get());
                             runVelocity(speeds);
                         },
                         this)

@@ -65,7 +65,7 @@ public class RobotContainer {
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
                 aprilTagVision = AprilTagVision.createReal();
-                coralVision = CoralVision.createDummy();
+                coralVision = CoralVision.createReal();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
                 intake = Intake.createReal();
