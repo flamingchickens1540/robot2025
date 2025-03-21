@@ -177,14 +177,12 @@ povs = [
         KEY_INTAKE_R1,
         KEY_INTAKE_R2
     )),
-    Selector(3, 0, (0, 0, 200), (0, 2, 1), (
-        KEY_ALGAE_1,
-        KEY_ALGAE_2,
-        KEY_ALGAE_3,
-        KEY_ALGAE_4
-    )),
     Button(0,KEY_NP_1,(0,200,100),(0,0,0)),
     Button(1,KEY_NP_2,(0,200,100),(0,0,0)),
+    Button(2,KEY_ALGAE_1,(250,50,0),(3,1,0)),
+    Button(3,KEY_ALGAE_2,(250,50,0),(3,1,0)),
+    Button(4,KEY_ALGAE_3,(250,50,0),(3,1,0)),
+    Button(5,KEY_ALGAE_4,(250,50,0),(3,1,0)),
 ]
 
 def refresh():

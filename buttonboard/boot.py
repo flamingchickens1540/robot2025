@@ -7,7 +7,7 @@ from joystick_xl.hid import create_joystick
 usb_hid.enable(
     (
         usb_hid.Device.CONSUMER_CONTROL,
-        create_joystick(axes=4, buttons=3, hats=0),
+        create_joystick(axes=4, buttons=6, hats=0),
     )
 )
 usb_hid.set_interface_name("Button Board")
