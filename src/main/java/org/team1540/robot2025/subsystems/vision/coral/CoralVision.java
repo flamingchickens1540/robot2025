@@ -14,7 +14,7 @@ public class CoralVision extends SubsystemBase {
 
     private CoralVision(CoralVisionIO io) {
         this.io = io;
-        this.disconnectedAlert = new Alert(io.getName() + " is disconnected oh noes", Alert.AlertType.kWarning);
+        this.disconnectedAlert = new Alert(io.getName() + " is disconnected.", Alert.AlertType.kWarning);
     }
 
     @Override

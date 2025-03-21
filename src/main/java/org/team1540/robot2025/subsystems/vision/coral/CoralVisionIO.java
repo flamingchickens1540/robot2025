@@ -6,7 +6,7 @@ import org.littletonrobotics.junction.AutoLog;
 public interface CoralVisionIO {
     @AutoLog
     class CoralVisionIOInputs {
-        public boolean connected = false;
+        public boolean connected = true;
         public boolean hasDetection = false;
         public CoralObservation latestObservation = new CoralObservation(0.0, new Rotation2d(), new Rotation2d(), 0.0);
     }

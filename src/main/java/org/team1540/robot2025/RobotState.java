@@ -265,7 +265,7 @@ public class RobotState {
             Rotation2d xRotation = latestCoralObservation.tx();
 
             assistVelocity = new ChassisSpeeds(robotVelocity.vyMetersPerSecond, -robotVelocity.vxMetersPerSecond, 0)
-                    .times(xRotation.getTan() * TRANSLATION_KP);
+                    .times(xRotation.getTan() * intakeAssistTranslationKP.get());
         }
         return assistVelocity;
     }
