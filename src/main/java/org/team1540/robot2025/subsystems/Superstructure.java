@@ -242,7 +242,7 @@ public class Superstructure {
     public Command score(boolean stow) {
         return Commands.defer(
                         () -> switch (getGoalState()) {
-                            case L1_FRONT -> intake.commandRunRollerFunnel(-0.3, -0.3)
+                            case L1_FRONT -> intake.commandRunRollerFunnel(-0.2, -0.2)
                                     .withDeadline(Commands.waitUntil(() -> !intake.hasCoral())
                                             .andThen(Commands.waitSeconds(0.5)));
                             case L2_FRONT, L3_FRONT -> grabber.commandRun(-0.3)

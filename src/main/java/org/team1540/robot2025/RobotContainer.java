@@ -225,8 +225,7 @@ public class RobotContainer {
         autoChooser.addRoutine("Right 4 Piece Sweep Reverse", autos::right4PieceSweepReverse);
         autoChooser.addRoutine("Left 3 Piece Sweep", autos::left3PieceSweep);
         autoChooser.addRoutine("Left 4 Piece Sweep Reverse", autos::left4PieceSweepReverse);
-        autoChooser.addRoutine("Center 1 Piece Barge", autos::center1PieceBarge);
-        autoChooser.addRoutine("Center 1 Piece Processor", autos::center1PieceProcessor);
+        autoChooser.addRoutine("Center 1 Piece", autos::center1Piece);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);

@@ -1,5 +1,5 @@
 {
- "name":"Center1PieceBarge",
+ "name":"Center1Piece",
  "version":1,
  "snapshot":{
   "waypoints":[
@@ -18,8 +18,7 @@
  "params":{
   "waypoints":[
     {"x":{"exp":"7.127391815185547 m", "val":7.127391815185547}, "y":{"exp":"H.y", "val":4.1166034}, "heading":{"exp":"180 deg", "val":3.141592653589793}, "intervals":19, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"H.x", "val":5.7964832}, "y":{"exp":"H.y", "val":4.1166034}, "heading":{"exp":"180 deg", "val":3.141592653589793}, "intervals":24, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"7.562702178955078 m", "val":7.562702178955078}, "y":{"exp":"5.085886001586914 m", "val":5.085886001586914}, "heading":{"exp":"180 deg", "val":3.141592653589793}, "intervals":79, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":{"exp":"H.x", "val":5.7964832}, "y":{"exp":"H.y", "val":4.1166034}, "heading":{"exp":"180 deg", "val":3.141592653589793}, "intervals":24, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
