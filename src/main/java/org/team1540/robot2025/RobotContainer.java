@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefHeight;
 import org.team1540.robot2025.autos.Autos;
+import org.team1540.robot2025.commands.AutoAlignCommands;
 import org.team1540.robot2025.commands.AutoScoreCommands;
 import org.team1540.robot2025.services.AlertManager;
 import org.team1540.robot2025.services.MechanismVisualizer;
@@ -65,7 +66,7 @@ public class RobotContainer {
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
                 aprilTagVision = AprilTagVision.createReal();
-                coralVision = CoralVision.createReal();
+                coralVision = CoralVision.createDummy();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
                 intake = Intake.createReal();
@@ -133,21 +134,11 @@ public class RobotContainer {
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
                 .and(() -> !grabber.hasAlgae())
-                .whileTrue(
-                        superstructure.coralGroundIntake()
-                        //                        .alongWith(drivetrain.teleopDriveWithNudgeCommand(
-                        //                                driver.getHID(), () -> false, () -> RobotState.getInstance()
-                        //                                        .getIntakeAssistVelocity()))
-                        )
+                .whileTrue(superstructure.coralGroundIntake())
                 .onFalse(superstructure.stow());
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).or(grabber::hasAlgae))
-                .whileTrue(
-                        superstructure.coralGroundIntakeL1()
-                        //                        .alongWith(drivetrain.teleopDriveWithNudgeCommand(
-                        //                                driver.getHID(), () -> true, () -> RobotState.getInstance()
-                        //                                        .getIntakeAssistVelocity()))
-                        )
+                .whileTrue(superstructure.coralGroundIntakeL1())
                 .onFalse(superstructure.stow());
 
         driver.leftBumper()
@@ -181,27 +172,31 @@ public class RobotContainer {
                 .onTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure, driver.getHID()));
         buttonBoard.button(2).or(copilot.povRight()).onTrue(superstructure.processor());
 
-        //                buttonBoard
-        //                        .button(2)
-        //                        .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.leftCage, drivetrain)
-        //                                .andThen(drivetrain.teleopOrthogonalDriveWithHeadingCommand(
-        //                                        driver.getHID(),
-        //                                        () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
-        //                                        () -> true)));
-        //        buttonBoard
-        //                .button(3)
-        //                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.middleCage, drivetrain)
-        //                        .andThen(drivetrain.teleopOrthogonalDriveWithHeadingCommand(
-        //                                driver.getHID(),
-        //                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
-        //                                () -> true)));
-        //        buttonBoard
-        //                .button(4)
-        //                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.rightCage, drivetrain)
-        //                        .andThen(drivetrain.teleopOrthogonalDriveWithHeadingCommand(
-        //                                driver.getHID(),
-        //                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
-        //                                () -> true)));
+        buttonBoard
+                .button(3)
+                //                .or(driver.x())
+                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.leftCage, drivetrain)
+                        .andThen(drivetrain.teleopDriveWithHeadingCommand(
+                                driver.getHID(),
+                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
+                                () -> true))
+                        .alongWith(superstructure.processor()));
+        buttonBoard
+                .button(4)
+                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.middleCage, drivetrain)
+                        .andThen(drivetrain.teleopDriveWithHeadingCommand(
+                                driver.getHID(),
+                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
+                                () -> true))
+                        .alongWith(superstructure.processor()));
+        buttonBoard
+                .button(5)
+                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.rightCage, drivetrain)
+                        .andThen(drivetrain.teleopDriveWithHeadingCommand(
+                                driver.getHID(),
+                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
+                                () -> true))
+                        .alongWith(superstructure.processor()));
 
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
 
