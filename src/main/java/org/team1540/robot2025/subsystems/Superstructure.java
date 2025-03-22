@@ -121,23 +121,31 @@ public class Superstructure {
                                 >= ArmState.STOW.position().getDegrees()) {
                             command = command.andThen(Commands.parallel(
                                     elevator.commandToSetpoint(elevatorState),
-                                    Commands.waitUntil(() ->
-                                                    getEndEffectorPosition(elevator.getPosition(), armState.position())
-                                                                            .getY()
-                                                                    >= 0.1
-                                                            && elevator.timeToSetpoint()
-                                                                    <= arm.timeToSetpoint(armState.position()))
+                                    Commands.waitUntil(
+                                                    () -> getEndEffectorPosition(
+                                                                            elevator.getPosition(), armState.position())
+                                                                    .getY()
+                                                            >= 0.1
+                                                    //                                                            &&
+                                                    // elevator.timeToSetpoint()
+                                                    //
+                                                    //  <= arm.timeToSetpoint(armState.position())
+                                                    )
                                             .andThen(arm.commandToSetpoint(armState)),
                                     intake.commandToSetpoint(goalState.intakeState)));
                         } else {
                             command = command.andThen(Commands.parallel(
                                     elevator.commandToSetpoint(elevatorState),
-                                    Commands.waitUntil(() ->
-                                                    getEndEffectorPosition(elevator.getPosition(), armState.position())
-                                                                            .getY()
-                                                                    > clearanceHeight
-                                                            && elevator.timeToSetpoint()
-                                                                    <= arm.timeToSetpoint(armState.position()))
+                                    Commands.waitUntil(
+                                                    () -> getEndEffectorPosition(
+                                                                            elevator.getPosition(), armState.position())
+                                                                    .getY()
+                                                            > clearanceHeight
+                                                    //                                                            &&
+                                                    // elevator.timeToSetpoint()
+                                                    //
+                                                    //  <= arm.timeToSetpoint(armState.position())
+                                                    )
                                             .andThen(Commands.parallel(
                                                     intake.commandToSetpoint(goalState.intakeState),
                                                     arm.commandToSetpoint(armState)))));
