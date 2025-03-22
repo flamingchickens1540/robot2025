@@ -250,7 +250,7 @@ public class Superstructure {
                                             .andThen(Commands.waitSeconds(0.25)));
                             case L3_FRONT -> grabber.commandRun(-0.3)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
-                                            .andThen(Commands.waitSeconds(0.25), arm.commandToSetpoint(ArmState.SCORE_L4_FRONT_BACKOFF)));
+                                            .andThen(Commands.waitSeconds(0.25), arm.commandToSetpoint(ArmState.BACKOFF_L2_L3_FRONT)));
                             case L4_FRONT -> grabber.commandRun(0.1)
                                     .until(grabber::reverseSensorTripped)
                                     .withTimeout(0.1)
@@ -260,7 +260,7 @@ public class Superstructure {
                                                     .andThen(Commands.waitSeconds(0.25)))
                                             .alongWith(
                                                     Commands.waitSeconds(0.2),
-                                                    arm.commandToSetpoint(ArmState.SCORE_L4_FRONT_BACKOFF)));
+                                                    arm.commandToSetpoint(ArmState.BACKOFF_L4_FRONT)));
                             case L4_BACK -> grabber.commandRun(-0.1)
                                     .until(grabber::forwardSensorTripped)
                                     .withTimeout(0.1)
