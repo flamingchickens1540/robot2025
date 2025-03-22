@@ -245,7 +245,7 @@ public class Superstructure {
                             case L1_FRONT -> intake.commandRunRollerFunnel(-0.3, -0.3)
                                     .withDeadline(Commands.waitUntil(() -> !intake.hasCoral())
                                             .andThen(Commands.waitSeconds(0.5)));
-                            case L2_FRONT, L3_FRONT -> grabber.commandRun(-0.45)
+                            case L2_FRONT, L3_FRONT -> grabber.commandRun(-0.4)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
                             case L4_FRONT -> grabber.commandRun(0.1)
