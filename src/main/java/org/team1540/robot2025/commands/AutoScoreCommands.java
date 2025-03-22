@@ -90,7 +90,7 @@ public class AutoScoreCommands {
     public static Command pointToBargeAndScore(
             Drivetrain drivetrain, Superstructure superstructure, XboxController controller) {
         return drivetrain
-                .teleopDriveWithHeadingCommand(controller, () -> Rotation2d.kZero, () -> true)
+                .teleopDriveWithHeadingCommand(controller, () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg), () -> true)
                 .asProxy()
                 .alongWith(Commands.waitUntil(() -> Math.abs(RobotState.getInstance()
                                         .getRobotRotation()

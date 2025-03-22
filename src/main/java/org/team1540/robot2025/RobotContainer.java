@@ -115,8 +115,7 @@ public class RobotContainer {
                             ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
             //            driver.b().whileTrue(AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure));
             driver.b()
-                    .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(
-                            FieldConstants.Reef.faces.get(0), drivetrain, superstructure));
+                    .whileTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure, driver.getHID()));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
@@ -225,8 +224,7 @@ public class RobotContainer {
         autoChooser.addRoutine("Right 4 Piece Sweep Reverse", autos::right4PieceSweepReverse);
         autoChooser.addRoutine("Left 3 Piece Sweep", autos::left3PieceSweep);
         autoChooser.addRoutine("Left 4 Piece Sweep Reverse", autos::left4PieceSweepReverse);
-        autoChooser.addRoutine("Center 1 Piece Barge", autos::center1PieceBarge);
-        autoChooser.addRoutine("Center 1 Piece Processor", autos::center1PieceProcessor);
+        autoChooser.addRoutine("Center 1 Piece", autos::center1Piece);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);

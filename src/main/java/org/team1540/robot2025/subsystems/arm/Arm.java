@@ -5,6 +5,7 @@ import static org.team1540.robot2025.subsystems.arm.ArmConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,11 +36,12 @@ public class Arm extends SubsystemBase {
         SCORE_L1_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL1BackDegrees", 90)),
         SCORE_L1_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL1FrontDegrees", 88)),
         SCORE_L2_L3_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3FrontDegrees", 55)),
+        BACKOFF_L2_L3_FRONT(new LoggedTunableNumber("Arm/Setpoints/BackoffL2L3FrontDegrees", 80)),
         SCORE_L2_L3_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3BackDegrees", 115)),
         SCORE_L4_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontDegrees", 60)),
-        SCORE_L4_FRONT_BACKOFF(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontBackoffDegrees", 80)),
-        SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 108)),
-        SCORE_L4_BACK_BACKOFF(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackBackoffDegrees", 98)),
+        BACKOFF_L4_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontBackoffDegrees", 80)),
+        SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 110)),
+        BACKOFF_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/BackoffL4BackDegrees", 98)),
         SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 90)),
         SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 120));
 
@@ -57,6 +59,9 @@ public class Arm extends SubsystemBase {
     private final ArmIO io;
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
     private Rotation2d setpoint = new Rotation2d();
+
+    private final Alert motorDisconnectedAlert = new Alert("Arm motor disconnected.", Alert.AlertType.kError);
+    private final Alert encoderDisconnectedAlert = new Alert("Arm encoder disconnected.", Alert.AlertType.kError);
 
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Arm/kP", KP);
     private final LoggedTunableNumber kI = new LoggedTunableNumber("Arm/kI", KI);
@@ -88,6 +93,9 @@ public class Arm extends SubsystemBase {
 
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configPID(kP.get(), kI.get(), kD.get()), kP, kI, kD);
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configFF(kS.get(), kV.get(), kG.get()), kS, kV, kG);
+
+        motorDisconnectedAlert.set(!inputs.motorConnected);
+        encoderDisconnectedAlert.set(!inputs.encoderConnected);
 
         LoggedTracer.record("Arm");
     }

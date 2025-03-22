@@ -71,7 +71,7 @@ public class Superstructure {
     public final Grabber grabber;
     private final double clearanceHeight = 0.5;
 
-    private SuperstructureState goalState;
+    private SuperstructureState goalState = SuperstructureState.STOW;
 
     public Superstructure(Elevator elevator, Arm arm, Intake intake, Grabber grabber) {
         this.elevator = elevator;
@@ -242,12 +242,17 @@ public class Superstructure {
     public Command score(boolean stow) {
         return Commands.defer(
                         () -> switch (getGoalState()) {
-                            case L1_FRONT -> intake.commandRunRollerFunnel(-0.3, -0.3)
+                            case L1_FRONT -> intake.commandRunRollerFunnel(-0.2, -0.2)
                                     .withDeadline(Commands.waitUntil(() -> !intake.hasCoral())
                                             .andThen(Commands.waitSeconds(0.5)));
-                            case L2_FRONT, L3_FRONT -> grabber.commandRun(-0.45)
+                            case L2_FRONT -> grabber.commandRun(-0.25)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
+                            case L3_FRONT -> grabber.commandRun(-0.25)
+                                    .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
+                                            .andThen(
+                                                    Commands.waitSeconds(0.25),
+                                                    arm.commandToSetpoint(ArmState.BACKOFF_L2_L3_FRONT)));
                             case L4_FRONT -> grabber.commandRun(0.1)
                                     .until(grabber::reverseSensorTripped)
                                     .withTimeout(0.1)
@@ -256,27 +261,26 @@ public class Superstructure {
                                             .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
                                                     .andThen(Commands.waitSeconds(0.25)))
                                             .alongWith(
-                                                    Commands.waitSeconds(0.1),
-                                                    arm.commandToSetpoint(ArmState.SCORE_L4_FRONT_BACKOFF)));
+                                                    Commands.waitSeconds(0.2),
+                                                    arm.commandToSetpoint(ArmState.BACKOFF_L4_FRONT)));
                             case L4_BACK -> grabber.commandRun(-0.1)
                                     .until(grabber::forwardSensorTripped)
                                     .withTimeout(0.1)
                                     .onlyIf(() -> !grabber.forwardSensorTripped() && grabber.reverseSensorTripped())
                                     .andThen(grabber.commandRun(0.4)
                                             .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
-                                                    .andThen(Commands.waitSeconds(0.25))));
-                                //                                            .alongWith(
-                                //                                                    Commands.waitSeconds(0.1),
-                                //
-                                // arm.commandToSetpoint(ArmState.SCORE_L4_FRONT_BACKOFF)));
+                                                    .andThen(Commands.waitSeconds(0.25)))
+                                            .alongWith(
+                                                    Commands.waitSeconds(0.2),
+                                                    arm.commandToSetpoint(ArmState.BACKOFF_L4_BACK)));
                             case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.6)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
-                            case PROCESSOR_BACK -> grabber.commandRun(-0.5).withTimeout(0.5);
-                            case SCORE_BARGE_FRONT, SCORE_BARGE_BACK -> grabber.commandRun(-0.8)
+                            case PROCESSOR_BACK -> grabber.commandRun(-0.3).withTimeout(0.5);
+                            case SCORE_BARGE_FRONT, SCORE_BARGE_BACK -> grabber.commandRun(-1.0)
                                     .withTimeout(0.5)
                                     .alongWith(Commands.runOnce(arm::holdPosition));
-                            default -> grabber.hasAlgae() ? grabber.commandRun(-0.5) : grabber.commandStartRun(0);
+                            default -> grabber.hasAlgae() ? grabber.commandRun(-0.5).withTimeout(0.5) : grabber.commandStartRun(0);
                         },
                         Set.of(elevator, arm, intake, grabber))
                 .andThen(stow().onlyIf(() -> stow));
