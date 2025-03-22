@@ -245,9 +245,12 @@ public class Superstructure {
                             case L1_FRONT -> intake.commandRunRollerFunnel(-0.2, -0.2)
                                     .withDeadline(Commands.waitUntil(() -> !intake.hasCoral())
                                             .andThen(Commands.waitSeconds(0.5)));
-                            case L2_FRONT, L3_FRONT -> grabber.commandRun(-0.3)
+                            case L2_FRONT -> grabber.commandRun(-0.3)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
+                            case L3_FRONT -> grabber.commandRun(-0.3)
+                                    .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
+                                            .andThen(Commands.waitSeconds(0.25), arm.commandToSetpoint(ArmState.SCORE_L4_FRONT_BACKOFF)));
                             case L4_FRONT -> grabber.commandRun(0.1)
                                     .until(grabber::reverseSensorTripped)
                                     .withTimeout(0.1)
