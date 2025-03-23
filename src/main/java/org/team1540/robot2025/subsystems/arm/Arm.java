@@ -5,6 +5,7 @@ import static org.team1540.robot2025.subsystems.arm.ArmConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -59,6 +60,9 @@ public class Arm extends SubsystemBase {
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
     private Rotation2d setpoint = new Rotation2d();
 
+    private final Alert motorDisconnectedAlert = new Alert("Arm motor disconnected.", Alert.AlertType.kError);
+    private final Alert encoderDisconnectedAlert = new Alert("Arm encoder disconnected.", Alert.AlertType.kError);
+
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Arm/kP", KP);
     private final LoggedTunableNumber kI = new LoggedTunableNumber("Arm/kI", KI);
     private final LoggedTunableNumber kD = new LoggedTunableNumber("Arm/kD", KD);
@@ -89,6 +93,9 @@ public class Arm extends SubsystemBase {
 
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configPID(kP.get(), kI.get(), kD.get()), kP, kI, kD);
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configFF(kS.get(), kV.get(), kG.get()), kS, kV, kG);
+
+        motorDisconnectedAlert.set(!inputs.motorConnected);
+        encoderDisconnectedAlert.set(!inputs.encoderConnected);
 
         LoggedTracer.record("Arm");
     }

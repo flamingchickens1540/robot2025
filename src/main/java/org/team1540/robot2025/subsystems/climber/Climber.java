@@ -4,6 +4,7 @@ import static org.team1540.robot2025.subsystems.climber.ClimberConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -38,6 +39,8 @@ public class Climber extends SubsystemBase {
     private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
     private Rotation2d setpoint = new Rotation2d();
 
+    private final Alert motorDisconnectedAlert = new Alert("Climb motor disconnected.", Alert.AlertType.kError);
+
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Climber/kP", KP);
     private final LoggedTunableNumber kI = new LoggedTunableNumber("Climber/kI", KI);
     private final LoggedTunableNumber kD = new LoggedTunableNumber("Climber/kD", KD);
@@ -65,6 +68,8 @@ public class Climber extends SubsystemBase {
 
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configPID(kP.get(), kI.get(), kD.get()), kP, kI, kD);
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configFF(kS.get(), kV.get(), kG.get()), kS, kV, kG);
+
+        motorDisconnectedAlert.set(!inputs.motorConnected);
 
         LoggedTracer.record("Climber");
     }
