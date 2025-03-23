@@ -280,7 +280,7 @@ public class Superstructure {
                             case SCORE_BARGE_FRONT, SCORE_BARGE_BACK -> grabber.commandRun(-1.0)
                                     .withTimeout(0.5)
                                     .alongWith(Commands.runOnce(arm::holdPosition));
-                            default -> grabber.hasAlgae() ? grabber.commandRun(-0.5).withTimeout(0.25) : grabber.commandStartRun(0);
+                            default -> grabber.hasAlgae() ? grabber.commandRun(-0.5).withTimeout(0.5) : grabber.commandStartRun(0);
                         },
                         Set.of(elevator, arm, intake, grabber))
                 .andThen(stow().onlyIf(() -> stow));
