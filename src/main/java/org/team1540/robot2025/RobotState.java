@@ -314,8 +314,8 @@ public class RobotState {
                                         .minus(RobotState.getInstance().getRobotRotation())
                                         .getDegrees())
                                 % 180
-                        > 90
-                || DriverStation.isTeleop();
+                        > 90;
+//                || DriverStation.isTeleop();
     }
 
     public boolean shouldReverseAlgae(FieldConstants.ReefFace face) {
