@@ -71,7 +71,7 @@ public class Superstructure {
     public final Grabber grabber;
     private final double clearanceHeight = 0.5;
 
-    private SuperstructureState goalState;
+    private SuperstructureState goalState = SuperstructureState.STOW;
 
     public Superstructure(Elevator elevator, Arm arm, Intake intake, Grabber grabber) {
         this.elevator = elevator;
