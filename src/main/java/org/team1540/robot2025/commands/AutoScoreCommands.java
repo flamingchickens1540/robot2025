@@ -19,8 +19,10 @@ import org.team1540.robot2025.util.LoggedTunableNumber;
 import org.team1540.robot2025.util.math.MathUtils;
 
 public class AutoScoreCommands {
-    private static final LoggedTunableNumber prepareDistanceMetersCoral =
-            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoral", 1.0);
+    private static final LoggedTunableNumber prepareDistanceMetersCoralLong =
+            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoralLong", 1.0);
+    private static final LoggedTunableNumber prepareDistanceMetersCoralShort =
+            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoralShort", 0.5);
     private static final LoggedTunableNumber prepareDistanceMetersAlgae =
             new LoggedTunableNumber("AutoScore/PrepareDistanceMetersAlgae", 2.0);
 
@@ -31,15 +33,28 @@ public class AutoScoreCommands {
                     boolean reverse = RobotState.getInstance().shouldReverseCoral(branch);
                     return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse)
                             .asProxy()
-                            .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
+                            .deadlineFor(Commands.waitUntil(() -> RobotState.getInstance()
                                                     .getEstimatedPose()
                                                     .getTranslation()
                                                     .getDistance(AllianceFlipUtil.maybeFlipTranslation(
                                                             branch.scorePosition.getTranslation()))
-                                            <= prepareDistanceMetersCoral.get())
-                                    .andThen(superstructure
-                                            .scoreCoral(height, () -> reverse)
-                                            .asProxy()));
+                                            <= prepareDistanceMetersCoralLong.get())
+                                    .andThen(
+                                            superstructure
+                                                    .preScoreCoral(height, () -> reverse)
+                                                    .asProxy(),
+                                            Commands.waitUntil(() -> RobotState.getInstance()
+                                                            .getEstimatedPose()
+                                                            .getTranslation()
+                                                            .getDistance(AllianceFlipUtil.maybeFlipTranslation(
+                                                                    branch.scorePosition.getTranslation()))
+                                                    <= prepareDistanceMetersCoralLong.get()),
+                                            superstructure
+                                                    .scoreCoral(height, () -> reverse)
+                                                    .asProxy()))
+                            .andThen(superstructure
+                                    .scoreCoral(height, () -> reverse)
+                                    .asProxy());
                 },
                 Set.of());
     }
@@ -90,7 +105,8 @@ public class AutoScoreCommands {
     public static Command pointToBargeAndScore(
             Drivetrain drivetrain, Superstructure superstructure, XboxController controller) {
         return drivetrain
-                .teleopDriveWithHeadingCommand(controller, () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg), () -> true)
+                .teleopDriveWithHeadingCommand(
+                        controller, () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg), () -> true)
                 .asProxy()
                 .alongWith(Commands.waitUntil(() -> Math.abs(RobotState.getInstance()
                                         .getRobotRotation()

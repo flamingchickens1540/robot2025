@@ -114,8 +114,7 @@ public class RobotContainer {
                     .whileTrue(AutoScoreCommands.alignToBranchAndScore(
                             ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
             //            driver.b().whileTrue(AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure));
-            driver.b()
-                    .whileTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure, driver.getHID()));
+            driver.b().whileTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure, driver.getHID()));
         }
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
