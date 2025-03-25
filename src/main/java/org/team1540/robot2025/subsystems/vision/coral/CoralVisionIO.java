@@ -8,7 +8,8 @@ public interface CoralVisionIO {
     class CoralVisionIOInputs {
         public boolean connected = true;
         public boolean hasDetection = false;
-        public CoralObservation latestObservation = new CoralObservation(0.0, new Rotation2d(), new Rotation2d(), 0.0);
+        public CoralObservation latestObservation =
+                new CoralObservation(0.0, Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0), 0.0);
     }
 
     record CoralObservation(double timestampSecs, Rotation2d tx, Rotation2d ty, double targetArea) {}

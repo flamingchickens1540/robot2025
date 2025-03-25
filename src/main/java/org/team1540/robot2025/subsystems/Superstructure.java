@@ -35,11 +35,17 @@ public class Superstructure {
         L2_FRONT(ArmState.SCORE_L2_L3_FRONT, ElevatorState.L2_FRONT, IntakeState.STOW),
         L2_BACK(ArmState.SCORE_L2_L3_BACK, ElevatorState.L2_BACK, IntakeState.STOW),
 
+        L2_L3_FRONT_STAGE(ArmState.SCORE_L2_L3_FRONT, ElevatorState.FRONT_STAGE, IntakeState.STOW),
+        L2_L3_BACK_STAGE(ArmState.SCORE_L2_L3_BACK, ElevatorState.BACK_STAGE, IntakeState.STOW),
+
         L3_FRONT(ArmState.SCORE_L2_L3_FRONT, ElevatorState.L3_FRONT, IntakeState.STOW),
         L3_BACK(ArmState.SCORE_L2_L3_BACK, ElevatorState.L3_BACK, IntakeState.STOW),
 
         L4_FRONT(ArmState.SCORE_L4_FRONT, ElevatorState.L4_FRONT, IntakeState.STOW),
         L4_BACK(ArmState.SCORE_L4_BACK, ElevatorState.L4_BACK, IntakeState.STOW),
+
+        L4_FRONT_STAGE(ArmState.SCORE_L4_FRONT, ElevatorState.FRONT_STAGE, IntakeState.STOW),
+        L4_BACK_STAGE(ArmState.SCORE_L4_BACK, ElevatorState.BACK_STAGE, IntakeState.STOW),
 
         DEALGIFY_LOW_FRONT(ArmState.REEF_ALGAE_FRONT, ElevatorState.REEF_ALGAE_LOW_FRONT, IntakeState.STOW),
         DEALGIFY_LOW_BACK(ArmState.REEF_ALGAE_BACK, ElevatorState.REEF_ALGAE_LOW_BACK, IntakeState.STOW),
@@ -201,6 +207,20 @@ public class Superstructure {
         return commandToState(SuperstructureState.STOW);
     }
 
+    public Command preScoreCoral(FieldConstants.ReefHeight height, BooleanSupplier shouldReverse) {
+        return switch (height) {
+            case L1 -> Commands.none();
+            case L2, L3 -> Commands.either(
+                    commandToState(SuperstructureState.L2_L3_FRONT_STAGE),
+                    commandToState(SuperstructureState.L2_L3_BACK_STAGE),
+                    shouldReverse);
+            case L4 -> Commands.either(
+                    commandToState(SuperstructureState.L4_FRONT_STAGE),
+                    commandToState(SuperstructureState.L4_BACK_STAGE),
+                    shouldReverse);
+        };
+    }
+
     public Command scoreCoral(FieldConstants.ReefHeight height, BooleanSupplier shouldReverse) {
         return switch (height) {
             case L1 -> L1();
@@ -280,7 +300,9 @@ public class Superstructure {
                             case SCORE_BARGE_FRONT, SCORE_BARGE_BACK -> grabber.commandRun(-1.0)
                                     .withTimeout(0.5)
                                     .alongWith(Commands.runOnce(arm::holdPosition));
-                            default -> grabber.hasAlgae() ? grabber.commandRun(-0.5).withTimeout(0.5) : grabber.commandStartRun(0);
+                            default -> grabber.hasAlgae()
+                                    ? grabber.commandRun(-0.5).withTimeout(0.5)
+                                    : grabber.commandStartRun(0);
                         },
                         Set.of(elevator, arm, intake, grabber))
                 .andThen(stow().onlyIf(() -> stow));
