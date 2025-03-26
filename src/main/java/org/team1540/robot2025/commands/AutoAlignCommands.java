@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
@@ -228,12 +229,17 @@ public class AutoAlignCommands {
                 drivetrain);
     }
 
-    public static Command alignToDealgifyAwayPose(ReefFace face, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
+    public static Command alignToPreCleanPose(ReefFace face, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
         return alignToReefPose(
                 face,
                 () -> {
                     Pose2d pose = AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition());
-                    pose.transformBy(new Transform2d(1.0, 0, Rotation2d.kZero));
+                    pose = RobotState.getInstance()
+                            .getEstimatedPose()
+                            .nearest(Arrays.asList(
+                                    pose.transformBy(new Transform2d(Units.inchesToMeters(4.5), .3, Rotation2d.kZero)),
+                                    pose.transformBy(
+                                            new Transform2d(Units.inchesToMeters(4.5), -.3, Rotation2d.kZero))));
                     if (!shouldReverse.getAsBoolean()) return pose;
                     else {
                         return new Pose2d(

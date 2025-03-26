@@ -17,5 +17,5 @@ public class CoralVisionConstants {
                     Units.inchesToMeters(11.496868),
                     Units.inchesToMeters(8.546354),
                     Units.inchesToMeters(40.470175),
-                    new Rotation3d(Math.toRadians(0), Math.toRadians(-136.134287), Math.toRadians(-6.274915)));
+                    new Rotation3d(Math.toRadians(0), Math.toRadians(-41.865713), Math.toRadians(-6.274915)));
 }

@@ -29,8 +29,22 @@ public class Arm extends SubsystemBase {
         INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 49.5)),
         FUNNEL(new LoggedTunableNumber("Arm/Setpoints/FunnelDegrees", 100)),
 
-        REEF_ALGAE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeFrontDegrees", 0)), // TODO: get value
-        REEF_ALGAE_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeBackDegrees", 180)),
+        REEF_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighFrontDegrees", 0)),
+        REEF_ALGAE_HIGH_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighFrontStageDegrees", 0)),
+        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowFrontDegrees", 0)),
+        REEF_ALGAE_LOW_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowFrontStageDegrees", 0)),
+        REEF_ALGAE_HIGH_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighBackDegrees", 180)),
+        REEF_ALGAE_HIGH_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighBackStageDegrees", 180)),
+        REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowBackDegrees", 180)),
+        REEF_ALGAE_LOW_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowBackStageDegrees", 180)),
+
+        REEF_ALGAE_MANUAL(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeManualDegrees", 180)),
+
+        CLEAN_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighFrontDegrees", 0)),
+        CLEAN_ALGAE_HIGH_BACK(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighBackDegrees", 180)),
+        CLEAN_ALGAE_LOW_FRONT(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeLowFrontDegrees", 0)),
+        CLEAN_ALGAE_LOW_BACK(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeLowBackDegrees", 180)),
+
         GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 210)),
         PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/Processor", 177)),
         SCORE_L1_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL1BackDegrees", 90)),
