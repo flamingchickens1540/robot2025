@@ -73,4 +73,8 @@ public class ButtonBoard {
     public Trigger button(int id) {
         return hid.button(id);
     }
+
+    public Trigger quickDealgify() {
+        return new Trigger(CommandScheduler.getInstance().getDefaultButtonLoop(), () -> this.getAxisState(2) == 2);
+    }
 }

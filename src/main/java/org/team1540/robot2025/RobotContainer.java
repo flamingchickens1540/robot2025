@@ -210,7 +210,17 @@ public class RobotContainer {
             buttonBoard
                     .branchFaceAt(button)
                     .and(driver.rightBumper())
+                    .and(buttonBoard.quickDealgify().negate())
+                    .and(() -> !(grabber.forwardSensorTripped() || grabber.reverseSensorTripped()))
                     .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(
+                            buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
+            buttonBoard
+                    .branchFaceAt(button)
+                    .and(driver.rightBumper())
+                    .and(buttonBoard
+                            .quickDealgify()
+                            .or(() -> (grabber.forwardSensorTripped() || grabber.reverseSensorTripped())))
+                    .whileTrue(AutoScoreCommands.alignToFaceAndClean(
                             buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
         }
     }
