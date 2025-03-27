@@ -6,7 +6,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 public class IntakeConstants {
     public static final int SPIN_MOTOR_ID = 6;
     public static final int PIVOT_MOTOR_ID = 5;
-    public static final int FUNNEL_MOTOR_ID = 4;
+    public static final int FUNNEL_MOTOR_ID = 40;
     public static final int LASER_CAN_ID = 33;
 
     public static final double LASER_CAN_DETECT_DISTANCE_MM = 50.0;
