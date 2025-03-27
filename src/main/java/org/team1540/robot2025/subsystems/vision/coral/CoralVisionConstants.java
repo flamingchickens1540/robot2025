@@ -6,7 +6,7 @@ import edu.wpi.first.math.util.Units;
 
 public class CoralVisionConstants {
     public static final int PIPELINE_INDEX = 0;
-    public static final String CAMERA_NAME = "coral-camera";
+    public static final String CAMERA_NAME = "limelight-coral";
     public static final Pose3d CAMERA_POSE =
             //            new Pose3d(
             //            Units.inchesToMeters(0),

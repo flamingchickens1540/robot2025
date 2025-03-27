@@ -37,7 +37,7 @@ public class CoralVision extends SubsystemBase {
         return CAMERA_POSE
                 .getRotation()
                 .rotateBy(new Rotation3d(
-                        0, observation.ty().getRadians(), observation.tx().getRadians()));
+                        0, observation.ty().getRadians(), -observation.tx().getRadians()));
     }
 
     @AutoLogOutput(key = "CoralVision/CoralTranslation")

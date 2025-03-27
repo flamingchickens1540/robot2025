@@ -66,7 +66,7 @@ public class RobotContainer {
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
                 aprilTagVision = AprilTagVision.createReal();
-                coralVision = CoralVision.createDummy();
+                coralVision = CoralVision.createReal();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
                 intake = Intake.createReal();
@@ -145,7 +145,7 @@ public class RobotContainer {
 
         driver.rightTrigger().onTrue(superstructure.score());
 
-        climber.setDefaultCommand(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
+        climber.setDefaultCommand(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0));
 
         copilot.start()
                 .whileTrue(superstructure
@@ -195,6 +195,11 @@ public class RobotContainer {
                                 () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
                                 () -> true))
                         .alongWith(superstructure.processor()));
+
+        buttonBoard
+                .button(6)
+                .toggleOnTrue(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0.3)
+                        .alongWith(superstructure.commandToState(Superstructure.SuperstructureState.PROCESSOR_BACK)));
 
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
 

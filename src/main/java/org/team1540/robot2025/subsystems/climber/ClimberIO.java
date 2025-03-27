@@ -8,25 +8,33 @@ public interface ClimberIO {
     class ClimberIOInputs {
         public boolean motorConnected = false;
 
-        public Rotation2d position = new Rotation2d();
-        public double velocityRPM = 0.0;
-        public double appliedVolts = 0.0;
-        public double supplyCurrentAmps = 0.0;
-        public double statorCurrentAmps = 0.0;
-        public double tempCelsius = 0.0;
+        public Rotation2d pivotPosition = new Rotation2d();
+        public double pivotVelocityRPM = 0.0;
+        public double pivotAppliedVolts = 0.0;
+        public double pivotSupplyCurrentAmps = 0.0;
+        public double pivotStatorCurrentAmps = 0.0;
+        public double pivotTempCelsius = 0.0;
 
         public boolean isAtForwardLimit = false;
         public boolean isAtReverseLimit = false;
+
+        public boolean rollerConnected = true;
+        public double rollerVelocityRPM = 0;
+        public double rollerAppliedVolts = 0;
+        public double rollerSupplyCurrentAmps = 0;
+        public double rollerStatorCurrentAmps = 0;
     }
 
     // runs open loop at given voltage
-    default void setVoltage(double voltage) {}
+    default void setPivotVoltage(double voltage) {}
+
+    default void setRollerVoltage(double voltage) {}
 
     // updates the loggable inputs
     default void updateInputs(ClimberIOInputs inputs) {}
 
     // runs closed loop to given position
-    default void setSetpoint(Rotation2d motorPosition) {}
+    default void setPivotSetpoint(Rotation2d motorPosition) {}
 
     default void resetPivotPosition(Rotation2d position) {}
 

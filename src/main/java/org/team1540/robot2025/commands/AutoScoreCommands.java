@@ -55,9 +55,11 @@ public class AutoScoreCommands {
                                             superstructure
                                                     .scoreCoral(height, () -> reverse)
                                                     .asProxy()))
-                            .andThen(superstructure
-                                    .scoreCoral(height, () -> reverse)
-                                    .asProxy());
+                            .andThen(
+                                    superstructure
+                                            .scoreCoral(height, () -> reverse)
+                                            .asProxy(),
+                                    superstructure.score());
                 },
                 Set.of());
     }
