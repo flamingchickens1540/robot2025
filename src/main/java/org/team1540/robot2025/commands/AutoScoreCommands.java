@@ -6,7 +6,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -59,7 +58,7 @@ public class AutoScoreCommands {
                                     superstructure
                                             .scoreCoral(height, () -> reverse)
                                             .asProxy(),
-                                    superstructure.score());
+                                    superstructure.score().asProxy());
                 },
                 Set.of());
     }
@@ -92,31 +91,33 @@ public class AutoScoreCommands {
     }
 
     public static Command alignToFaceAndClean(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {
-        return Commands.sequence(
-                        AutoAlignCommands.alignToPreCleanPose(
-                                face, drivetrain, () -> RobotState.getInstance().shouldReverseAlgae(face)),
-                        drivetrain.driveToPoseCommand(() -> {
-                            Pose2d pose = AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition())
-                                    .transformBy(new Transform2d(Units.inchesToMeters(4.5), 0, Rotation2d.kZero));
-                            if (!RobotState.getInstance().shouldReverseAlgae(face)) return pose;
-                            else {
-                                return new Pose2d(
-                                                pose.getTranslation(),
-                                                pose.getRotation().rotateBy(Rotation2d.k180deg))
-                                        .transformBy(new Transform2d(
-                                                0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
-                            }
-                        }))
-                .asProxy()
-                .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
-                                        .getEstimatedPose()
-                                        .getTranslation()
-                                        .getDistance(AllianceFlipUtil.maybeFlipTranslation(
-                                                face.dealgifyPosition().getTranslation()))
-                                <= prepareDistanceMetersAlgae.get())
-                        .andThen(superstructure.clean(face))
-                        .asProxy())
-                .andThen();
+        return (Commands.sequence(AutoAlignCommands.alignToDealgifyPose(
+                                face, drivetrain, () -> RobotState.getInstance().shouldReverseAlgae(face)))
+                        .asProxy()
+                        .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
+                                                .getEstimatedPose()
+                                                .getTranslation()
+                                                .getDistance(AllianceFlipUtil.maybeFlipTranslation(
+                                                        face.dealgifyPosition().getTranslation()))
+                                        <= prepareDistanceMetersAlgae.get())
+                                .andThen(superstructure.cleanStage(face))
+                                .asProxy()))
+                .andThen(
+                        superstructure.clean(face).asProxy(),
+                        drivetrain
+                                .driveToPoseCommand(() -> {
+                                    Pose2d pose = AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition())
+                                            .transformBy(new Transform2d(0.5, 0, Rotation2d.kZero));
+                                    if (!RobotState.getInstance().shouldReverseAlgae(face)) return pose;
+                                    else {
+                                        return new Pose2d(
+                                                        pose.getTranslation(),
+                                                        pose.getRotation().rotateBy(Rotation2d.k180deg))
+                                                .transformBy(new Transform2d(
+                                                        0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                                    }
+                                })
+                                .asProxy());
     }
 
     public static Command alignToBargeAndScore(Drivetrain drivetrain, Superstructure superstructure) {

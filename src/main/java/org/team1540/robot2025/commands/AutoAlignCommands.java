@@ -129,7 +129,7 @@ public class AutoAlignCommands {
                     if (!shouldReverse.getAsBoolean())
                         return AllianceFlipUtil.maybeFlipPose(branch.scorePosition)
                                 .transformBy(new Transform2d(
-                                        Units.inchesToMeters(-3.5), Units.inchesToMeters(0.5), Rotation2d.kZero));
+                                        0, Units.inchesToMeters(0.5), Rotation2d.kZero));
                     else {
                         Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
                         return new Pose2d(

@@ -25,6 +25,7 @@ import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.FieldConstants.ReefFace;
 import org.team1540.robot2025.subsystems.drive.DrivetrainConstants;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVisionIO;
+import org.team1540.robot2025.subsystems.vision.coral.CoralVisionConstants;
 import org.team1540.robot2025.subsystems.vision.coral.CoralVisionIO.CoralObservation;
 import org.team1540.robot2025.util.AllianceFlipUtil;
 import org.team1540.robot2025.util.LoggedTracer;
@@ -73,6 +74,8 @@ public class RobotState {
     private CoralObservation latestCoralObservation = null;
 
     private final Field2d field = new Field2d();
+
+    private boolean intakeAssist = true;
 
     private RobotState() {
         poseEstimator = new SwerveDrivePoseEstimator(
@@ -185,6 +188,12 @@ public class RobotState {
         return robotVelocity;
     }
 
+    @AutoLogOutput(key = "Odometry/RobotVelocityMagnitude")
+    public double getRobotVelocityMagnitude() {
+        return Math.sqrt(
+                Math.pow(getRobotVelocity().vxMetersPerSecond, 2) + Math.pow(getRobotVelocity().vyMetersPerSecond, 2));
+    }
+
     @AutoLogOutput(key = "Odometry/FieldRelativeVelocity")
     public ChassisSpeeds getFieldRelativeVelocity() {
         return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotVelocity(), getRobotRotation());
@@ -259,14 +268,38 @@ public class RobotState {
     public ChassisSpeeds getIntakeAssistVelocity() {
         ChassisSpeeds assistVelocity = new ChassisSpeeds(0, 0, 0);
         if (latestCoralObservation != null
-                && Timer.getFPGATimestamp() - latestCoralObservation.timestampSecs() < coralDetectionStaleSecs.get()
-                && robotVelocity.vxMetersPerSecond > 0) {
-            Rotation2d xRotation = latestCoralObservation.tx();
+                && Timer.getFPGATimestamp() - latestCoralObservation.timestampSecs() < coralDetectionStaleSecs.get()) {
+            Rotation2d xRotation = latestCoralObservation
+                    .tx()
+                    .unaryMinus()
+                    .plus(CoralVisionConstants.CAMERA_POSE.getRotation().toRotation2d());
 
-            assistVelocity = new ChassisSpeeds(robotVelocity.vyMetersPerSecond, -robotVelocity.vxMetersPerSecond, 0)
-                    .times(xRotation.getTan() * intakeAssistTranslationKP.get());
+            Translation2d vector =
+                    (new Translation2d(0.5 / 24 * latestCoralObservation.ty().getDegrees() + 4.0 / 3.0, xRotation));
+            vector = vector.plus(
+                    CoralVisionConstants.CAMERA_POSE.getTranslation().toTranslation2d());
+            vector = vector.div(vector.getNorm());
+
+            assistVelocity = new ChassisSpeeds(
+                    vector.getX(), vector.getY(), vector.getAngle().getRadians());
+
+            //            assistVelocity = new ChassisSpeeds(robotVelocity.vyMetersPerSecond,
+            // -robotVelocity.vxMetersPerSecond, 0)
+            //                    .times(xRotation.getTan() * intakeAssistTranslationKP.get());
         }
         return assistVelocity;
+    }
+
+    public CoralObservation getLatestCoralObservation() {
+        return latestCoralObservation;
+    }
+
+    public boolean getIntakeAssist() {
+        return intakeAssist;
+    }
+
+    public void toggleIntakeAssist() {
+        intakeAssist = !intakeAssist;
     }
 
     public Pose2d predictRobotPose(double lookaheadSeconds) {
@@ -310,12 +343,13 @@ public class RobotState {
 
     public boolean shouldReverseCoral(FieldConstants.ReefBranch branch) {
         return Math.abs(AllianceFlipUtil.maybeFlipPose(branch.face.pose())
-                                        .getRotation()
-                                        .minus(RobotState.getInstance().getRobotRotation())
-                                        .getDegrees())
-                                % 180
-                        > 90
-                || DriverStation.isTeleop();
+                                .getRotation()
+                                .minus(RobotState.getInstance().getRobotRotation())
+                                .getDegrees())
+                        % 180
+                > 90
+        //                || DriverStation.isTeleop()
+        ;
     }
 
     public boolean shouldReverseAlgae(FieldConstants.ReefFace face) {

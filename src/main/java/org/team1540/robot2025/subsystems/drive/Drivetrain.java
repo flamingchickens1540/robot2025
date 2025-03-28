@@ -37,10 +37,7 @@ import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.team1540.robot2025.Constants;
-import org.team1540.robot2025.Robot;
-import org.team1540.robot2025.RobotState;
-import org.team1540.robot2025.SimState;
+import org.team1540.robot2025.*;
 import org.team1540.robot2025.commands.CharacterizationCommands;
 import org.team1540.robot2025.generated.TunerConstants;
 import org.team1540.robot2025.util.*;
@@ -67,6 +64,15 @@ public class Drivetrain extends SubsystemBase {
             new LoggedTunableNumber("AutoAlign/RotationSpeedFactor", 0.5);
     private static final LoggedTunableNumber autoAlignRotationAccelFactor =
             new LoggedTunableNumber("AutoAlign/RotationAccelFactor", 0.5);
+
+    private static final LoggedTunableNumber coralAlignRotationSpeedFactor =
+            new LoggedTunableNumber("CoralAlign/RotationSpeedFactor", 2.5);
+    private static final LoggedTunableNumber coralAlignTranslationSpeedFactor =
+            new LoggedTunableNumber("CoralAlign/TranslationSpeedFactor", 1.5);
+    private static final LoggedTunableNumber coralAlignSpeedFactor =
+            new LoggedTunableNumber("CoralAlign/AlignSpeedFactor", 1);
+    private static final LoggedTunableNumber coralAlignAssistSpeedFactor =
+            new LoggedTunableNumber("CoralAlign/AlignAssistSpeedFactor", 1);
 
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -423,11 +429,33 @@ public class Drivetrain extends SubsystemBase {
                                     linearPercent.get().getX() * MAX_LINEAR_SPEED_MPS,
                                     linearPercent.get().getY() * MAX_LINEAR_SPEED_MPS,
                                     omegaPercent.getAsDouble() * MAX_ANGULAR_SPEED_RAD_PER_SEC);
+                            speeds = speeds.plus(nudgeSpeeds.get());
                             if (fieldRelative.getAsBoolean()) {
                                 speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                                         speeds, rawGyroRotation.minus(fieldOrientationOffset));
                             }
-                            speeds = speeds.plus(nudgeSpeeds.get());
+                            runVelocity(speeds);
+                        },
+                        this)
+                .finallyDo(this::stop);
+    }
+
+    public Command seekAndDestroy() {
+        return Commands.run(
+                        () -> {
+                            ChassisSpeeds speeds = RobotState.getInstance().getIntakeAssistVelocity();
+                            speeds = new ChassisSpeeds(
+                                    speeds.vxMetersPerSecond
+                                            * coralAlignTranslationSpeedFactor.get()
+                                            * coralAlignSpeedFactor.get(),
+                                    speeds.vyMetersPerSecond
+                                            * coralAlignTranslationSpeedFactor.get()
+                                            * coralAlignSpeedFactor.get(),
+                                    speeds.omegaRadiansPerSecond
+                                            * coralAlignRotationSpeedFactor.get()
+                                            * coralAlignSpeedFactor.get());
+                            if (speeds.equals(new ChassisSpeeds())) speeds = new ChassisSpeeds(0.5, 0, 0);
+
                             runVelocity(speeds);
                         },
                         this)
@@ -440,6 +468,33 @@ public class Drivetrain extends SubsystemBase {
                 () -> JoystickUtil.smartDeadzone(-controller.getRightX(), 0.1),
                 fieldRelative,
                 ChassisSpeeds::new);
+    }
+
+    public Command teleopDriveIntakeAssistCommand(XboxController controller, BooleanSupplier fieldRelative) {
+        return percentDriveCommand(
+                () -> JoystickUtil.deadzonedJoystickTranslation(-controller.getLeftY(), -controller.getLeftX(), 0.1),
+                () -> JoystickUtil.smartDeadzone(-controller.getRightX(), 0.1),
+                fieldRelative,
+                () -> {
+                    Translation2d linearPercent = JoystickUtil.deadzonedJoystickTranslation(
+                            -controller.getLeftY(), -controller.getLeftX(), 0.1);
+                    double omegaPercent = JoystickUtil.smartDeadzone(-controller.getRightX(), 0.1);
+                    ChassisSpeeds assistSpeeds = RobotState.getInstance().getIntakeAssistVelocity();
+                    assistSpeeds = new ChassisSpeeds(
+                            assistSpeeds.vxMetersPerSecond
+                                    * coralAlignTranslationSpeedFactor.get()
+                                    * coralAlignAssistSpeedFactor.get()
+                                    * linearPercent.getNorm(),
+                            assistSpeeds.vyMetersPerSecond
+                                    * coralAlignTranslationSpeedFactor.get()
+                                    * coralAlignAssistSpeedFactor.get()
+                                    * linearPercent.getNorm(),
+                            assistSpeeds.omegaRadiansPerSecond
+                                    * coralAlignRotationSpeedFactor.get()
+                                    * coralAlignAssistSpeedFactor.get()
+                                    * linearPercent.getNorm());
+                    return assistSpeeds;
+                });
     }
 
     public Command teleopDriveWithHeadingCommand(

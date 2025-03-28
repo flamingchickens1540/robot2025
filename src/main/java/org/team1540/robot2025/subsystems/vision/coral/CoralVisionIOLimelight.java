@@ -4,6 +4,7 @@ import static org.team1540.robot2025.subsystems.vision.coral.CoralVisionConstant
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.Timer;
 import org.team1540.robot2025.util.LimelightHelpers;
 
 public class CoralVisionIOLimelight implements CoralVisionIO {
@@ -21,8 +22,8 @@ public class CoralVisionIOLimelight implements CoralVisionIO {
         inputs.connected = ((RobotController.getFPGATime() - LimelightHelpers.getLatency_Pipeline(name)) / 1000) < 250;
         inputs.hasDetection = LimelightHelpers.getTV(name);
         if (inputs.hasDetection) {
-            double latestDetectionTimestampSecs =
-                    LimelightHelpers.getLimelightNTTableEntry(name, "tv").getLastChange();
+            double latestDetectionTimestampSecs = Timer.getFPGATimestamp();
+            //                    LimelightHelpers.getLimelightNTTableEntry(name, "tv").getLastChange();
             inputs.latestObservation = new CoralObservation(
                     latestDetectionTimestampSecs,
                     Rotation2d.fromDegrees(LimelightHelpers.getTX(name)),

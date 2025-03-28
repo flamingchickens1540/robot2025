@@ -42,14 +42,14 @@ public class Elevator extends SubsystemBase {
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
         GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.42)),
 
-        REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowBack", 0.8)),
-        REEF_ALGAE_LOW_BACK_STAGE(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowBackStage", 0.8)),
-        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowFront", 0.7)),
-        REEF_ALGAE_LOW_FRONT_STAGE(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowFrontStage", 0.7)),
+        REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowBack", 1.0)),
+        REEF_ALGAE_LOW_BACK_STAGE(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowBackStage", 1.3)),
+        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowFront", 0.9)),
+        REEF_ALGAE_LOW_FRONT_STAGE(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowFrontStage", 1.2)),
         REEF_ALGAE_HIGH_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighBack", 1.2)),
-        REEF_ALGAE_HIGH_BACK_STAGE(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighBackStage", 1.2)),
+        REEF_ALGAE_HIGH_BACK_STAGE(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighBackStage", 0.9)),
         REEF_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighFront", 1.1)),
-        REEF_ALGAE_HIGH_FRONT_STAGE(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighFrontStage", 1.1)),
+        REEF_ALGAE_HIGH_FRONT_STAGE(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighFrontStage", 0.8)),
 
         REEF_ALGAE_LOW_MANUAL(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowManual", 0.8)),
         REEF_ALGAE_HIGH_MANUAL(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighManual", 1.2)),
@@ -58,6 +58,11 @@ public class Elevator extends SubsystemBase {
         CLEAN_ALGAE_LOW_FRONT(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeLowFront", 0.7)),
         CLEAN_ALGAE_HIGH_BACK(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeHighBack", 1.2)),
         CLEAN_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeHighFront", 1.1)),
+
+        CLEAN_ALGAE_LOW_BACK_STAGE(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeLowBackStage", 1.0)),
+        CLEAN_ALGAE_LOW_FRONT_STAGE(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeLowFrontStage", 0.9)),
+        CLEAN_ALGAE_HIGH_BACK_STAGE(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeHighBackStage", 1.0)),
+        CLEAN_ALGAE_HIGH_FRONT_STAGE(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeHighFrontStage", 0.9)),
 
         PROCESSOR(new LoggedTunableNumber("Elevator/Setpoints/Processor", 0.254)), // TODO: get value
         STOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/StowAlgae", 0.75));

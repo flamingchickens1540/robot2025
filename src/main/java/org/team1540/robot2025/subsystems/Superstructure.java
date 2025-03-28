@@ -52,10 +52,10 @@ public class Superstructure {
 
         DEALGIFY_LOW_FRONT(ArmState.REEF_ALGAE_LOW_FRONT, ElevatorState.REEF_ALGAE_LOW_FRONT, IntakeState.STOW),
         DEALGIFY_LOW_FRONT_STAGE(
-                ArmState.REEF_ALGAE_LOW_FRONT_STAGE, ElevatorState.REEF_ALGAE_HIGH_BACK_STAGE, IntakeState.STOW),
+                ArmState.REEF_ALGAE_LOW_FRONT_STAGE, ElevatorState.REEF_ALGAE_LOW_FRONT_STAGE, IntakeState.STOW),
         DEALGIFY_LOW_BACK(ArmState.REEF_ALGAE_LOW_BACK, ElevatorState.REEF_ALGAE_LOW_BACK, IntakeState.STOW),
         DEALGIFY_LOW_BACK_STAGE(
-                ArmState.REEF_ALGAE_LOW_BACK_STAGE, ElevatorState.REEF_ALGAE_HIGH_BACK_STAGE, IntakeState.STOW),
+                ArmState.REEF_ALGAE_LOW_BACK_STAGE, ElevatorState.REEF_ALGAE_LOW_BACK_STAGE, IntakeState.STOW),
 
         DEALGIFY_HIGH_FRONT(ArmState.REEF_ALGAE_HIGH_FRONT, ElevatorState.REEF_ALGAE_HIGH_FRONT, IntakeState.STOW),
         DEALGIFY_HIGH_FRONT_STAGE(
@@ -68,6 +68,14 @@ public class Superstructure {
         CLEAN_LOW_FRONT(ArmState.CLEAN_ALGAE_LOW_FRONT, ElevatorState.CLEAN_ALGAE_LOW_FRONT, IntakeState.STOW),
         CLEAN_HIGH_BACK(ArmState.CLEAN_ALGAE_HIGH_BACK, ElevatorState.CLEAN_ALGAE_HIGH_BACK, IntakeState.STOW),
         CLEAN_LOW_BACK(ArmState.CLEAN_ALGAE_LOW_BACK, ElevatorState.CLEAN_ALGAE_LOW_BACK, IntakeState.STOW),
+
+        CLEAN_HIGH_FRONT_STAGE(
+                ArmState.CLEAN_ALGAE_HIGH_FRONT, ElevatorState.CLEAN_ALGAE_HIGH_FRONT_STAGE, IntakeState.STOW),
+        CLEAN_LOW_FRONT_STAGE(
+                ArmState.CLEAN_ALGAE_LOW_FRONT, ElevatorState.CLEAN_ALGAE_LOW_FRONT_STAGE, IntakeState.STOW),
+        CLEAN_HIGH_BACK_STAGE(
+                ArmState.CLEAN_ALGAE_HIGH_BACK, ElevatorState.CLEAN_ALGAE_HIGH_BACK_STAGE, IntakeState.STOW),
+        CLEAN_LOW_BACK_STAGE(ArmState.CLEAN_ALGAE_LOW_BACK, ElevatorState.CLEAN_ALGAE_LOW_BACK_STAGE, IntakeState.STOW),
 
         // barge is same from both sides
         SCORE_BARGE_FRONT(ArmState.SCORE_BARGE_FRONT, ElevatorState.BARGE, IntakeState.STOW),
@@ -384,6 +392,22 @@ public class Superstructure {
                         if (RobotState.getInstance().shouldReverseAlgae(face))
                             return commandToState(SuperstructureState.CLEAN_HIGH_FRONT);
                         else return commandToState(SuperstructureState.CLEAN_HIGH_BACK);
+                    }
+                },
+                Set.of(elevator, arm, intake, grabber));
+    }
+
+    public Command cleanStage(FieldConstants.ReefFace face) {
+        return Commands.defer(
+                () -> {
+                    if (!face.highDealgify()) {
+                        if (RobotState.getInstance().shouldReverseAlgae(face))
+                            return commandToState(SuperstructureState.CLEAN_LOW_FRONT_STAGE);
+                        else return commandToState(SuperstructureState.CLEAN_LOW_BACK_STAGE);
+                    } else {
+                        if (RobotState.getInstance().shouldReverseAlgae(face))
+                            return commandToState(SuperstructureState.CLEAN_HIGH_FRONT_STAGE);
+                        else return commandToState(SuperstructureState.CLEAN_HIGH_BACK_STAGE);
                     }
                 },
                 Set.of(elevator, arm, intake, grabber));
