@@ -26,17 +26,17 @@ public class Arm extends SubsystemBase {
         STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
         STOW_ALGAE(new LoggedTunableNumber("Arm/Setpoints/StowAlgaeDegrees", 120)),
 
-        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 49.5)),
+        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 55)),
         FUNNEL(new LoggedTunableNumber("Arm/Setpoints/FunnelDegrees", 100)),
 
-        REEF_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighFrontDegrees", 0)),
-        REEF_ALGAE_HIGH_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighFrontStageDegrees", 0)),
-        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowFrontDegrees", 0)),
-        REEF_ALGAE_LOW_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowFrontStageDegrees", 0)),
-        REEF_ALGAE_HIGH_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighBackDegrees", 180)),
-        REEF_ALGAE_HIGH_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighBackStageDegrees", 180)),
-        REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowBackDegrees", 180)),
-        REEF_ALGAE_LOW_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowBackStageDegrees", 180)),
+        REEF_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighFrontDegrees", 55)),
+        REEF_ALGAE_HIGH_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighFrontStageDegrees", 55)),
+        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowFrontDegrees", -50)),
+        REEF_ALGAE_LOW_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowFrontStageDegrees", -50)),
+        REEF_ALGAE_HIGH_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighBackDegrees", 120)),
+        REEF_ALGAE_HIGH_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighBackStageDegrees", 120)),
+        REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowBackDegrees", 230)),
+        REEF_ALGAE_LOW_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowBackStageDegrees", 230)),
 
         REEF_ALGAE_MANUAL(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeManualDegrees", 180)),
 

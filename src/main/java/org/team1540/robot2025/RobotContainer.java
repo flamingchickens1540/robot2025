@@ -114,8 +114,16 @@ public class RobotContainer {
                     .whileTrue(AutoScoreCommands.alignToBranchAndScore(
                             ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
             //            driver.b().whileTrue(AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure));
-            driver.b().whileTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure, driver.getHID()));
+            //            driver.b().whileTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure,
+            // driver.getHID()));
+
+            //            RobotState.getInstance()
+            //                    .addCoralObservation(new CoralVisionIO.CoralObservation(0, Rotation2d.kZero,
+            // Rotation2d.kZero, 0));
+            //            driver.b().whileTrue(drivetrain.seekAndDestroy());
         }
+        //        driver.b().whileTrue(drivetrain.seekAndDestroy());
+        driver.b().onTrue(Commands.runOnce(() -> RobotState.getInstance().toggleIntakeAssist()));
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.x()
@@ -130,10 +138,16 @@ public class RobotContainer {
         driver.leftStick().onTrue(superstructure.stow());
 
         driver.leftTrigger()
+                .whileTrue(drivetrain
+                        .teleopDriveIntakeAssistCommand(driver.getHID(), () -> true)
+                        .onlyIf(RobotState.getInstance()::getIntakeAssist));
+
+        driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
                 .and(() -> !grabber.hasAlgae())
                 .whileTrue(superstructure.coralGroundIntake())
                 .onFalse(superstructure.stow());
+
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).or(grabber::hasAlgae))
                 .whileTrue(superstructure.coralGroundIntakeL1())
@@ -238,6 +252,8 @@ public class RobotContainer {
         autoChooser.addRoutine("Right 4 Piece Sweep Reverse", autos::right4PieceSweepReverse);
         autoChooser.addRoutine("Left 3 Piece Sweep", autos::left3PieceSweep);
         autoChooser.addRoutine("Left 4 Piece Sweep Reverse", autos::left4PieceSweepReverse);
+        autoChooser.addRoutine("Left 4 Piece", autos::left4Piece);
+        autoChooser.addRoutine("Left 4 Piece Eyes", autos::left4PieceEyes);
         autoChooser.addRoutine("Center 1 Piece", autos::center1Piece);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
