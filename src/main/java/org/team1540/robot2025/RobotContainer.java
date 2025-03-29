@@ -214,7 +214,6 @@ public class RobotContainer {
                 .button(6)
                 .toggleOnTrue(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0.3)
                         .alongWith(superstructure.commandToState(Superstructure.SuperstructureState.PROCESSOR_BACK)));
-
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
 
         for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {
