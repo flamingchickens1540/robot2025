@@ -72,7 +72,7 @@ public class IntakeIOReal implements IntakeIO {
         spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimitEnable(true);
         spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimit(120);
         spinTalonFXConfigs.CurrentLimits.withSupplyCurrentLimit(55);
-        spinTalonFXConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        spinTalonFXConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         spinTalonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         spinTalonFXConfigs.Feedback.SensorToMechanismRatio = SPIN_GEAR_RATIO;
 

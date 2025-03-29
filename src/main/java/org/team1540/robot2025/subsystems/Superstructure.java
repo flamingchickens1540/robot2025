@@ -18,6 +18,7 @@ import org.team1540.robot2025.subsystems.elevator.Elevator.ElevatorState;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.intake.Intake.IntakeState;
+import org.team1540.robot2025.util.AllianceFlipUtil;
 
 public class Superstructure {
     public enum SuperstructureState {
@@ -487,7 +488,13 @@ public class Superstructure {
     }
 
     public Command net() {
-        return commandToState(SuperstructureState.SCORE_BARGE_BACK);
+        return Commands.either(
+                commandToState(SuperstructureState.SCORE_BARGE_BACK),
+                commandToState(SuperstructureState.SCORE_BARGE_FRONT),
+                () -> Math.abs(RobotState.getInstance().getRobotRotation().getDegrees()
+                                - AllianceFlipUtil.maybeReverseRotation(Rotation2d.kZero)
+                                        .getDegrees())
+                        < 90);
     }
 
     public Command zeroCommand() {
