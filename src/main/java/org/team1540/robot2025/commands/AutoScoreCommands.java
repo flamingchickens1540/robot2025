@@ -75,22 +75,21 @@ public class AutoScoreCommands {
     }
 
     public static Command alignToFaceAndDealgify(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {
-        return Commands.sequence(AutoAlignCommands.alignToDealgifyPose(
-                        face,
-                        drivetrain,
-                        () -> RobotState.getInstance().shouldReverseAlgae(face),
-                        () -> true,
-                        () -> Units.inchesToMeters(9)))
-                .asProxy()
-                .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
-                                        .getEstimatedPose()
-                                        .getTranslation()
-                                        .getDistance(AllianceFlipUtil.maybeFlipTranslation(face.dealgifyPosition()
+        return (Commands.sequence(AutoAlignCommands.alignToDealgifyPose(
+                                face,
+                                drivetrain,
+                                () -> RobotState.getInstance().shouldReverseAlgae(face),
+                                () -> true,
+                                () -> Units.inchesToMeters(9)))
+                        .asProxy()
+                        .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
+                                                .getEstimatedPose()
                                                 .getTranslation()
-                                                .plus(new Translation2d(Units.inchesToMeters(9), 0))))
-                                <= prepareDistanceMetersAlgae.get())
-                        .andThen(superstructure.dealgifyStage(face))
-                        .asProxy())
+                                                .getDistance(AllianceFlipUtil.maybeFlipTranslation(
+                                                        face.dealgifyPosition().getTranslation()))
+                                        <= prepareDistanceMetersAlgae.get())
+                                .andThen(superstructure.dealgify(face))
+                                .asProxy()))
                 .andThen(
                         AutoAlignCommands.alignToDealgifyPose(
                                         face,
@@ -99,7 +98,14 @@ public class AutoScoreCommands {
                                         () -> false,
                                         () -> Units.inchesToMeters(4.5))
                                 .asProxy(),
-                        superstructure.dealgify(face).asProxy());
+                        AutoAlignCommands.alignToDealgifyPose(
+                                        face,
+                                        drivetrain,
+                                        () -> RobotState.getInstance().shouldReverseAlgae(face),
+                                        () -> false,
+                                        () -> 0.5)
+                                .asProxy(),
+                        superstructure.stow().asProxy());
     }
 
     public static Command alignToFaceAndClean(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {
@@ -126,14 +132,18 @@ public class AutoScoreCommands {
                                         () -> false,
                                         () -> Units.inchesToMeters(4.5))
                                 .asProxy(),
-                        superstructure.clean(face).asProxy(),
-                        AutoAlignCommands.alignToDealgifyPose(
-                                        face,
-                                        drivetrain,
-                                        () -> RobotState.getInstance().shouldReverseAlgae(face),
-                                        () -> false,
-                                        () -> 0.5)
-                                .asProxy());
+                        superstructure
+                                .clean(face)
+                                .asProxy()
+                                .alongWith(Commands.waitSeconds(0.2)
+                                        .andThen(AutoAlignCommands.alignToDealgifyPose(
+                                                        face,
+                                                        drivetrain,
+                                                        () -> RobotState.getInstance()
+                                                                .shouldReverseAlgae(face),
+                                                        () -> false,
+                                                        () -> 0.5)
+                                                .asProxy())));
     }
 
     public static Command alignToBargeAndScore(Drivetrain drivetrain, Superstructure superstructure) {

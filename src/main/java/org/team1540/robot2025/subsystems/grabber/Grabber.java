@@ -70,6 +70,11 @@ public class Grabber extends SubsystemBase {
         return hasAlgae;
     }
 
+    @AutoLogOutput
+    public boolean hasCoral() {
+        return forwardSensorTripped() || reverseSensorTripped();
+    }
+
     public void stop() {
         grabberIO.setVoltage(0.0);
     }
