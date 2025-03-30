@@ -113,6 +113,9 @@ public class RobotContainer {
             driver.y()
                     .whileTrue(AutoScoreCommands.alignToBranchAndScore(
                             ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
+            driver.b().whileTrue(AutoScoreCommands.alignToFaceAndClean(ReefBranch.E.face, drivetrain, superstructure));
+            driver.a()
+                    .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain, superstructure));
             //            driver.b().whileTrue(AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure));
             //            driver.b().whileTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure,
             // driver.getHID()));
@@ -131,7 +134,7 @@ public class RobotContainer {
                         driver.getHID(),
                         () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
                         () -> true));
-        driver.a().onTrue(superstructure.coralIntakeEject().withTimeout(2.0));
+        //        driver.a().onTrue(superstructure.coralIntakeEject().withTimeout(2.0));
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
@@ -145,13 +148,13 @@ public class RobotContainer {
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
                 .and(() -> !grabber.hasAlgae())
-                .whileTrue(superstructure.coralGroundIntake())
-                .onFalse(superstructure.stow());
+                .whileTrue(superstructure.coralGroundIntake());
+        //                .onFalse(superstructure.stow());
 
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).or(grabber::hasAlgae))
-                .whileTrue(superstructure.coralGroundIntakeL1())
-                .onFalse(superstructure.stow());
+                .whileTrue(superstructure.coralGroundIntakeL1());
+        //                .onFalse(superstructure.stow());
 
         driver.leftBumper()
                 .whileTrue(superstructure.algaeIntake())
@@ -229,15 +232,13 @@ public class RobotContainer {
                     .branchFaceAt(button)
                     .and(driver.rightBumper())
                     .and(buttonBoard.quickDealgify().negate())
-                    .and(() -> !(grabber.forwardSensorTripped() || grabber.reverseSensorTripped()))
+                    .and(() -> !grabber.hasCoral())
                     .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(
                             buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
             buttonBoard
                     .branchFaceAt(button)
                     .and(driver.rightBumper())
-                    .and(buttonBoard
-                            .quickDealgify()
-                            .or(() -> (grabber.forwardSensorTripped() || grabber.reverseSensorTripped())))
+                    .and(buttonBoard.quickDealgify().or(grabber::hasCoral))
                     .whileTrue(AutoScoreCommands.alignToFaceAndClean(
                             buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
         }

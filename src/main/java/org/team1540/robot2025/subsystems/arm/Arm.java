@@ -26,28 +26,16 @@ public class Arm extends SubsystemBase {
         STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
         STOW_ALGAE(new LoggedTunableNumber("Arm/Setpoints/StowAlgaeDegrees", 120)),
 
-        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 55)),
+        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 40.5)),
         FUNNEL(new LoggedTunableNumber("Arm/Setpoints/FunnelDegrees", 100)),
 
-        REEF_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighFrontDegrees", 55)),
-        REEF_ALGAE_HIGH_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighFrontStageDegrees", 55)),
-        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowFrontDegrees", -50)),
-        REEF_ALGAE_LOW_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowFrontStageDegrees", -50)),
-        REEF_ALGAE_HIGH_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighBackDegrees", 120)),
-        REEF_ALGAE_HIGH_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighBackStageDegrees", 120)),
-        REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowBackDegrees", 230)),
-        REEF_ALGAE_LOW_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeLowBackStageDegrees", 230)),
+        REEF_ALGAE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighFrontDegrees", 0)),
+        REEF_ALGAE_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighBackDegrees", 180)),
 
-        REEF_ALGAE_MANUAL(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeManualDegrees", 180)),
-
-        CLEAN_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighFrontDegrees", 90)),
-        CLEAN_ALGAE_HIGH_BACK(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighBackDegrees", 90)),
-        CLEAN_ALGAE_LOW_FRONT(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeLowFrontDegrees", 0)),
-        CLEAN_ALGAE_LOW_BACK(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeLowBackDegrees", 180)),
-        CLEAN_ALGAE_HIGH_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighFrontStageDegrees", 0)),
-        CLEAN_ALGAE_HIGH_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighBackStageDegrees", 160)),
-        CLEAN_ALGAE_LOW_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeLowFrontStageDegrees", 0)),
-        CLEAN_ALGAE_LOW_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeLowBackStageDegrees", 160)),
+        CLEAN_ALGAE_FRONT(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighFrontDegrees", 90)),
+        CLEAN_ALGAE_BACK(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighBackDegrees", 90)),
+        CLEAN_ALGAE_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighFrontStageDegrees", 0)),
+        CLEAN_ALGAE_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighBackStageDegrees", 160)),
 
         GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 210)),
         PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/Processor", 177)),
@@ -63,7 +51,6 @@ public class Arm extends SubsystemBase {
         SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 90)),
         SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 105)),
         BACKOFF_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/BackoffBargeBackDegrees", 140));
-
 
         private final DoubleSupplier positionDegrees;
 

@@ -172,8 +172,7 @@ public class Autos {
                                 ReefHeight.L4,
                                 drivetrain,
                                 superstructure,
-                                () -> !superstructure.grabber.forwardSensorTripped()
-                                        && !superstructure.grabber.reverseSensorTripped())
+                                () -> !superstructure.grabber.hasCoral())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
@@ -192,8 +191,7 @@ public class Autos {
                                 ReefHeight.L4,
                                 drivetrain,
                                 superstructure,
-                                () -> !superstructure.grabber.forwardSensorTripped()
-                                        && !superstructure.grabber.reverseSensorTripped())
+                                () -> !superstructure.grabber.hasCoral())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
@@ -212,8 +210,7 @@ public class Autos {
                                 ReefHeight.L4,
                                 drivetrain,
                                 superstructure,
-                                () -> !superstructure.grabber.forwardSensorTripped()
-                                        && !superstructure.grabber.reverseSensorTripped())
+                                () -> !superstructure.grabber.hasCoral())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
@@ -239,8 +236,7 @@ public class Autos {
                                 ReefHeight.L4,
                                 drivetrain,
                                 superstructure,
-                                () -> !superstructure.grabber.forwardSensorTripped()
-                                        && !superstructure.grabber.reverseSensorTripped())
+                                () -> !superstructure.grabber.hasCoral())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
@@ -259,8 +255,7 @@ public class Autos {
                                 ReefHeight.L4,
                                 drivetrain,
                                 superstructure,
-                                () -> !superstructure.grabber.forwardSensorTripped()
-                                        && !superstructure.grabber.reverseSensorTripped())
+                                () -> !superstructure.grabber.hasCoral())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
@@ -279,8 +274,7 @@ public class Autos {
                                 ReefHeight.L4,
                                 drivetrain,
                                 superstructure,
-                                () -> !superstructure.grabber.forwardSensorTripped()
-                                        && !superstructure.grabber.reverseSensorTripped())
+                                () -> !superstructure.grabber.hasCoral())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),
@@ -304,8 +298,7 @@ public class Autos {
                                 ReefHeight.L4,
                                 drivetrain,
                                 superstructure,
-                                () -> !superstructure.grabber.forwardSensorTripped()
-                                        && !superstructure.grabber.reverseSensorTripped())
+                                () -> !superstructure.grabber.hasCoral())
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(
                                 Commands.waitSeconds(SCORE_WAIT_TIME),

@@ -282,10 +282,6 @@ public class RobotState {
 
             assistVelocity = new ChassisSpeeds(
                     vector.getX(), vector.getY(), vector.getAngle().getRadians());
-
-            //            assistVelocity = new ChassisSpeeds(robotVelocity.vyMetersPerSecond,
-            // -robotVelocity.vxMetersPerSecond, 0)
-            //                    .times(xRotation.getTan() * intakeAssistTranslationKP.get());
         }
         return assistVelocity;
     }
@@ -294,6 +290,7 @@ public class RobotState {
         return latestCoralObservation;
     }
 
+    @AutoLogOutput(key = "CoralVision/IntakeAssist")
     public boolean getIntakeAssist() {
         return intakeAssist;
     }
