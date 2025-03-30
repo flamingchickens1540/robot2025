@@ -40,6 +40,7 @@ import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.*;
 import org.team1540.robot2025.commands.CharacterizationCommands;
 import org.team1540.robot2025.generated.TunerConstants;
+import org.team1540.robot2025.subsystems.vision.coral.CoralVisionIO;
 import org.team1540.robot2025.util.*;
 import org.team1540.robot2025.util.swerve.AutoAlignController;
 import org.team1540.robot2025.util.swerve.TrajectoryController;
@@ -444,6 +445,8 @@ public class Drivetrain extends SubsystemBase {
         return Commands.run(
                         () -> {
                             ChassisSpeeds speeds = RobotState.getInstance().getIntakeAssistVelocity();
+                            CoralVisionIO.CoralObservation observation =
+                                    RobotState.getInstance().getLatestCoralObservation();
                             speeds = new ChassisSpeeds(
                                     speeds.vxMetersPerSecond
                                             * coralAlignTranslationSpeedFactor.get()

@@ -241,6 +241,18 @@ public class RobotContainer {
                     .whileTrue(AutoScoreCommands.alignToFaceAndClean(
                             buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
         }
+
+        //        new Trigger(() -> RobotState.getInstance()
+        //                                .getEstimatedPose()
+        //                                .getTranslation()
+        //
+        // .getDistance(AllianceFlipUtil.maybeFlipTranslation(FieldConstants.Reef.center))
+        //                        > FieldConstants.Reef.centerToZoneLine
+        //                                + Units.inchesToMeters(12)
+        //                                + Constants.BUMPER_LENGTH_X_METERS / 2)
+        //                .and(() -> !(grabber.reverseSensorTripped() || grabber.forwardSensorTripped()))
+        //                .and(() -> superstructure.getGoalState().elevatorState.height.getAsDouble() > 0.2)
+        //                .onTrue(superstructure.stow());
     }
 
     private void configureAutoRoutines() {

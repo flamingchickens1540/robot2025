@@ -4,10 +4,10 @@ import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
@@ -211,44 +211,33 @@ public class AutoAlignCommands {
                 Set.of(drivetrain));
     }
 
-    public static Command alignToDealgifyPose(ReefFace face, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
-        return alignToReefPose(
-                face,
-                () -> {
-                    if (!shouldReverse.getAsBoolean()) return AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition());
-                    else {
-                        Pose2d pose = AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition());
-                        return new Pose2d(
-                                        pose.getTranslation(),
-                                        pose.getRotation().rotateBy(Rotation2d.k180deg))
-                                .transformBy(
-                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
-                    }
-                },
-                drivetrain);
-    }
-
-    public static Command alignToPreCleanPose(ReefFace face, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
-        return alignToReefPose(
-                face,
+    public static Command alignToDealgifyPose(
+            ReefFace face,
+            Drivetrain drivetrain,
+            BooleanSupplier shouldReverse,
+            BooleanSupplier shouldAvoidReef,
+            DoubleSupplier backoffDistance) {
+        return Commands.defer(
                 () -> {
                     Pose2d pose = AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition());
-                    pose = RobotState.getInstance()
-                            .getEstimatedPose()
-                            .nearest(Arrays.asList(
-                                    pose.transformBy(new Transform2d(Units.inchesToMeters(4.5), .3, Rotation2d.kZero)),
-                                    pose.transformBy(
-                                            new Transform2d(Units.inchesToMeters(4.5), -.3, Rotation2d.kZero))));
-                    if (!shouldReverse.getAsBoolean()) return pose;
-                    else {
-                        return new Pose2d(
+                    pose = pose.transformBy(new Transform2d(backoffDistance.getAsDouble(), 0, Rotation2d.kZero));
+                    if (shouldReverse.getAsBoolean()) {
+                        pose = new Pose2d(
                                         pose.getTranslation(),
                                         pose.getRotation().rotateBy(Rotation2d.k180deg))
                                 .transformBy(
                                         new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
                     }
+                    Pose2d finalPose = pose;
+                    if (shouldAvoidReef.getAsBoolean()) return alignToReefPose(face, () -> finalPose, drivetrain);
+                    else return drivetrain.driveToPoseCommand(() -> finalPose);
                 },
-                drivetrain);
+                Set.of(drivetrain));
+    }
+
+    public static Command alignToDealgifyPose(ReefFace face, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
+        return AutoAlignCommands.alignToDealgifyPose(
+                face, drivetrain, shouldReverse, () -> true, () -> Units.inchesToMeters(4.5));
     }
 
     public static Command alignToCage(Translation2d cage, Drivetrain drivetrain) {
