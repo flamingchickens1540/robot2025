@@ -71,12 +71,13 @@ public class Superstructure {
         CLEAN_LOW_BACK(ArmState.CLEAN_ALGAE_LOW_BACK, ElevatorState.CLEAN_ALGAE_LOW_BACK, IntakeState.STOW),
 
         CLEAN_HIGH_FRONT_STAGE(
-                ArmState.CLEAN_ALGAE_HIGH_FRONT, ElevatorState.CLEAN_ALGAE_HIGH_FRONT_STAGE, IntakeState.STOW),
+                ArmState.CLEAN_ALGAE_HIGH_FRONT_STAGE, ElevatorState.CLEAN_ALGAE_HIGH_FRONT_STAGE, IntakeState.STOW),
         CLEAN_LOW_FRONT_STAGE(
-                ArmState.CLEAN_ALGAE_LOW_FRONT, ElevatorState.CLEAN_ALGAE_LOW_FRONT_STAGE, IntakeState.STOW),
+                ArmState.CLEAN_ALGAE_LOW_FRONT_STAGE, ElevatorState.CLEAN_ALGAE_LOW_FRONT_STAGE, IntakeState.STOW),
         CLEAN_HIGH_BACK_STAGE(
-                ArmState.CLEAN_ALGAE_HIGH_BACK, ElevatorState.CLEAN_ALGAE_HIGH_BACK_STAGE, IntakeState.STOW),
-        CLEAN_LOW_BACK_STAGE(ArmState.CLEAN_ALGAE_LOW_BACK, ElevatorState.CLEAN_ALGAE_LOW_BACK_STAGE, IntakeState.STOW),
+                ArmState.CLEAN_ALGAE_HIGH_BACK_STAGE, ElevatorState.CLEAN_ALGAE_HIGH_BACK_STAGE, IntakeState.STOW),
+        CLEAN_LOW_BACK_STAGE(
+                ArmState.CLEAN_ALGAE_LOW_BACK_STAGE, ElevatorState.CLEAN_ALGAE_LOW_BACK_STAGE, IntakeState.STOW),
 
         // barge is same from both sides
         SCORE_BARGE_FRONT(ArmState.SCORE_BARGE_FRONT, ElevatorState.BARGE, IntakeState.STOW),
@@ -313,13 +314,16 @@ public class Superstructure {
                                             .alongWith(
                                                     Commands.waitSeconds(0.2),
                                                     arm.commandToSetpoint(ArmState.BACKOFF_L4_BACK)));
-                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.6)
+                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.4)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
                             case PROCESSOR_BACK -> grabber.commandRun(-0.3).withTimeout(0.5);
-                            case SCORE_BARGE_FRONT, SCORE_BARGE_BACK -> grabber.commandRun(-1.0)
+                            case SCORE_BARGE_FRONT -> grabber.commandRun(-1.0)
                                     .withTimeout(0.5)
                                     .alongWith(Commands.runOnce(arm::holdPosition));
+                            case SCORE_BARGE_BACK -> grabber.commandRun(-1.0)
+                                    .withTimeout(0.5)
+                                    .alongWith(Commands.waitSeconds(0.2).andThen(arm.commandToSetpoint(ArmState.BACKOFF_BARGE_BACK)));
                             default -> grabber.hasAlgae()
                                     ? grabber.commandRun(-0.5).withTimeout(0.5)
                                     : grabber.commandStartRun(0);

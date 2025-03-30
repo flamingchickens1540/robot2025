@@ -40,10 +40,14 @@ public class Arm extends SubsystemBase {
 
         REEF_ALGAE_MANUAL(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeManualDegrees", 180)),
 
-        CLEAN_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighFrontDegrees", 0)),
-        CLEAN_ALGAE_HIGH_BACK(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighBackDegrees", 180)),
+        CLEAN_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighFrontDegrees", 90)),
+        CLEAN_ALGAE_HIGH_BACK(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighBackDegrees", 90)),
         CLEAN_ALGAE_LOW_FRONT(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeLowFrontDegrees", 0)),
         CLEAN_ALGAE_LOW_BACK(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeLowBackDegrees", 180)),
+        CLEAN_ALGAE_HIGH_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighFrontStageDegrees", 0)),
+        CLEAN_ALGAE_HIGH_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighBackStageDegrees", 160)),
+        CLEAN_ALGAE_LOW_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeLowFrontStageDegrees", 0)),
+        CLEAN_ALGAE_LOW_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeLowBackStageDegrees", 160)),
 
         GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 210)),
         PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/Processor", 177)),
@@ -57,7 +61,9 @@ public class Arm extends SubsystemBase {
         SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 110)),
         BACKOFF_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/BackoffL4BackDegrees", 98)),
         SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 90)),
-        SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 120));
+        SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 105)),
+        BACKOFF_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/BackoffBargeBackDegrees", 140));
+
 
         private final DoubleSupplier positionDegrees;
 

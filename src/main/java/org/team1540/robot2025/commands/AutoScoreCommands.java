@@ -4,8 +4,8 @@ import static org.team1540.robot2025.FieldConstants.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,7 +15,6 @@ import org.team1540.robot2025.Constants;
 import org.team1540.robot2025.RobotState;
 import org.team1540.robot2025.subsystems.Superstructure;
 import org.team1540.robot2025.subsystems.drive.Drivetrain;
-import org.team1540.robot2025.subsystems.grabber.GrabberConstants;
 import org.team1540.robot2025.util.AllianceFlipUtil;
 import org.team1540.robot2025.util.LoggedTunableNumber;
 import org.team1540.robot2025.util.math.MathUtils;
@@ -58,7 +57,7 @@ public class AutoScoreCommands {
                                     superstructure
                                             .scoreCoral(height, () -> reverse)
                                             .asProxy(),
-                                    superstructure.score().asProxy());
+                                    superstructure.score(false).asProxy());
                 },
                 Set.of());
     }
@@ -77,22 +76,39 @@ public class AutoScoreCommands {
 
     public static Command alignToFaceAndDealgify(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {
         return Commands.sequence(AutoAlignCommands.alignToDealgifyPose(
-                        face, drivetrain, () -> RobotState.getInstance().shouldReverseAlgae(face)))
+                        face,
+                        drivetrain,
+                        () -> RobotState.getInstance().shouldReverseAlgae(face),
+                        () -> true,
+                        () -> Units.inchesToMeters(9)))
                 .asProxy()
                 .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
                                         .getEstimatedPose()
                                         .getTranslation()
-                                        .getDistance(AllianceFlipUtil.maybeFlipTranslation(
-                                                face.dealgifyPosition().getTranslation()))
+                                        .getDistance(AllianceFlipUtil.maybeFlipTranslation(face.dealgifyPosition()
+                                                .getTranslation()
+                                                .plus(new Translation2d(Units.inchesToMeters(9), 0))))
                                 <= prepareDistanceMetersAlgae.get())
                         .andThen(superstructure.dealgifyStage(face))
                         .asProxy())
-                .andThen(superstructure.dealgify(face).asProxy());
+                .andThen(
+                        AutoAlignCommands.alignToDealgifyPose(
+                                        face,
+                                        drivetrain,
+                                        () -> RobotState.getInstance().shouldReverseAlgae(face),
+                                        () -> false,
+                                        () -> Units.inchesToMeters(4.5))
+                                .asProxy(),
+                        superstructure.dealgify(face).asProxy());
     }
 
     public static Command alignToFaceAndClean(ReefFace face, Drivetrain drivetrain, Superstructure superstructure) {
         return (Commands.sequence(AutoAlignCommands.alignToDealgifyPose(
-                                face, drivetrain, () -> RobotState.getInstance().shouldReverseAlgae(face)))
+                                face,
+                                drivetrain,
+                                () -> RobotState.getInstance().shouldReverseAlgae(face),
+                                () -> true,
+                                () -> Units.inchesToMeters(9)))
                         .asProxy()
                         .alongWith(Commands.waitUntil(() -> RobotState.getInstance()
                                                 .getEstimatedPose()
@@ -103,20 +119,20 @@ public class AutoScoreCommands {
                                 .andThen(superstructure.cleanStage(face))
                                 .asProxy()))
                 .andThen(
+                        AutoAlignCommands.alignToDealgifyPose(
+                                        face,
+                                        drivetrain,
+                                        () -> RobotState.getInstance().shouldReverseAlgae(face),
+                                        () -> false,
+                                        () -> Units.inchesToMeters(4.5))
+                                .asProxy(),
                         superstructure.clean(face).asProxy(),
-                        drivetrain
-                                .driveToPoseCommand(() -> {
-                                    Pose2d pose = AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition())
-                                            .transformBy(new Transform2d(0.5, 0, Rotation2d.kZero));
-                                    if (!RobotState.getInstance().shouldReverseAlgae(face)) return pose;
-                                    else {
-                                        return new Pose2d(
-                                                        pose.getTranslation(),
-                                                        pose.getRotation().rotateBy(Rotation2d.k180deg))
-                                                .transformBy(new Transform2d(
-                                                        0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
-                                    }
-                                })
+                        AutoAlignCommands.alignToDealgifyPose(
+                                        face,
+                                        drivetrain,
+                                        () -> RobotState.getInstance().shouldReverseAlgae(face),
+                                        () -> false,
+                                        () -> 0.5)
                                 .asProxy());
     }
 
