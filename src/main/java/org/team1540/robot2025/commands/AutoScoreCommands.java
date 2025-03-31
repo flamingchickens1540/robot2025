@@ -21,9 +21,9 @@ import org.team1540.robot2025.util.math.MathUtils;
 
 public class AutoScoreCommands {
     private static final LoggedTunableNumber prepareDistanceMetersCoralLong =
-            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoralLong", 1.0);
+            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoralLong", 2.0);
     private static final LoggedTunableNumber prepareDistanceMetersCoralShort =
-            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoralShort", 0.5);
+            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoralShort", 1.0);
     private static final LoggedTunableNumber prepareDistanceMetersAlgae =
             new LoggedTunableNumber("AutoScore/PrepareDistanceMetersAlgae", 2.0);
 
@@ -31,7 +31,7 @@ public class AutoScoreCommands {
             ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
         return Commands.defer(
                 () -> {
-                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch);
+                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height == ReefHeight.L1;
                     return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse)
                             .asProxy()
                             .deadlineFor(Commands.waitUntil(() -> RobotState.getInstance()
@@ -96,8 +96,9 @@ public class AutoScoreCommands {
                                         drivetrain,
                                         () -> RobotState.getInstance().shouldReverseAlgae(face),
                                         () -> false,
-                                        () -> Units.inchesToMeters(4.5))
+                                        () -> Units.inchesToMeters(3.5))
                                 .asProxy(),
+                        Commands.waitUntil(superstructure.grabber::hasAlgae),
                         AutoAlignCommands.alignToDealgifyPose(
                                         face,
                                         drivetrain,

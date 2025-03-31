@@ -46,11 +46,11 @@ public class Arm extends SubsystemBase {
         SCORE_L2_L3_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3BackDegrees", 115)),
         SCORE_L4_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontDegrees", 60)),
         BACKOFF_L4_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontBackoffDegrees", 120)),
-        SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 110)),
+        SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 113)),
         BACKOFF_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/BackoffL4BackDegrees", 98)),
-        SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 90)),
-        SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 105)),
-        BACKOFF_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/BackoffBargeBackDegrees", 140));
+        SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 105)),
+        SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 90)),
+        BACKOFF_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/BackoffBargeFrontDegrees", 80));
 
         private final DoubleSupplier positionDegrees;
 

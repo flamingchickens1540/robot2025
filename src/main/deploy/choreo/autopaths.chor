@@ -28,8 +28,8 @@
    "MaxV":{
     "dimension":"LinVel",
     "var":{
-     "exp":"2.54 m / s",
-     "val":2.54
+     "exp":"3 m / s",
+     "val":3.0
     }
    },
    "SrcRAngle":{
@@ -421,8 +421,8 @@
    "val":607.3745796940267
   },
   "tmax":{
-   "exp":"0.8 N * m",
-   "val":0.8
+   "exp":"0.9 N * m",
+   "val":0.9
   },
   "cof":{
    "exp":"1.4",

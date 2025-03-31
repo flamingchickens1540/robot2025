@@ -378,19 +378,19 @@ public class Autos {
                         .andThen(
                                 Commands.waitSeconds(0.25).alongWith(jToLeftSrc.spawnCmd()),
                                 superstructure.coralGroundIntake().asProxy()));
-        jToLeftSrc.done().or(superstructure.intake::hasCoral).onTrue(leftSrcToK.spawnCmd());
+        jToLeftSrc.done().or(superstructure.grabber::hasCoral).onTrue(leftSrcToK.spawnCmd());
         leftSrcToK
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.K, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(superstructure.coralGroundIntake().asProxy().alongWith(kToLeftSrc.spawnCmd())));
-        kToLeftSrc.done().or(superstructure.intake::hasCoral).onTrue(leftSrcToL.spawnCmd());
+        kToLeftSrc.done().or(superstructure.grabber::hasCoral).onTrue(leftSrcToL.spawnCmd());
         leftSrcToL
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.L, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(superstructure.coralGroundIntake().asProxy().alongWith(lToLeftSrc.spawnCmd())));
-        lToLeftSrc.done().or(superstructure.intake::hasCoral).onTrue(leftSrcToA.spawnCmd());
+        lToLeftSrc.done().or(superstructure.grabber::hasCoral).onTrue(leftSrcToA.spawnCmd());
         leftSrcToA
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(
@@ -422,11 +422,11 @@ public class Autos {
                                 superstructure.coralGroundIntake().asProxy()));
 
         jToLeftSrc
-                .atTimeBeforeEnd(2)
+                .atTimeBeforeEnd(1.5)
                 .onTrue(drivetrain
                         .seekAndDestroy()
-                        .until(superstructure.intake::hasCoral)
-                        .withTimeout(1)
+                        .until(superstructure.grabber::hasCoral)
+                        .withTimeout(1.5)
                         .andThen(leftSrcToK.spawnCmd()));
         leftSrcToK
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
@@ -434,11 +434,11 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(superstructure.coralGroundIntake().asProxy().alongWith(kToLeftSrc.spawnCmd())));
         kToLeftSrc
-                .atTimeBeforeEnd(2)
+                .atTimeBeforeEnd(1.5)
                 .onTrue(drivetrain
                         .seekAndDestroy()
-                        .until(superstructure.intake::hasCoral)
-                        .withTimeout(1)
+                        .until(superstructure.grabber::hasCoral)
+                        .withTimeout(1.5)
                         .andThen(leftSrcToL.spawnCmd()));
         leftSrcToL
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
@@ -446,11 +446,11 @@ public class Autos {
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(superstructure.coralGroundIntake().asProxy().alongWith(lToLeftSrc.spawnCmd())));
         lToLeftSrc
-                .atTimeBeforeEnd(2)
+                .atTimeBeforeEnd(1.5)
                 .onTrue(drivetrain
                         .seekAndDestroy()
-                        .until(superstructure.intake::hasCoral)
-                        .withTimeout(1)
+                        .until(superstructure.grabber::hasCoral)
+                        .withTimeout(1.5)
                         .andThen(leftSrcToA.spawnCmd()));
         leftSrcToA
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
