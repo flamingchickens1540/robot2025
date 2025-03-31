@@ -298,13 +298,13 @@ public class Superstructure {
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
                             case PROCESSOR_BACK -> grabber.commandRun(-0.3).withTimeout(0.5);
-                            case SCORE_BARGE_FRONT -> grabber.commandRun(-1.0)
-                                    .withTimeout(0.5)
-                                    .alongWith(Commands.runOnce(arm::holdPosition));
                             case SCORE_BARGE_BACK -> grabber.commandRun(-1.0)
                                     .withTimeout(0.5)
-                                    .alongWith(Commands.waitSeconds(0.2)
-                                            .andThen(arm.commandToSetpoint(ArmState.BACKOFF_BARGE_BACK)));
+                                    .alongWith(Commands.runOnce(arm::holdPosition));
+                            case SCORE_BARGE_FRONT -> grabber.commandRun(-1.0)
+                                    .withTimeout(0.5)
+                                    .alongWith(Commands.waitSeconds(0.4)
+                                            .andThen(arm.commandToSetpoint(ArmState.BACKOFF_BARGE_FRONT)));
                             default -> grabber.hasAlgae()
                                     ? grabber.commandRun(-0.5).withTimeout(0.5)
                                     : grabber.commandStartRun(0);
