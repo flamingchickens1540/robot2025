@@ -7,6 +7,7 @@ import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
@@ -28,13 +29,14 @@ public class Elevator extends SubsystemBase {
     public enum ElevatorState {
         STOW(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
         GROUND_CORAL(new LoggedTunableNumber("Elevator/Setpoints/GroundCoral", 0.1)),
+        GROUND_CORAL_L1(new LoggedTunableNumber("Elevator/Setpoints/GroundCoralL1", 0.125)),
         L1_BACK(new LoggedTunableNumber("Elevator/Setpoints/L1Back", 0.2)),
         L1_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L1Front", 0.2)),
-        L2_BACK(new LoggedTunableNumber("Elevator/Setpoints/L2Back", 0.655)),
+        L2_BACK(new LoggedTunableNumber("Elevator/Setpoints/L2Back", 0.46)),
         L2_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L2Front", 0.635)),
-        L3_BACK(new LoggedTunableNumber("Elevator/Setpoints/L3Back", 1.055)),
+        L3_BACK(new LoggedTunableNumber("Elevator/Setpoints/L3Back", 0.86)),
         L3_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L3Front", 1.035)),
-        L4_BACK(new LoggedTunableNumber("Elevator/Setpoints/L4Back", MAX_HEIGHT_M)),
+        L4_BACK(new LoggedTunableNumber("Elevator/Setpoints/L4Back", MAX_HEIGHT_M - Units.inchesToMeters(2))),
         L4_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L4Front", MAX_HEIGHT_M)),
         FRONT_STAGE(new LoggedTunableNumber("Elevator/Setpoints/L2L3FrontStage", 0.635)),
         BACK_STAGE(new LoggedTunableNumber("Elevator/Setpoints/L2L3BackStage", 0.55)),

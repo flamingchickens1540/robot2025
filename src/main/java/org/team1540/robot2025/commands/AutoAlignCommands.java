@@ -2,7 +2,6 @@ package org.team1540.robot2025.commands;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.List;
@@ -12,6 +11,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 import org.team1540.robot2025.Constants;
+import org.team1540.robot2025.FieldConstants;
 import org.team1540.robot2025.FieldConstants.Reef;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefFace;
@@ -123,17 +123,17 @@ public class AutoAlignCommands {
         return alignToReefPose(face, () -> pose, drivetrain);
     }
 
-    public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
+    public static Command alignToBranch(
+            ReefBranch branch, Drivetrain drivetrain, BooleanSupplier shouldReverse, FieldConstants.ReefHeight height) {
         return alignToReefPose(
                 branch.face,
                 () -> {
                     Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
-                    if (DriverStation.isAutonomous()) {
+                    if (!shouldReverse.getAsBoolean() && height == FieldConstants.ReefHeight.L4) {
                         pose = pose.transformBy(new Transform2d(Units.inchesToMeters(-3.5), 0, Rotation2d.kZero));
-                        System.out.println("IT DID THE THING");
                     }
                     if (!shouldReverse.getAsBoolean())
-                        return pose.transformBy(new Transform2d(0, Units.inchesToMeters(0.5), Rotation2d.kZero));
+                        return pose.transformBy(new Transform2d(0, Units.inchesToMeters(-0.25), Rotation2d.kZero));
                     else {
                         return new Pose2d(
                                         pose.getTranslation(),
@@ -146,7 +146,11 @@ public class AutoAlignCommands {
     }
 
     public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain) {
-        return alignToBranch(branch, drivetrain, () -> RobotState.getInstance().shouldReverseCoral(branch));
+        return alignToBranch(
+                branch,
+                drivetrain,
+                () -> RobotState.getInstance().shouldReverseCoral(branch),
+                FieldConstants.ReefHeight.L2);
     }
 
     public static Command alignToBranchNearestSide(ReefBranch branch, Drivetrain drivetrain) {

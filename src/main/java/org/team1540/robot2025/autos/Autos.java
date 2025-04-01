@@ -5,6 +5,7 @@ import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import org.ironmaple.simulation.SimulatedArena;
 import org.team1540.robot2025.Constants;
@@ -18,7 +19,7 @@ import org.team1540.robot2025.util.AllianceFlipUtil;
 
 public class Autos {
     private static final double AUTO_ALIGN_SWITCH_TIME = 0.8;
-    private static final double ALIGN_TIMEOUT = 2.5;
+    private static final double ALIGN_TIMEOUT = 3;
     private static final double INTAKE_DEPLOY_TIME = 2.5;
     private static final double SCORE_WAIT_TIME = 0.5;
 
@@ -370,32 +371,127 @@ public class Autos {
 
         resetPoseInSim(routine, startToJ);
         routine.active().onTrue(startToJ.cmd());
-        routine.active().onTrue(superstructure.zeroCommand());
+        //        routine.active().onTrue(superstructure.zeroCommand());
 
-        startToJ.atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+        startToJ.atTimeBeforeEnd(0.6)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.J, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
-                        .andThen(
-                                Commands.waitSeconds(0.25).alongWith(jToLeftSrc.spawnCmd()),
-                                superstructure.coralGroundIntake().asProxy()));
-        jToLeftSrc.done().or(superstructure.grabber::hasCoral).onTrue(leftSrcToK.spawnCmd());
+                        .andThen(Commands.parallel(
+                                jToLeftSrc.spawnCmd(),
+                                Commands.waitSeconds(0.25)
+                                        .andThen(superstructure
+                                                .coralGroundIntake()
+                                                .asProxy()))));
+
+        jToLeftSrc
+                .done()
+                //                .or(superstructure.intake::hasCoral)
+                .onTrue(leftSrcToK.spawnCmd());
+
         leftSrcToK
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.K, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(superstructure.coralGroundIntake().asProxy().alongWith(kToLeftSrc.spawnCmd())));
-        kToLeftSrc.done().or(superstructure.grabber::hasCoral).onTrue(leftSrcToL.spawnCmd());
+
+        kToLeftSrc
+                .done()
+                //                .or(superstructure.intake::hasCoral)
+                .onTrue(leftSrcToL.spawnCmd());
+
         leftSrcToL
-                .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .atTimeBeforeEnd(0.9)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.L, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(superstructure.coralGroundIntake().asProxy().alongWith(lToLeftSrc.spawnCmd())));
-        lToLeftSrc.done().or(superstructure.grabber::hasCoral).onTrue(leftSrcToA.spawnCmd());
+
+        lToLeftSrc
+                .done()
+                //                .or(superstructure.intake::hasCoral)
+                .onTrue(leftSrcToA.spawnCmd());
+
         leftSrcToA
                 .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(
                         ReefBranch.A, ReefHeight.L4, drivetrain, superstructure));
         return routine;
+    }
+
+    public Command left4PieceSplit() {
+        final String trajName = "Left4Piece";
+
+        AutoRoutine startToJRoutine = autoFactory.newRoutine("startToJ");
+        AutoTrajectory startToJTrajectory = startToJRoutine.trajectory(trajName, 0);
+
+        AutoRoutine jToLeftSrcRoutine = autoFactory.newRoutine("jToLeftSrc");
+        AutoTrajectory jToLeftSrcTrajectory = startToJRoutine.trajectory(trajName, 1);
+
+        AutoRoutine leftSrcToKRoutine = autoFactory.newRoutine("leftSrcToK");
+        AutoTrajectory leftSrcToKTrajectory = startToJRoutine.trajectory(trajName, 1);
+
+        AutoRoutine kToLeftSrcRoutine = autoFactory.newRoutine("kToLeftSrc");
+        AutoTrajectory kToLeftSrcTrajectory = startToJRoutine.trajectory(trajName, 1);
+
+        AutoRoutine leftSrcToLRoutine = autoFactory.newRoutine("leftSrcToL");
+        AutoTrajectory leftSrcToLTrajectory = startToJRoutine.trajectory(trajName, 1);
+
+        AutoRoutine lToLeftSrcRoutine = autoFactory.newRoutine("lToLeftSrc");
+        AutoTrajectory lToLeftSrcTrajectory = startToJRoutine.trajectory(trajName, 1);
+
+        AutoRoutine leftSrcToARoutine = autoFactory.newRoutine("leftSrcToA");
+        AutoTrajectory leftSrcToATrajectory = startToJRoutine.trajectory(trajName, 1);
+
+        resetPoseInSim(startToJRoutine, startToJTrajectory);
+        startToJRoutine.active().onTrue(startToJTrajectory.cmd());
+        startToJRoutine.active().onTrue(superstructure.zeroCommand());
+
+        startToJTrajectory
+                .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.J, ReefHeight.L4, drivetrain, superstructure)
+                        .withTimeout(ALIGN_TIMEOUT)
+                        .andThen(Commands.parallel(
+                                jToLeftSrcTrajectory.spawnCmd(),
+                                Commands.waitSeconds(0.25)
+                                        .andThen(superstructure
+                                                .coralGroundIntake()
+                                                .asProxy()))));
+
+        jToLeftSrcTrajectory.done().or(superstructure.grabber::hasCoral).onTrue(leftSrcToKTrajectory.spawnCmd());
+
+        leftSrcToKTrajectory
+                .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.K, ReefHeight.L4, drivetrain, superstructure)
+                        .withTimeout(ALIGN_TIMEOUT)
+                        .andThen(superstructure
+                                .coralGroundIntake()
+                                .asProxy()
+                                .alongWith(kToLeftSrcTrajectory.spawnCmd())));
+
+        kToLeftSrcTrajectory.done().or(superstructure.grabber::hasCoral).onTrue(leftSrcToLTrajectory.spawnCmd());
+
+        leftSrcToLTrajectory
+                .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.L, ReefHeight.L4, drivetrain, superstructure)
+                        .withTimeout(ALIGN_TIMEOUT)
+                        .andThen(superstructure
+                                .coralGroundIntake()
+                                .asProxy()
+                                .alongWith(lToLeftSrcTrajectory.spawnCmd())));
+
+        lToLeftSrcTrajectory.done().or(superstructure.grabber::hasCoral).onTrue(leftSrcToATrajectory.spawnCmd());
+
+        leftSrcToATrajectory
+                .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(
+                        ReefBranch.A, ReefHeight.L4, drivetrain, superstructure));
+        return Commands.sequence(
+                startToJRoutine.cmd(),
+                jToLeftSrcRoutine.cmd(),
+                leftSrcToKRoutine.cmd(),
+                kToLeftSrcRoutine.cmd(),
+                leftSrcToLRoutine.cmd(),
+                lToLeftSrcRoutine.cmd(),
+                leftSrcToARoutine.cmd());
     }
 
     public AutoRoutine left4PieceEyes() {
