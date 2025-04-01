@@ -23,7 +23,7 @@ public class AutoScoreCommands {
     private static final LoggedTunableNumber prepareDistanceMetersCoralLong =
             new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoralLong", 2.0);
     private static final LoggedTunableNumber prepareDistanceMetersCoralShort =
-            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoralShort", 1.0);
+            new LoggedTunableNumber("AutoScore/PrepareDistanceMetersCoralShort", 0.5);
     private static final LoggedTunableNumber prepareDistanceMetersAlgae =
             new LoggedTunableNumber("AutoScore/PrepareDistanceMetersAlgae", 2.0);
 
@@ -32,7 +32,7 @@ public class AutoScoreCommands {
         return Commands.defer(
                 () -> {
                     boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height == ReefHeight.L1;
-                    return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse)
+                    return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse, height)
                             .asProxy()
                             .deadlineFor(Commands.waitUntil(() -> RobotState.getInstance()
                                                     .getEstimatedPose()
@@ -57,9 +57,22 @@ public class AutoScoreCommands {
                                     superstructure
                                             .scoreCoral(height, () -> reverse)
                                             .asProxy(),
+                                    Commands.waitSeconds(0.1).onlyIf(() -> !reverse && height != ReefHeight.L4),
+                                    //                                    Commands.waitSeconds(0.2).onlyIf(() ->
+                                    // !reverse && height == ReefHeight.L4),
                                     superstructure.score(false).asProxy());
                 },
                 Set.of());
+    }
+
+    public static Command alignToBranchAndScore(
+            ReefBranch branch,
+            ReefHeight height,
+            Drivetrain drivetrain,
+            Superstructure superstructure,
+            BooleanSupplier shouldScore) {
+        return Commands.either(
+                alignToBranchAndScore(branch, height, drivetrain, superstructure), Commands.none(), shouldScore);
     }
 
     public static Command alignToBranchAndScoreL1Fallback(

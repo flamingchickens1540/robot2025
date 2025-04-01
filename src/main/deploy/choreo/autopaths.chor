@@ -7,8 +7,8 @@
    "IntakeEndDistance":{
     "dimension":"Length",
     "var":{
-     "exp":"20 in",
-     "val":0.508
+     "exp":"49 in",
+     "val":1.2446
     }
    },
    "IntakeStartDistance":{
@@ -268,11 +268,11 @@
    "SrcLOutIntake":{
     "x":{
      "exp":"SrcROutIntake.x",
-     "val":1.8676275772319593
+     "val":2.300590194070595
     },
     "y":{
      "exp":"7.35754919052124 m + IntakeEndDistance * -SrcRAngleY",
-     "val":6.946568557378767
+     "val":6.35064663932218
     },
     "heading":{
      "exp":"(360 deg - SrcRAngle)",
@@ -324,11 +324,11 @@
    "SrcROutIntake":{
     "x":{
      "exp":"1.5690326690673828 m + IntakeEndDistance * SrcRAngleX",
-     "val":1.8676275772319593
+     "val":2.300590194070595
     },
     "y":{
      "exp":"0.6762703657150269 m + IntakeEndDistance * SrcRAngleY",
-     "val":1.0872509988575
+     "val":1.6831729169140863
     },
     "heading":{
      "exp":"(90 + 144) deg",

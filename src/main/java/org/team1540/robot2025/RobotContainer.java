@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -112,10 +113,12 @@ public class RobotContainer {
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             driver.y()
                     .whileTrue(AutoScoreCommands.alignToBranchAndScore(
-                            ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
-            driver.b().whileTrue(AutoScoreCommands.alignToFaceAndClean(ReefBranch.E.face, drivetrain, superstructure));
-            driver.a()
-                    .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain, superstructure));
+                            ReefBranch.E, ReefHeight.L2, drivetrain, superstructure));
+            //            driver.b().whileTrue(AutoScoreCommands.alignToFaceAndClean(ReefBranch.E.face, drivetrain,
+            // superstructure));
+            //            driver.a()
+            //                    .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain,
+            // superstructure));
             //            driver.b().whileTrue(AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure));
             //            driver.b().whileTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure,
             // driver.getHID()));
@@ -134,7 +137,7 @@ public class RobotContainer {
                         driver.getHID(),
                         () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
                         () -> true));
-        //        driver.a().onTrue(superstructure.coralIntakeEject().withTimeout(2.0));
+        driver.a().onTrue(superstructure.coralIntakeEject().withTimeout(2.0));
         driver.back().onTrue(Commands.runOnce(drivetrain::stopWithX, drivetrain));
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
@@ -146,6 +149,12 @@ public class RobotContainer {
                         .onlyIf(RobotState.getInstance()::getIntakeAssist));
 
         driver.leftTrigger()
+                .onTrue(Commands.runOnce(() -> driver.setRumble(GenericHID.RumbleType.kBothRumble, 1)))
+                .onFalse(Commands.runOnce(() -> driver.setRumble(GenericHID.RumbleType.kBothRumble, 0)));
+        new Trigger(intake::hasCoral)
+                .onTrue(Commands.runOnce(() -> driver.setRumble(GenericHID.RumbleType.kBothRumble, 0)));
+
+        driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
                 .and(() -> !grabber.hasAlgae())
                 .whileTrue(superstructure.coralGroundIntake())
@@ -153,6 +162,7 @@ public class RobotContainer {
 
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).or(grabber::hasAlgae))
+                .and(() -> !grabber.hasAlgae())
                 .whileTrue(superstructure.coralGroundIntakeL1())
                 .onFalse(superstructure.stow());
 
@@ -265,6 +275,7 @@ public class RobotContainer {
         autoChooser.addRoutine("Left 3 Piece Sweep", autos::left3PieceSweep);
         autoChooser.addRoutine("Left 4 Piece Sweep Reverse", autos::left4PieceSweepReverse);
         autoChooser.addRoutine("Left 4 Piece", autos::left4Piece);
+        autoChooser.addCmd("Left 4 Piece Defer", autos::left4PieceSplit);
         autoChooser.addRoutine("Left 4 Piece Eyes", autos::left4PieceEyes);
         autoChooser.addRoutine("Center 1 Piece", autos::center1Piece);
         if (Constants.isTuningMode()) {

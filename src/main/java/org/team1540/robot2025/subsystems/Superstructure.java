@@ -25,7 +25,7 @@ public class Superstructure {
         STOW(ArmState.STOW, ElevatorState.STOW, IntakeState.STOW),
         STOW_ALGAE(ArmState.STOW_ALGAE, ElevatorState.STOW_ALGAE, IntakeState.STOW),
         INTAKE_GROUND(ArmState.INTAKE, ElevatorState.GROUND_CORAL, IntakeState.INTAKE),
-        INTAKE_GROUND_L1(ArmState.STOW, ElevatorState.STOW, IntakeState.INTAKE),
+        INTAKE_GROUND_L1(ArmState.INTAKE, ElevatorState.GROUND_CORAL_L1, IntakeState.INTAKE),
         INTAKE_SOURCE(ArmState.STOW, ElevatorState.STOW, IntakeState.STOW),
         INTAKE_ALGAE(ArmState.GROUND_ALGAE, ElevatorState.GROUND_ALGAE, IntakeState.STOW),
         CORAL_EJECT(ArmState.STOW, ElevatorState.STOW, IntakeState.EJECT),
@@ -81,7 +81,7 @@ public class Superstructure {
     public final Arm arm;
     public final Intake intake;
     public final Grabber grabber;
-    private final double clearanceHeight = 0.5;
+    private final double clearanceHeight = 0.45;
 
     private SuperstructureState goalState = SuperstructureState.STOW;
 
@@ -282,7 +282,7 @@ public class Superstructure {
                                             .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
                                                     .andThen(Commands.waitSeconds(0.25)))
                                             .alongWith(
-                                                    Commands.waitSeconds(0.2),
+                                                    Commands.waitSeconds(0.1),
                                                     arm.commandToSetpoint(ArmState.BACKOFF_L4_FRONT)));
                             case L4_BACK -> grabber.commandRun(-0.1)
                                     .until(grabber::forwardSensorTripped)
@@ -294,7 +294,7 @@ public class Superstructure {
                                             .alongWith(
                                                     Commands.waitSeconds(0.2),
                                                     arm.commandToSetpoint(ArmState.BACKOFF_L4_BACK)));
-                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.4)
+                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.8)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
                             case PROCESSOR_BACK -> grabber.commandRun(-0.3).withTimeout(0.5);
@@ -374,23 +374,18 @@ public class Superstructure {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_GROUND)
                                 .withTimeout(1.0)
-                                .deadlineFor(Commands.startEnd(
-                                                () -> intake.setRollerVoltage(0.75 * 12),
-                                                () -> intake.setRollerVoltage(0.0))
+                                .alongWith(Commands.runOnce(() -> intake.setRollerVoltage(0.75 * 12))
                                         .unless(intake::hasCoral)),
                         grabber.commandRun(0.3)
                                 .until(grabber::forwardSensorTripped)
-                                .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
-                                .deadlineFor(intake.commandRunRollerFunnel(0.75, 0.75)),
+                                .andThen(grabber.commandRun(0.15).until(grabber::reverseSensorTripped)),
                         stow().alongWith(
                                         grabber.commandRun(0.0),
                                         Commands.startEnd(
                                                         () -> {
-                                                            intake.setFunnelVoltage(-0.75 * 12);
                                                             intake.setRollerVoltage(-0.75 * 12);
                                                         },
                                                         () -> {
-                                                            intake.setFunnelVoltage(0);
                                                             intake.setRollerVoltage(0);
                                                         })
                                                 .withTimeout(0.5)
@@ -401,14 +396,15 @@ public class Superstructure {
     public Command coralGroundIntakeL1() {
         return Commands.sequence(
                 commandToState(SuperstructureState.INTAKE_GROUND_L1).withTimeout(1.0),
-                intake.commandRunRoller(0.8).until(intake::hasCoral),
+                intake.commandRunRoller(0.5).until(intake::hasCoral),
+                intake.commandRunRoller(0.2).withTimeout(0.2),
                 stow());
     }
 
     public Command coralIntakeEject() {
-        return Commands.sequence(
-                        commandToState(SuperstructureState.CORAL_EJECT), intake.commandRunRollerFunnel(-0.5, -0.5))
-                .unless(grabber::hasAlgae);
+        return Commands.parallel(
+                commandToState(SuperstructureState.CORAL_EJECT),
+                Commands.waitSeconds(0.1).andThen(intake.commandRunRollerFunnel(-0.5, -0.5)));
     }
 
     public Command coralIntakeReverseHandoff() {
