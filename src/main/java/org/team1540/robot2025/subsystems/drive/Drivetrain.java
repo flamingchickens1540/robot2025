@@ -67,7 +67,7 @@ public class Drivetrain extends SubsystemBase {
             new LoggedTunableNumber("AutoAlign/RotationAccelFactor", 0.5);
 
     private static final LoggedTunableNumber coralAlignRotationSpeedFactor =
-            new LoggedTunableNumber("CoralAlign/RotationSpeedFactor", 2.5);
+            new LoggedTunableNumber("CoralAlign/RotationSpeedFactor", 7.5);
     private static final LoggedTunableNumber coralAlignTranslationSpeedFactor =
             new LoggedTunableNumber("CoralAlign/TranslationSpeedFactor", 1.5);
     private static final LoggedTunableNumber coralAlignSpeedFactor =

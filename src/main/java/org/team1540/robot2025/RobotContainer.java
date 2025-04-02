@@ -32,10 +32,7 @@ import org.team1540.robot2025.subsystems.leds.CustomLEDPatterns;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
 import org.team1540.robot2025.subsystems.vision.coral.CoralVision;
-import org.team1540.robot2025.util.AllianceFlipUtil;
-import org.team1540.robot2025.util.ButtonBoard;
-import org.team1540.robot2025.util.JoystickUtil;
-import org.team1540.robot2025.util.MatchTriggers;
+import org.team1540.robot2025.util.*;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
@@ -148,11 +145,9 @@ public class RobotContainer {
                         .teleopDriveIntakeAssistCommand(driver.getHID(), () -> true)
                         .onlyIf(RobotState.getInstance()::getIntakeAssist));
 
-        driver.leftTrigger()
-                .onTrue(Commands.runOnce(() -> driver.setRumble(GenericHID.RumbleType.kBothRumble, 1)))
-                .onFalse(Commands.runOnce(() -> driver.setRumble(GenericHID.RumbleType.kBothRumble, 0)));
+        driver.leftTrigger().whileTrue(Rumble.getInstance().rumbleDriver());
         new Trigger(intake::hasCoral)
-                .onTrue(Commands.runOnce(() -> driver.setRumble(GenericHID.RumbleType.kBothRumble, 0)));
+                .onTrue(Rumble.getInstance().setDriverRumble(GenericHID.RumbleType.kBothRumble, 0));
 
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
@@ -195,7 +190,7 @@ public class RobotContainer {
                 .or(copilot.b())
                 //                .or(driver.x())
                 .onTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure, driver.getHID()));
-        buttonBoard.button(2).or(copilot.povRight()).onTrue(superstructure.processor());
+        buttonBoard.button(2).onTrue(superstructure.processor());
 
         buttonBoard
                 .button(3)
@@ -225,6 +220,7 @@ public class RobotContainer {
 
         buttonBoard
                 .button(6)
+                .or(copilot.povRight())
                 .toggleOnTrue(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0.3)
                         .alongWith(superstructure.commandToState(Superstructure.SuperstructureState.PROCESSOR_BACK)));
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
