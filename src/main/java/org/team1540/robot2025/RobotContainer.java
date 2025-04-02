@@ -36,9 +36,9 @@ import org.team1540.robot2025.util.*;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
-    private final CommandXboxController driver = new CommandXboxController(0);
-    private final CommandXboxController copilot = new CommandXboxController(1);
-    private final ButtonBoard buttonBoard = new ButtonBoard(2);
+    private final CommandXboxController driver = Controllers.getInstance().getDriver();
+    private final CommandXboxController copilot = Controllers.getInstance().getCopilot();
+    private final ButtonBoard buttonBoard = Controllers.getInstance().getButtonBoard();
 
     private final Drivetrain drivetrain;
     private final AprilTagVision aprilTagVision;
@@ -145,9 +145,9 @@ public class RobotContainer {
                         .teleopDriveIntakeAssistCommand(driver.getHID(), () -> true)
                         .onlyIf(RobotState.getInstance()::getIntakeAssist));
 
-        driver.leftTrigger().whileTrue(Rumble.getInstance().rumbleDriver());
+        driver.leftTrigger().whileTrue(Controllers.getInstance().rumbleDriver());
         new Trigger(intake::hasCoral)
-                .onTrue(Rumble.getInstance().setDriverRumble(GenericHID.RumbleType.kBothRumble, 0));
+                .onTrue(Controllers.getInstance().setDriverRumble(GenericHID.RumbleType.kBothRumble, 0));
 
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
