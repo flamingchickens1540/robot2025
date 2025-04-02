@@ -19,6 +19,7 @@ import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.intake.Intake.IntakeState;
 import org.team1540.robot2025.util.AllianceFlipUtil;
+import org.team1540.robot2025.util.Rumble;
 
 public class Superstructure {
     public enum SuperstructureState {
@@ -310,6 +311,7 @@ public class Superstructure {
                                     : grabber.commandStartRun(0);
                         },
                         Set.of(elevator, arm, intake, grabber))
+                .alongWith(Rumble.getInstance().rumbleDriver())
                 .andThen(stow().onlyIf(() -> stow));
     }
 
@@ -374,11 +376,14 @@ public class Superstructure {
         return Commands.sequence(
                         commandToState(SuperstructureState.INTAKE_GROUND)
                                 .withTimeout(1.0)
-                                .alongWith(Commands.runOnce(() -> intake.setRollerVoltage(0.75 * 12))
+                                .deadlineFor(Commands.startEnd(
+                                                () -> intake.setRollerVoltage(0.75 * 12),
+                                                () -> intake.setRollerVoltage(0.0))
                                         .unless(intake::hasCoral)),
                         grabber.commandRun(0.3)
                                 .until(grabber::forwardSensorTripped)
-                                .andThen(grabber.commandRun(0.15).until(grabber::reverseSensorTripped)),
+                                .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
+                                .deadlineFor(intake.commandRunRollerFunnel(0.75, 0.75)),
                         stow().alongWith(
                                         grabber.commandRun(0.0),
                                         Commands.startEnd(
@@ -396,7 +401,7 @@ public class Superstructure {
     public Command coralGroundIntakeL1() {
         return Commands.sequence(
                 commandToState(SuperstructureState.INTAKE_GROUND_L1).withTimeout(1.0),
-                intake.commandRunRoller(0.5).until(intake::hasCoral),
+                intake.commandRunRoller(0.7).until(intake::hasCoral),
                 intake.commandRunRoller(0.2).withTimeout(0.2),
                 stow());
     }

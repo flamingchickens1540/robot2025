@@ -112,6 +112,7 @@ public class AutoScoreCommands {
                                         () -> Units.inchesToMeters(3.5))
                                 .asProxy(),
                         Commands.waitUntil(superstructure.grabber::hasAlgae),
+                        Commands.waitSeconds(0.5),
                         AutoAlignCommands.alignToDealgifyPose(
                                         face,
                                         drivetrain,
