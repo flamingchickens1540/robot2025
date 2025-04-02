@@ -7,17 +7,18 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
-public class Rumble {
+public class Controllers {
 
-    private static Rumble instance = null;
+    private static Controllers instance = null;
 
-    public static Rumble getInstance() {
-        if (instance == null) instance = new Rumble();
+    public static Controllers getInstance() {
+        if (instance == null) instance = new Controllers();
         return instance;
     }
 
     private final CommandXboxController driver = new CommandXboxController(0);
     private final CommandXboxController copilot = new CommandXboxController(1);
+    private final ButtonBoard buttonBoard = new ButtonBoard(2);
 
     public static Command startStopTimed(Runnable start, Runnable end, double duration, Subsystem... requirements) {
         return Commands.race(Commands.waitSeconds(duration), Commands.startEnd(start, end, requirements));
@@ -66,5 +67,17 @@ public class Rumble {
 
     public Command setCopilotRumble(GenericHID.RumbleType type, double value) {
         return Commands.runOnce(() -> copilot.setRumble(type, value));
+    }
+
+    public CommandXboxController getDriver() {
+        return driver;
+    }
+
+    public CommandXboxController getCopilot() {
+        return copilot;
+    }
+
+    public ButtonBoard getButtonBoard() {
+        return buttonBoard;
     }
 }

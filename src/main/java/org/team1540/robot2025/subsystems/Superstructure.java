@@ -19,7 +19,7 @@ import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.intake.Intake.IntakeState;
 import org.team1540.robot2025.util.AllianceFlipUtil;
-import org.team1540.robot2025.util.Rumble;
+import org.team1540.robot2025.util.Controllers;
 
 public class Superstructure {
     public enum SuperstructureState {
@@ -311,7 +311,7 @@ public class Superstructure {
                                     : grabber.commandStartRun(0);
                         },
                         Set.of(elevator, arm, intake, grabber))
-                .alongWith(Rumble.getInstance().rumbleDriver())
+                .alongWith(Controllers.getInstance().rumbleDriver())
                 .andThen(stow().onlyIf(() -> stow));
     }
 
