@@ -55,9 +55,7 @@ public class AutoAlignCommands {
             if (distanceToGoal <= finalAlignDistanceMeters.get()) {
                 Pose2d interpolatedPose = robotPose.interpolate(
                         goalPose,
-                        (DriverStation.isAutonomousEnabled()
-                                                ? autoFinalAlignLookaheadMeters
-                                                : finalAlignLookaheadMeters)
+                        finalAlignLookaheadMeters
                                         .get()
                                 / distanceToGoal);
                 return new Pose2d(interpolatedPose.getTranslation(), goalPose.getRotation());
