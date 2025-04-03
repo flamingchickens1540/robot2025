@@ -33,6 +33,8 @@ public class AutoAlignCommands {
             new LoggedTunableNumber("AutoAlign/FinalReefAvoidanceSectorDeg", 15);
     private static final LoggedTunableNumber finalAlignLookaheadMeters =
             new LoggedTunableNumber("AutoAlign/FinalAlignLookaheadMeters", 0.05);
+    private static final LoggedTunableNumber autoFinalAlignLookaheadMeters =
+            new LoggedTunableNumber("AutoAlign/AutoFinalAlignLookaheadMeters", 0.1);
     private static final LoggedTunableNumber finalAlignToleranceDeg =
             new LoggedTunableNumber("AutoAlign/FinalAlignToleranceDeg", 10);
     private static final LoggedTunableNumber finalAlignDistanceMeters =
@@ -129,7 +131,7 @@ public class AutoAlignCommands {
                 branch.face,
                 () -> {
                     Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
-                    if (!shouldReverse.getAsBoolean() && height == FieldConstants.ReefHeight.L4) {
+                    if (!shouldReverse.getAsBoolean()) {
                         pose = pose.transformBy(new Transform2d(Units.inchesToMeters(-3.5), 0, Rotation2d.kZero));
                     }
                     if (!shouldReverse.getAsBoolean())

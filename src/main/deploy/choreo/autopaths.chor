@@ -4,6 +4,13 @@
  "type":"Swerve",
  "variables":{
   "expressions":{
+   "FieldWidth":{
+    "dimension":"Length",
+    "var":{
+     "exp":"317 in",
+     "val":8.0518
+    }
+   },
    "IntakeEndDistance":{
     "dimension":"Length",
     "var":{
@@ -21,8 +28,8 @@
    "IntakeV":{
     "dimension":"LinVel",
     "var":{
-     "exp":"0.9 m / s",
-     "val":0.9
+     "exp":"1.5 m / s",
+     "val":1.5
     }
    },
    "MaxV":{
@@ -309,30 +316,30 @@
    },
    "SrcROutApproach":{
     "x":{
-     "exp":"1.5690326690673828 m + IntakeStartDistance * SrcRAngleX",
-     "val":2.539466120602256
+     "exp":"SrcLOutApproach.x",
+     "val":3.2663791179656982
     },
     "y":{
-     "exp":"0.6762703657150269 m + IntakeStartDistance * SrcRAngleY",
-     "val":2.011957423428065
+     "exp":"FieldWidth - SrcLOutApproach.y",
+     "val":1.4139382713317872
     },
     "heading":{
-     "exp":"(90 + 144) deg",
-     "val":4.084070449666731
+     "exp":"-SrcLOutApproach.heading",
+     "val":-3.141592653589793
     }
    },
    "SrcROutIntake":{
     "x":{
-     "exp":"1.5690326690673828 m + IntakeEndDistance * SrcRAngleX",
+     "exp":"SrcLOutIntake.x",
      "val":2.300590194070595
     },
     "y":{
-     "exp":"0.6762703657150269 m + IntakeEndDistance * SrcRAngleY",
-     "val":1.6831729169140863
+     "exp":"FieldWidth - SrcLOutIntake.y",
+     "val":1.7011533606778195
     },
     "heading":{
-     "exp":"(90 + 144) deg",
-     "val":4.084070449666731
+     "exp":"-SrcLOutIntake.heading",
+     "val":-3.141592653589793
     }
    },
    "StartC":{
@@ -369,8 +376,8 @@
      "val":7.146318435668945
     },
     "y":{
-     "exp":"0.476599782705307 m",
-     "val":0.476599782705307
+     "exp":"FieldWidth - StartL.y",
+     "val":2.848517809850602
     },
     "heading":{
      "exp":"-StartL.heading",
@@ -413,16 +420,16 @@
    "val":7.125
   },
   "radius":{
-   "exp":"2 in",
-   "val":0.0508
+   "exp":"2.0507421857391757 in",
+   "val":0.05208885151777506
   },
   "vmax":{
    "exp":"5800 RPM",
    "val":607.3745796940267
   },
   "tmax":{
-   "exp":"0.9 N * m",
-   "val":0.9
+   "exp":"1 N * m",
+   "val":1.0
   },
   "cof":{
    "exp":"1.4",

@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -31,7 +32,7 @@ public class AutoScoreCommands {
             ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
         return Commands.defer(
                 () -> {
-                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height == ReefHeight.L1;
+                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height != ReefHeight.L4;
                     return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse, height)
                             .asProxy()
                             .deadlineFor(Commands.waitUntil(() -> RobotState.getInstance()
@@ -57,7 +58,8 @@ public class AutoScoreCommands {
                                     superstructure
                                             .scoreCoral(height, () -> reverse)
                                             .asProxy(),
-                                    Commands.waitSeconds(0.1).onlyIf(() -> !reverse && height != ReefHeight.L4),
+                                    Commands.waitSeconds(0.2).onlyIf(() -> !reverse && height != ReefHeight.L4),
+                                    Commands.waitSeconds(0.25).onlyIf(DriverStation::isAutonomous),
                                     //                                    Commands.waitSeconds(0.2).onlyIf(() ->
                                     // !reverse && height == ReefHeight.L4),
                                     superstructure.score(false).asProxy());
@@ -190,5 +192,12 @@ public class AutoScoreCommands {
                                         .getDegrees())
                                 < 10)
                         .andThen(superstructure.net()));
+    }
+
+    public static Command warmup(Drivetrain drivetrain, Superstructure superstructure) {
+        return alignToBranchAndScore(ReefBranch.A, ReefHeight.L4, drivetrain, superstructure)
+                .withTimeout(1.0)
+                .ignoringDisable(true)
+                .onlyIf(DriverStation::isDisabled);
     }
 }

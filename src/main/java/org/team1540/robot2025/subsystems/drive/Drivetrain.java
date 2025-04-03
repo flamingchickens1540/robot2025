@@ -441,7 +441,7 @@ public class Drivetrain extends SubsystemBase {
                 .finallyDo(this::stop);
     }
 
-    public Command seekAndDestroy() {
+    public Command driveToCoral() {
         return Commands.run(
                         () -> {
                             ChassisSpeeds speeds = RobotState.getInstance().getIntakeAssistVelocity();

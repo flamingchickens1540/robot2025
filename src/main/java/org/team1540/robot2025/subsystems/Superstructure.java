@@ -1,7 +1,11 @@
 package org.team1540.robot2025.subsystems;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
@@ -18,8 +22,8 @@ import org.team1540.robot2025.subsystems.elevator.Elevator.ElevatorState;
 import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.intake.Intake.IntakeState;
+import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.util.AllianceFlipUtil;
-import org.team1540.robot2025.util.Controllers;
 
 public class Superstructure {
     public enum SuperstructureState {
@@ -82,15 +86,17 @@ public class Superstructure {
     public final Arm arm;
     public final Intake intake;
     public final Grabber grabber;
+    public final Leds leds;
     private final double clearanceHeight = 0.45;
 
     private SuperstructureState goalState = SuperstructureState.STOW;
 
-    public Superstructure(Elevator elevator, Arm arm, Intake intake, Grabber grabber) {
+    public Superstructure(Elevator elevator, Arm arm, Intake intake, Grabber grabber, Leds leds) {
         this.elevator = elevator;
         this.arm = arm;
         this.intake = intake;
         this.grabber = grabber;
+        this.leds = leds;
     }
 
     @AutoLogOutput(key = "Superstructure/GoalState")
@@ -273,8 +279,8 @@ public class Superstructure {
                                     .withDeadline(Commands.waitUntil(() -> !intake.hasCoral())
                                             .andThen(Commands.waitSeconds(0.5)));
                             case L2_FRONT, L3_FRONT -> grabber.commandRun(-0.25)
-                                    .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
-                                            .andThen(Commands.waitSeconds(0.05)));
+                                    .withDeadline(Commands.waitUntil(() -> !grabber.hasCoral())
+                                            .andThen(Commands.waitSeconds(0.15)));
                             case L4_FRONT -> grabber.commandRun(0.1)
                                     .until(grabber::reverseSensorTripped)
                                     .withTimeout(0.1)
@@ -293,9 +299,9 @@ public class Superstructure {
                                             .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                                     .andThen(Commands.waitSeconds(0.25)))
                                             .alongWith(
-                                                    Commands.waitSeconds(0.2),
+                                                    Commands.waitSeconds(0.4),
                                                     arm.commandToSetpoint(ArmState.BACKOFF_L4_BACK)));
-                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.6)
+                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.25)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
                             case PROCESSOR_BACK -> grabber.commandRun(-0.3).withTimeout(0.5);
@@ -305,13 +311,14 @@ public class Superstructure {
                             case SCORE_BARGE_FRONT -> grabber.commandRun(-1.0)
                                     .withTimeout(0.5)
                                     .alongWith(Commands.waitSeconds(0.4)
-                                            .andThen(arm.commandToSetpoint(ArmState.BACKOFF_BARGE_FRONT)));
+                                            .andThen(
+                                                    arm.commandToSetpoint(ArmState.BACKOFF_BARGE_FRONT),
+                                                    elevator.commandToSetpoint(ElevatorState.BARGE_BACKOFF)));
                             default -> grabber.hasAlgae()
                                     ? grabber.commandRun(-0.5).withTimeout(0.5)
                                     : grabber.commandStartRun(0);
                         },
                         Set.of(elevator, arm, intake, grabber))
-                .alongWith(Controllers.getInstance().rumbleDriver())
                 .andThen(stow().onlyIf(() -> stow));
     }
 
@@ -402,7 +409,7 @@ public class Superstructure {
         return Commands.sequence(
                 commandToState(SuperstructureState.INTAKE_GROUND_L1).withTimeout(1.0),
                 intake.commandRunRoller(0.7).until(intake::hasCoral),
-                intake.commandRunRoller(0.2).withTimeout(0.2),
+                intake.commandRunRoller(0.7).withTimeout(0.5),
                 stow());
     }
 
@@ -456,6 +463,11 @@ public class Superstructure {
 
     public Command zeroCommand() {
         return Commands.sequence(
-                arm.commandToSetpoint(ArmState.STOW), Commands.parallel(elevator.zeroCommand(), intake.zeroCommand()));
+                        arm.commandToSetpoint(ArmState.STOW),
+                        Commands.parallel(elevator.zeroCommand(), intake.zeroCommand()))
+                .andThen(() -> leds.viewTop
+                        .commandShowPattern(LEDPattern.solid(Color.kMagenta).blink(Seconds.of(0.1)))
+                        .withTimeout(1)
+                        .schedule());
     }
 }

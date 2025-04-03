@@ -95,8 +95,9 @@ public class RobotContainer {
                 grabber = Grabber.createDummy();
                 climber = Climber.createDummy();
         }
-        superstructure = new Superstructure(elevator, arm, intake, grabber);
+        superstructure = new Superstructure(elevator, arm, intake, grabber, leds);
         autos = new Autos(drivetrain, superstructure);
+        AutoScoreCommands.warmup(drivetrain, superstructure).schedule();
 
         configureButtonBindings();
         configureAutoRoutines();
@@ -108,9 +109,10 @@ public class RobotContainer {
     private void configureButtonBindings() {
         // Sim testing binding
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
-            driver.y()
-                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
-                            ReefBranch.E, ReefHeight.L2, drivetrain, superstructure));
+//            driver.y()
+//                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
+//                            ReefBranch.E, ReefHeight.L2, drivetrain, superstructure));
+            driver.y().whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain, superstructure));
             //            driver.b().whileTrue(AutoScoreCommands.alignToFaceAndClean(ReefBranch.E.face, drivetrain,
             // superstructure));
             //            driver.a()
@@ -179,11 +181,11 @@ public class RobotContainer {
         copilot.leftTrigger().onTrue(superstructure.stow());
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
+        copilot.povLeft().onTrue(Commands.runOnce(() -> climber.resetPosition(Rotation2d.fromDegrees(30))));
 
         copilot.y().onTrue(superstructure.L4(() -> true));
         copilot.x().onTrue(superstructure.L3(() -> true));
         copilot.a().onTrue(superstructure.L2(() -> true));
-        copilot.povRight().onTrue(superstructure.L1());
 
         buttonBoard
                 .button(1)
@@ -273,6 +275,7 @@ public class RobotContainer {
 
         //        autoChooser.addRoutine("Left 4 Piece Sweep Reverse", autos::left4PieceSweepReverse);
         autoChooser.addRoutine("Left 4 Piece", autos::left4Piece);
+        autoChooser.addRoutine("Left 4 Piece Rizz", autos::left4PieceRizz);
         //        autoChooser.addRoutine("Left 4 Piece Eyes", autos::left4PieceEyes);
         autoChooser.addRoutine("Center 1 Piece", autos::center1Piece);
         if (Constants.isTuningMode()) {

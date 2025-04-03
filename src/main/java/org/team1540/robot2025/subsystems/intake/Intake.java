@@ -25,9 +25,7 @@ public class Intake extends SubsystemBase {
         STOW(new LoggedTunableNumber("Intake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees())),
         INTAKE(new LoggedTunableNumber("Intake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees())),
         EJECT(new LoggedTunableNumber("Intake/Setpoints/Eject/AngleDegrees", 60)),
-        L1(new LoggedTunableNumber(
-                "Intake/Setpoints/L1/AngleDegrees",
-                50)); // TODO double check this because I cant remember if this is correct or not
+        L1(new LoggedTunableNumber("Intake/Setpoints/L1/AngleDegrees", 57));
 
         private final DoubleSupplier pivotPosition;
 
@@ -52,7 +50,6 @@ public class Intake extends SubsystemBase {
 
     private final Alert pivotDisconnectedAlert = new Alert("Intake pivot disconnected", Alert.AlertType.kError);
     private final Alert rollerDisconnectedAlert = new Alert("Intake roller disconnected", Alert.AlertType.kError);
-    private final Alert funnelDisconnectedAlert = new Alert("Intake funnel disconnected", Alert.AlertType.kError);
 
     private Rotation2d pivotSetpoint = PIVOT_MIN_ANGLE;
 
@@ -90,7 +87,6 @@ public class Intake extends SubsystemBase {
 
         pivotDisconnectedAlert.set(!inputs.pivotConnected);
         rollerDisconnectedAlert.set(!inputs.spinConnected);
-        funnelDisconnectedAlert.set(!inputs.funnelConnected);
 
         LoggedTracer.record("Intake");
     }
