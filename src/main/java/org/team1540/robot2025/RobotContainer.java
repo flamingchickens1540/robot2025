@@ -179,11 +179,11 @@ public class RobotContainer {
         copilot.leftTrigger().onTrue(superstructure.stow());
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
+        copilot.povLeft().onTrue(Commands.runOnce(() -> climber.resetPosition(Rotation2d.kZero)));
 
         copilot.y().onTrue(superstructure.L4(() -> true));
         copilot.x().onTrue(superstructure.L3(() -> true));
         copilot.a().onTrue(superstructure.L2(() -> true));
-        copilot.povRight().onTrue(superstructure.L1());
 
         buttonBoard
                 .button(1)
