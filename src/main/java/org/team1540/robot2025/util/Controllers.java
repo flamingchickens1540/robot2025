@@ -1,5 +1,6 @@
 package org.team1540.robot2025.util;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,9 +27,10 @@ public class Controllers {
 
     public static Command rumbleCommandTimed(XboxController controller, double amount, double duration) {
         return startStopTimed(
-                () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, amount),
-                () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, 0),
-                duration);
+                        () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, amount),
+                        () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, 0),
+                        duration)
+                .onlyIf(() -> !DriverStation.isAutonomous());
     }
 
     public static Command rumbleCommandTimed(CommandXboxController controller, double amount, double duration) {
@@ -37,8 +39,9 @@ public class Controllers {
 
     public static Command rumbleCommand(XboxController controller, double amount) {
         return Commands.startEnd(
-                () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, amount),
-                () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, 0));
+                        () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, amount),
+                        () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, 0))
+                .onlyIf(() -> !DriverStation.isAutonomous());
     }
 
     public static Command rumbleCommand(CommandXboxController controller, double amount) {
@@ -54,7 +57,7 @@ public class Controllers {
     }
 
     public Command setDriverRumble(GenericHID.RumbleType type, double value) {
-        return Commands.runOnce(() -> driver.setRumble(type, value));
+        return Commands.runOnce(() -> driver.setRumble(type, value)).onlyIf(() -> !DriverStation.isAutonomous());
     }
 
     public Command rumbleCopilot() {
@@ -66,7 +69,7 @@ public class Controllers {
     }
 
     public Command setCopilotRumble(GenericHID.RumbleType type, double value) {
-        return Commands.runOnce(() -> copilot.setRumble(type, value));
+        return Commands.runOnce(() -> copilot.setRumble(type, value)).onlyIf(() -> !DriverStation.isAutonomous());
     }
 
     public CommandXboxController getDriver() {
