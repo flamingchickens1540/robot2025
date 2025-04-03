@@ -272,8 +272,8 @@ public class Superstructure {
                                     .withDeadline(Commands.waitUntil(() -> !intake.hasCoral())
                                             .andThen(Commands.waitSeconds(0.5)));
                             case L2_FRONT, L3_FRONT -> grabber.commandRun(-0.25)
-                                    .withDeadline(Commands.waitUntil(() -> !grabber.forwardSensorTripped())
-                                            .andThen(Commands.waitSeconds(0.05)));
+                                    .withDeadline(Commands.waitUntil(() -> !grabber.hasCoral())
+                                            .andThen(Commands.waitSeconds(0.15)));
                             case L4_FRONT -> grabber.commandRun(0.1)
                                     .until(grabber::reverseSensorTripped)
                                     .withTimeout(0.1)

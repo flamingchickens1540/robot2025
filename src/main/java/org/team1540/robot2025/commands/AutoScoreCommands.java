@@ -31,7 +31,7 @@ public class AutoScoreCommands {
             ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
         return Commands.defer(
                 () -> {
-                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height == ReefHeight.L1;
+                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height != ReefHeight.L4;
                     return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse, height)
                             .asProxy()
                             .deadlineFor(Commands.waitUntil(() -> RobotState.getInstance()
