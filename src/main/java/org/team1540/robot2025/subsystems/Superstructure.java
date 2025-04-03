@@ -19,7 +19,6 @@ import org.team1540.robot2025.subsystems.grabber.Grabber;
 import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.intake.Intake.IntakeState;
 import org.team1540.robot2025.util.AllianceFlipUtil;
-import org.team1540.robot2025.util.Controllers;
 
 public class Superstructure {
     public enum SuperstructureState {
@@ -295,7 +294,7 @@ public class Superstructure {
                                             .alongWith(
                                                     Commands.waitSeconds(0.2),
                                                     arm.commandToSetpoint(ArmState.BACKOFF_L4_BACK)));
-                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.5)
+                            case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.4)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                             .andThen(Commands.waitSeconds(0.25)));
                             case PROCESSOR_BACK -> grabber.commandRun(-0.3).withTimeout(0.5);
@@ -306,7 +305,8 @@ public class Superstructure {
                                     .withTimeout(0.5)
                                     .alongWith(Commands.waitSeconds(0.4)
                                             .andThen(arm.commandToSetpoint(ArmState.BACKOFF_BARGE_FRONT)
-                                                    .alongWith(elevator.commandToSetpoint(ElevatorState.BARGE_BACKOFF))));
+                                                    .alongWith(
+                                                            elevator.commandToSetpoint(ElevatorState.BARGE_BACKOFF))));
                             default -> grabber.hasAlgae()
                                     ? grabber.commandRun(-0.5).withTimeout(0.5)
                                     : grabber.commandStartRun(0);

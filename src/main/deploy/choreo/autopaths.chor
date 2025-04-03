@@ -21,8 +21,8 @@
    "IntakeV":{
     "dimension":"LinVel",
     "var":{
-     "exp":"0.9 m / s",
-     "val":0.9
+     "exp":"1.5 m / s",
+     "val":1.5
     }
    },
    "MaxV":{

@@ -2,6 +2,7 @@ package org.team1540.robot2025.commands;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.List;
@@ -33,6 +34,8 @@ public class AutoAlignCommands {
             new LoggedTunableNumber("AutoAlign/FinalReefAvoidanceSectorDeg", 15);
     private static final LoggedTunableNumber finalAlignLookaheadMeters =
             new LoggedTunableNumber("AutoAlign/FinalAlignLookaheadMeters", 0.05);
+    private static final LoggedTunableNumber autoFinalAlignLookaheadMeters =
+            new LoggedTunableNumber("AutoAlign/AutoFinalAlignLookaheadMeters", 0.1);
     private static final LoggedTunableNumber finalAlignToleranceDeg =
             new LoggedTunableNumber("AutoAlign/FinalAlignToleranceDeg", 10);
     private static final LoggedTunableNumber finalAlignDistanceMeters =
@@ -50,8 +53,13 @@ public class AutoAlignCommands {
         if (Math.abs(angularError.getDegrees()) <= finalAlignToleranceDeg.get()) {
             double distanceToGoal = robotFromReef.getTranslation().getDistance(goalFromReef.getTranslation());
             if (distanceToGoal <= finalAlignDistanceMeters.get()) {
-                Pose2d interpolatedPose =
-                        robotPose.interpolate(goalPose, finalAlignLookaheadMeters.get() / distanceToGoal);
+                Pose2d interpolatedPose = robotPose.interpolate(
+                        goalPose,
+                        (DriverStation.isAutonomousEnabled()
+                                                ? autoFinalAlignLookaheadMeters
+                                                : finalAlignLookaheadMeters)
+                                        .get()
+                                / distanceToGoal);
                 return new Pose2d(interpolatedPose.getTranslation(), goalPose.getRotation());
             }
             return goalPose;
