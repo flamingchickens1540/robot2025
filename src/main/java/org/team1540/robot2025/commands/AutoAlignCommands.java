@@ -2,7 +2,6 @@ package org.team1540.robot2025.commands;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.List;
@@ -53,11 +52,8 @@ public class AutoAlignCommands {
         if (Math.abs(angularError.getDegrees()) <= finalAlignToleranceDeg.get()) {
             double distanceToGoal = robotFromReef.getTranslation().getDistance(goalFromReef.getTranslation());
             if (distanceToGoal <= finalAlignDistanceMeters.get()) {
-                Pose2d interpolatedPose = robotPose.interpolate(
-                        goalPose,
-                        finalAlignLookaheadMeters
-                                        .get()
-                                / distanceToGoal);
+                Pose2d interpolatedPose =
+                        robotPose.interpolate(goalPose, finalAlignLookaheadMeters.get() / distanceToGoal);
                 return new Pose2d(interpolatedPose.getTranslation(), goalPose.getRotation());
             }
             return goalPose;
