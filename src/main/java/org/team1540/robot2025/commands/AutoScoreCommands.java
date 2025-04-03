@@ -57,7 +57,7 @@ public class AutoScoreCommands {
                                     superstructure
                                             .scoreCoral(height, () -> reverse)
                                             .asProxy(),
-                                    Commands.waitSeconds(0.1).onlyIf(() -> !reverse && height != ReefHeight.L4),
+                                    Commands.waitSeconds(0.2).onlyIf(() -> !reverse && height != ReefHeight.L4),
                                     //                                    Commands.waitSeconds(0.2).onlyIf(() ->
                                     // !reverse && height == ReefHeight.L4),
                                     superstructure.score(false).asProxy());

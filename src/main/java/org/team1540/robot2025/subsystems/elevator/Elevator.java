@@ -41,6 +41,7 @@ public class Elevator extends SubsystemBase {
         FRONT_STAGE(new LoggedTunableNumber("Elevator/Setpoints/L2L3FrontStage", 0.635)),
         BACK_STAGE(new LoggedTunableNumber("Elevator/Setpoints/L2L3BackStage", 0.55)),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
+        BARGE_BACKOFF(new LoggedTunableNumber("Elevator/Setpoints/BargeBackoff", MAX_HEIGHT_M - 0.2)),
         GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.42)),
 
         REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowBack", 0.8)),

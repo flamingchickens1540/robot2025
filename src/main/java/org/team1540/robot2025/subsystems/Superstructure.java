@@ -305,13 +305,13 @@ public class Superstructure {
                             case SCORE_BARGE_FRONT -> grabber.commandRun(-1.0)
                                     .withTimeout(0.5)
                                     .alongWith(Commands.waitSeconds(0.4)
-                                            .andThen(arm.commandToSetpoint(ArmState.BACKOFF_BARGE_FRONT)));
+                                            .andThen(arm.commandToSetpoint(ArmState.BACKOFF_BARGE_FRONT)
+                                                    .alongWith(elevator.commandToSetpoint(ElevatorState.BARGE_BACKOFF))));
                             default -> grabber.hasAlgae()
                                     ? grabber.commandRun(-0.5).withTimeout(0.5)
                                     : grabber.commandStartRun(0);
                         },
                         Set.of(elevator, arm, intake, grabber))
-                .alongWith(Controllers.getInstance().rumbleDriver())
                 .andThen(stow().onlyIf(() -> stow));
     }
 
@@ -402,7 +402,7 @@ public class Superstructure {
         return Commands.sequence(
                 commandToState(SuperstructureState.INTAKE_GROUND_L1).withTimeout(1.0),
                 intake.commandRunRoller(0.7).until(intake::hasCoral),
-                intake.commandRunRoller(0.2).withTimeout(0.2),
+                intake.commandRunRoller(0.7).withTimeout(0.5),
                 stow());
     }
 
