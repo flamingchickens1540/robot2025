@@ -289,7 +289,7 @@ public class Superstructure {
                                     .until(grabber::forwardSensorTripped)
                                     .withTimeout(0.1)
                                     .onlyIf(() -> !grabber.forwardSensorTripped() && grabber.reverseSensorTripped())
-                                    .andThen(grabber.commandRun(0.4)
+                                    .andThen(grabber.commandRun(0.35)
                                             .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                                     .andThen(Commands.waitSeconds(0.25)))
                                             .alongWith(
