@@ -21,7 +21,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.Unit;
 import edu.wpi.first.units.measure.*;
 
 public class ClimberIOReal implements ClimberIO {
@@ -72,9 +71,9 @@ public class ClimberIOReal implements ClimberIO {
         pivotConfig.CurrentLimits.SupplyCurrentLowerTime = 15;
 
         pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 0;
+        pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Units.degreesToRotations(65);
         pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-        pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Units.degreesToRotations(50);
+        pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
 
         pivotMotor.getConfigurator().apply(pivotConfig);
         BaseStatusSignal.setUpdateFrequencyForAll(

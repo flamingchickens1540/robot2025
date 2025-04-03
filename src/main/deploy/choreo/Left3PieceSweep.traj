@@ -29,7 +29,7 @@
  },
  "params":{
   "waypoints":[
-    {"x":{"exp":"StartL.x", "val":7.087358474731445}, "y":{"exp":"StartL.y", "val":7.572288990020752}, "heading":{"exp":"pi rad", "val":3.141592653589793}, "intervals":43, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"StartL.x", "val":7.146318435668945}, "y":{"exp":"StartL.y", "val":5.203282190149398}, "heading":{"exp":"pi rad", "val":3.141592653589793}, "intervals":43, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"J.x", "val":5.064370245480891}, "y":{"exp":"J.y", "val":5.203282190149398}, "heading":{"exp":"180 deg + J.heading", "val":4.1887902047863905}, "intervals":27, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"5.079347610473633 m", "val":5.079347610473633}, "y":{"exp":"5.7630133628845215 m", "val":5.7630133628845215}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":42, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"2.7714428901672363 m", "val":2.7714428901672363}, "y":{"exp":"6.350363731384277 m", "val":6.350363731384277}, "heading":{"exp":"2.3191749290669326 rad", "val":2.319174929066933}, "intervals":24, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
@@ -49,8 +49,8 @@
     {"from":6, "to":7, "data":{"type":"MaxAngularVelocity", "props":{"max":{"exp":"1 rad / s", "val":1.0}}}, "enabled":true},
     {"from":"first", "to":"last", "data":{"type":"MaxVelocity", "props":{"max":{"exp":"MaxV", "val":3.0}}}, "enabled":true},
     {"from":3, "to":4, "data":{"type":"MaxAngularVelocity", "props":{"max":{"exp":"1 rad / s", "val":1.0}}}, "enabled":true},
-    {"from":6, "to":7, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"IntakeV", "val":1.5}}}, "enabled":true},
-    {"from":3, "to":4, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"IntakeV", "val":1.5}}}, "enabled":true}],
+    {"from":6, "to":7, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"IntakeV", "val":0.9}}}, "enabled":true},
+    {"from":3, "to":4, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"IntakeV", "val":0.9}}}, "enabled":true}],
   "targetDt":{
    "exp":"0.05 s",
    "val":0.05
