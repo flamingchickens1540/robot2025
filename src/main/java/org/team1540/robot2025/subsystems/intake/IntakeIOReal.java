@@ -54,20 +54,14 @@ public class IntakeIOReal implements IntakeIO {
     private final MotionMagicVoltage pivotPositionRequest = new MotionMagicVoltage(0).withSlot(0);
     private final VoltageOut pivotVoltageRequest = new VoltageOut(0);
 
-    // clockwise to intake, counter-clockwise to spit out
-    private final SparkMax funnelNeo = new SparkMax(FUNNEL_MOTOR_ID, SparkLowLevel.MotorType.kBrushless);
-    private final RelativeEncoder funnelEncoder = funnelNeo.getEncoder();
-
     private final LaserCan laserCan = new LaserCan(LASER_CAN_ID);
 
     private final Debouncer spinConnectedDebounce = new Debouncer(0.5);
     private final Debouncer pivotConnectedDebounce = new Debouncer(0.5);
-    private final Debouncer funnelConnectedDebounce = new Debouncer(0.5);
 
     public IntakeIOReal() {
         TalonFXConfiguration spinTalonFXConfigs = new TalonFXConfiguration();
         TalonFXConfiguration pivotTalonFXConfigs = new TalonFXConfiguration();
-        SparkMaxConfig funnelNEOConfig = new SparkMaxConfig();
 
         spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimitEnable(true);
         spinTalonFXConfigs.CurrentLimits.withStatorCurrentLimit(120);
@@ -103,14 +97,6 @@ public class IntakeIOReal implements IntakeIO {
 
         pivotFalcon.getConfigurator().apply(pivotTalonFXConfigs);
         pivotFalcon.setPosition(PIVOT_MAX_ANGLE.getRotations());
-
-        funnelNEOConfig.smartCurrentLimit(40);
-        funnelNEOConfig.inverted(false);
-        funnelNEOConfig.idleMode(SparkBaseConfig.IdleMode.kCoast);
-        funnelNEOConfig.encoder.positionConversionFactor(1.0 / FUNNEL_GEAR_RATIO);
-
-        funnelNeo.configure(
-                funnelNEOConfig, SparkBase.ResetMode.kResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
                 50.0,
@@ -151,11 +137,6 @@ public class IntakeIOReal implements IntakeIO {
     }
 
     @Override
-    public void setFunnelVoltage(double voltage) {
-        funnelNeo.setVoltage(voltage);
-    }
-
-    @Override
     public void updateInputs(IntakeInputs inputs) {
         StatusCode spinStatus = BaseStatusSignal.refreshAll(
                 spinVelocity, spinPosition, spinAppliedVoltage, spinSupplyCurrent, spinStatorCurrent, spinTemp);
@@ -174,12 +155,6 @@ public class IntakeIOReal implements IntakeIO {
         inputs.pivotMotorAppliedVolts = pivotAppliedVoltage.getValueAsDouble();
         inputs.pivotSupplyCurrentAmps = pivotSupplyCurrent.getValueAsDouble();
         inputs.pivotStatorCurrentAmps = pivotStatorCurrent.getValueAsDouble();
-
-        inputs.funnelMotorAppliedVolts = (funnelNeo.getAppliedOutput() * funnelNeo.getBusVoltage());
-        inputs.funnelMotorVelocityRPS = funnelEncoder.getVelocity();
-        inputs.funnelSupplyCurrentAmps = funnelNeo.getOutputCurrent();
-        inputs.funnelStatorCurrentAmps = funnelNeo.getOutputCurrent();
-        inputs.funnelConnected = funnelConnectedDebounce.calculate(funnelNeo.getLastError() == REVLibError.kOk);
 
         LaserCanInterface.Measurement measurement = laserCan.getMeasurement();
         inputs.sensorConnected = measurement != null;

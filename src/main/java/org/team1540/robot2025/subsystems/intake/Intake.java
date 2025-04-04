@@ -50,7 +50,6 @@ public class Intake extends SubsystemBase {
 
     private final Alert pivotDisconnectedAlert = new Alert("Intake pivot disconnected", Alert.AlertType.kError);
     private final Alert rollerDisconnectedAlert = new Alert("Intake roller disconnected", Alert.AlertType.kError);
-    private final Alert funnelDisconnectedAlert = new Alert("Intake funnel disconnected", Alert.AlertType.kError);
 
     private Rotation2d pivotSetpoint = PIVOT_MIN_ANGLE;
 
@@ -88,7 +87,6 @@ public class Intake extends SubsystemBase {
 
         pivotDisconnectedAlert.set(!inputs.pivotConnected);
         rollerDisconnectedAlert.set(!inputs.spinConnected);
-        funnelDisconnectedAlert.set(!inputs.funnelConnected);
 
         LoggedTracer.record("Intake");
     }
