@@ -273,6 +273,7 @@ public class RobotContainer {
 
         //        autoChooser.addRoutine("Left 4 Piece Sweep Reverse", autos::left4PieceSweepReverse);
         autoChooser.addRoutine("Left 4 Piece", autos::left4Piece);
+        autoChooser.addRoutine("Left 4 Piece Rizz", autos::left4PieceRizz);
         //        autoChooser.addRoutine("Left 4 Piece Eyes", autos::left4PieceEyes);
         autoChooser.addRoutine("Center 1 Piece", autos::center1Piece);
         if (Constants.isTuningMode()) {

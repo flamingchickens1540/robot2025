@@ -372,7 +372,7 @@ public class Autos {
         routine.active().onTrue(startToJ.cmd());
         //        routine.active().onTrue(superstructure.zeroCommand());
 
-        startToJ.atTimeBeforeEnd(0.6)
+        startToJ.atTimeBeforeEnd(0.5)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.J, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(Commands.parallel(
@@ -388,7 +388,7 @@ public class Autos {
                 .onTrue(leftSrcToK.spawnCmd());
 
         leftSrcToK
-                .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .atTimeBeforeEnd(0.5)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.K, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(superstructure.coralGroundIntake().asProxy().alongWith(kToLeftSrc.spawnCmd())));
@@ -399,7 +399,7 @@ public class Autos {
                 .onTrue(leftSrcToL.spawnCmd());
 
         leftSrcToL
-                .atTimeBeforeEnd(0.9)
+                .atTimeBeforeEnd(0.5)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.L, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(superstructure.coralGroundIntake().asProxy().alongWith(lToLeftSrc.spawnCmd())));
@@ -410,9 +410,69 @@ public class Autos {
                 .onTrue(leftSrcToA.spawnCmd());
 
         leftSrcToA
-                .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .atTimeBeforeEnd(0.5)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(
                         ReefBranch.A, ReefHeight.L4, drivetrain, superstructure));
+        return routine;
+    }
+
+    public AutoRoutine left4PieceRizz() {
+        final String trajName = "Left4PieceRizz";
+
+        AutoRoutine routine = autoFactory.newRoutine("Left4PieceRizz");
+        AutoTrajectory startToI = routine.trajectory(trajName, 0);
+        AutoTrajectory iToLeftSrc = routine.trajectory(trajName, 1);
+        AutoTrajectory leftSrcToL = routine.trajectory(trajName, 2);
+        AutoTrajectory lToLeftSrc = routine.trajectory(trajName, 3);
+        AutoTrajectory leftSrcToK = routine.trajectory(trajName, 4);
+        AutoTrajectory kToLeftSrc = routine.trajectory(trajName, 5);
+        AutoTrajectory leftSrcToJ = routine.trajectory(trajName, 6);
+
+        resetPoseInSim(routine, startToI);
+        routine.active().onTrue(startToI.cmd());
+        //        routine.active().onTrue(superstructure.zeroCommand());
+
+        startToI.atTimeBeforeEnd(0.5)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.I, ReefHeight.L4, drivetrain, superstructure)
+                        .withTimeout(ALIGN_TIMEOUT)
+                        .andThen(Commands.parallel(
+                                iToLeftSrc.spawnCmd(),
+                                Commands.waitSeconds(0.25)
+                                        .andThen(superstructure
+                                                .coralGroundIntake()
+                                                .asProxy()))));
+
+        iToLeftSrc
+                .done()
+                //                .or(superstructure.intake::hasCoral)
+                .onTrue(leftSrcToL.spawnCmd());
+
+        leftSrcToL
+                .atTimeBeforeEnd(0.5)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.L, ReefHeight.L4, drivetrain, superstructure)
+                        .withTimeout(ALIGN_TIMEOUT)
+                        .andThen(superstructure.coralGroundIntake().asProxy().alongWith(lToLeftSrc.spawnCmd())));
+
+        lToLeftSrc
+                .done()
+                //                .or(superstructure.intake::hasCoral)
+                .onTrue(leftSrcToK.spawnCmd());
+
+        leftSrcToK
+                .atTimeBeforeEnd(0.5)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.K, ReefHeight.L4, drivetrain, superstructure)
+                        .withTimeout(ALIGN_TIMEOUT)
+                        .andThen(superstructure.coralGroundIntake().asProxy().alongWith(kToLeftSrc.spawnCmd())));
+
+        kToLeftSrc
+                .done()
+                //                .or(superstructure.intake::hasCoral)
+                .onTrue(leftSrcToJ.spawnCmd());
+
+        leftSrcToJ
+                .atTimeBeforeEnd(0.5)
+                .onTrue(AutoScoreCommands.alignToBranchAndScore(
+                        ReefBranch.I, ReefHeight.L4, drivetrain, superstructure));
         return routine;
     }
 
@@ -543,7 +603,7 @@ public class Autos {
         routine.active().onTrue(startToE.cmd());
         //        routine.active().onTrue(superstructure.zeroCommand());
 
-        startToE.atTimeBeforeEnd(0.6)
+        startToE.atTimeBeforeEnd(0.5)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.E, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(Commands.parallel(
@@ -559,7 +619,7 @@ public class Autos {
                 .onTrue(rightSrcToD.spawnCmd());
 
         rightSrcToD
-                .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .atTimeBeforeEnd(0.5)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.D, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(superstructure.coralGroundIntake().asProxy().alongWith(dToRightSrc.spawnCmd())));
@@ -570,7 +630,7 @@ public class Autos {
                 .onTrue(rightSrcToC.spawnCmd());
 
         rightSrcToC
-                .atTimeBeforeEnd(0.9)
+                .atTimeBeforeEnd(0.5)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.C, ReefHeight.L4, drivetrain, superstructure)
                         .withTimeout(ALIGN_TIMEOUT)
                         .andThen(superstructure.coralGroundIntake().asProxy().alongWith(cToRightSrc.spawnCmd())));
@@ -581,7 +641,7 @@ public class Autos {
                 .onTrue(rightSrcToB.spawnCmd());
 
         rightSrcToB
-                .atTimeBeforeEnd(AUTO_ALIGN_SWITCH_TIME)
+                .atTimeBeforeEnd(0.5)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(
                         ReefBranch.B, ReefHeight.L4, drivetrain, superstructure));
         return routine;
