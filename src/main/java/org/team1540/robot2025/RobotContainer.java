@@ -95,8 +95,9 @@ public class RobotContainer {
                 grabber = Grabber.createDummy();
                 climber = Climber.createDummy();
         }
-        superstructure = new Superstructure(elevator, arm, intake, grabber);
+        superstructure = new Superstructure(elevator, arm, intake, grabber, leds);
         autos = new Autos(drivetrain, superstructure);
+        AutoScoreCommands.warmup(drivetrain, superstructure).schedule();
 
         configureButtonBindings();
         configureAutoRoutines();
