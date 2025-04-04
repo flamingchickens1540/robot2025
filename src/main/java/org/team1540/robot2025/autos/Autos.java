@@ -502,7 +502,7 @@ public class Autos {
         jToLeftSrc
                 .atTimeBeforeEnd(1.5)
                 .onTrue(drivetrain
-                        .seekAndDestroy()
+                        .driveToCoral()
                         .until(superstructure.grabber::hasCoral)
                         .withTimeout(1.5)
                         .andThen(leftSrcToK.spawnCmd()));
@@ -514,7 +514,7 @@ public class Autos {
         kToLeftSrc
                 .atTimeBeforeEnd(1.5)
                 .onTrue(drivetrain
-                        .seekAndDestroy()
+                        .driveToCoral()
                         .until(superstructure.grabber::hasCoral)
                         .withTimeout(1.5)
                         .andThen(leftSrcToL.spawnCmd()));
@@ -526,7 +526,7 @@ public class Autos {
         lToLeftSrc
                 .atTimeBeforeEnd(1.5)
                 .onTrue(drivetrain
-                        .seekAndDestroy()
+                        .driveToCoral()
                         .until(superstructure.grabber::hasCoral)
                         .withTimeout(1.5)
                         .andThen(leftSrcToA.spawnCmd()));
