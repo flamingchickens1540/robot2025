@@ -34,7 +34,7 @@ public class Elevator extends SubsystemBase {
         L1_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L1Front", 0.2)),
         L2_BACK(new LoggedTunableNumber("Elevator/Setpoints/L2Back", 0.435)),
         L2_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L2Front", 0.635)),
-        L3_BACK(new LoggedTunableNumber("Elevator/Setpoints/L3Back", 0.835)),
+        L3_BACK(new LoggedTunableNumber("Elevator/Setpoints/L3Back", 0.885)),
         L3_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L3Front", 1.035)),
         L4_BACK(new LoggedTunableNumber("Elevator/Setpoints/L4Back", MAX_HEIGHT_M - Units.inchesToMeters(2))),
         L4_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L4Front", MAX_HEIGHT_M)),
