@@ -109,9 +109,10 @@ public class RobotContainer {
     private void configureButtonBindings() {
         // Sim testing binding
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
-            driver.y()
-                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
-                            ReefBranch.E, ReefHeight.L2, drivetrain, superstructure));
+//            driver.y()
+//                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
+//                            ReefBranch.E, ReefHeight.L2, drivetrain, superstructure));
+            driver.y().whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain, superstructure));
             //            driver.b().whileTrue(AutoScoreCommands.alignToFaceAndClean(ReefBranch.E.face, drivetrain,
             // superstructure));
             //            driver.a()
