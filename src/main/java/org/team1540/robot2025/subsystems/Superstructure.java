@@ -1,13 +1,14 @@
 package org.team1540.robot2025.subsystems;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.LEDPattern;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj.util.Color;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -23,8 +24,6 @@ import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.intake.Intake.IntakeState;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.util.AllianceFlipUtil;
-
-import static edu.wpi.first.units.Units.Seconds;
 
 public class Superstructure {
     public enum SuperstructureState {
@@ -312,9 +311,9 @@ public class Superstructure {
                             case SCORE_BARGE_FRONT -> grabber.commandRun(-1.0)
                                     .withTimeout(0.5)
                                     .alongWith(Commands.waitSeconds(0.4)
-                                            .andThen(arm.commandToSetpoint(ArmState.BACKOFF_BARGE_FRONT)
-                                                    .alongWith(
-                                                            elevator.commandToSetpoint(ElevatorState.BARGE_BACKOFF))));
+                                            .andThen(
+                                                    arm.commandToSetpoint(ArmState.BACKOFF_BARGE_FRONT),
+                                                    elevator.commandToSetpoint(ElevatorState.BARGE_BACKOFF)));
                             default -> grabber.hasAlgae()
                                     ? grabber.commandRun(-0.5).withTimeout(0.5)
                                     : grabber.commandStartRun(0);
@@ -464,8 +463,11 @@ public class Superstructure {
 
     public Command zeroCommand() {
         return Commands.sequence(
-                arm.commandToSetpoint(ArmState.STOW), Commands.parallel(elevator.zeroCommand(), intake.zeroCommand())).andThen(
-                () -> leds.viewTop.commandShowPattern(LEDPattern.solid(Color.kMagenta).blink(Seconds.of(0.1))).withTimeout(1).schedule()
-        );
+                        arm.commandToSetpoint(ArmState.STOW),
+                        Commands.parallel(elevator.zeroCommand(), intake.zeroCommand()))
+                .andThen(() -> leds.viewTop
+                        .commandShowPattern(LEDPattern.solid(Color.kMagenta).blink(Seconds.of(0.1)))
+                        .withTimeout(1)
+                        .schedule());
     }
 }

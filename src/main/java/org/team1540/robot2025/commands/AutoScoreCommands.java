@@ -194,6 +194,9 @@ public class AutoScoreCommands {
     }
 
     public static Command warmup(Drivetrain drivetrain, Superstructure superstructure) {
-        return alignToBranchAndScore(ReefBranch.A, ReefHeight.L4, drivetrain, superstructure).withTimeout(1.0).ignoringDisable(true).onlyIf(DriverStation::isDisabled);
+        return alignToBranchAndScore(ReefBranch.A, ReefHeight.L4, drivetrain, superstructure)
+                .withTimeout(1.0)
+                .ignoringDisable(true)
+                .onlyIf(DriverStation::isDisabled);
     }
 }
