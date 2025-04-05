@@ -299,7 +299,7 @@ public class Superstructure {
                                             .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
                                                     .andThen(Commands.waitSeconds(0.25)))
                                             .alongWith(
-                                                    Commands.waitSeconds(0.3),
+                                                    Commands.waitSeconds(0.4),
                                                     arm.commandToSetpoint(ArmState.BACKOFF_L4_BACK)));
                             case L1_BACK, L2_BACK, L3_BACK -> grabber.commandRun(0.25)
                                     .withDeadline(Commands.waitUntil(() -> !grabber.reverseSensorTripped())
