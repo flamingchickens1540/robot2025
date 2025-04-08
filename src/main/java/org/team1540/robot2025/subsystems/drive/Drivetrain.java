@@ -66,6 +66,15 @@ public class Drivetrain extends SubsystemBase {
     private static final LoggedTunableNumber autoAlignRotationAccelFactor =
             new LoggedTunableNumber("AutoAlign/RotationAccelFactor", 0.5);
 
+    private static final LoggedTunableNumber autoAlignLinearSpeedFactorFast =
+            new LoggedTunableNumber("AutoAlign/LinearSpeedFactorFast", 0.7);
+    private static final LoggedTunableNumber autoAlignLinearAccelFactorFast =
+            new LoggedTunableNumber("AutoAlign/LinearAccelFactorFast", 0.5);
+    private static final LoggedTunableNumber autoAlignRotationSpeedFactorFast =
+            new LoggedTunableNumber("AutoAlign/RotationSpeedFactorFast", 0.5);
+    private static final LoggedTunableNumber autoAlignRotationAccelFactorFast =
+            new LoggedTunableNumber("AutoAlign/RotationAccelFactorFast", 0.5);
+
     private static final LoggedTunableNumber coralAlignRotationSpeedFactor =
             new LoggedTunableNumber("CoralAlign/RotationSpeedFactor", 7.5);
     private static final LoggedTunableNumber coralAlignTranslationSpeedFactor =
@@ -95,6 +104,7 @@ public class Drivetrain extends SubsystemBase {
 
     private boolean isAutoAligning = false;
     private final Debouncer atAutoAlignGoalDebounce = new Debouncer(0.1, Debouncer.DebounceType.kRising);
+    private final Debouncer atAutoAlignGoalDebounceFast = new Debouncer(0.1, Debouncer.DebounceType.kRising);
 
     private boolean isFFCharacterizing = false;
     private double ffCharacterizationInput = 0.0;
@@ -118,6 +128,18 @@ public class Drivetrain extends SubsystemBase {
             MAX_LINEAR_ACCEL_MPS2 * autoAlignLinearAccelFactor.get(),
             MAX_ANGULAR_SPEED_RAD_PER_SEC * autoAlignRotationSpeedFactor.get(),
             MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * autoAlignRotationAccelFactor.get());
+
+    private final AutoAlignController autoAlignControllerFast = new AutoAlignController(
+            translationKP.get(),
+            translationKI.get(),
+            translationKD.get(),
+            headingKP.get(),
+            headingKI.get(),
+            headingKD.get(),
+            MAX_LINEAR_SPEED_MPS * autoAlignLinearSpeedFactorFast.get(),
+            MAX_LINEAR_ACCEL_MPS2 * autoAlignLinearAccelFactorFast.get(),
+            MAX_ANGULAR_SPEED_RAD_PER_SEC * autoAlignRotationSpeedFactorFast.get(),
+            MAX_ANGULAR_ACCEL_RAD_PER_SEC2 * autoAlignRotationAccelFactorFast.get());
 
     private final ProfiledPIDController headingController = new ProfiledPIDController(
             headingKP.get(),
@@ -276,6 +298,8 @@ public class Drivetrain extends SubsystemBase {
                             translationKP.get(), translationKI.get(), translationKD.get());
                     autoAlignController.setTranslationPID(
                             translationKP.get(), translationKI.get(), translationKD.get());
+                    autoAlignControllerFast.setTranslationPID(
+                            translationKP.get(), translationKI.get(), translationKD.get());
                 },
                 translationKP,
                 translationKI,
@@ -285,6 +309,7 @@ public class Drivetrain extends SubsystemBase {
                 () -> {
                     trajectoryController.setHeadingPID(headingKP.get(), headingKI.get(), headingKD.get());
                     autoAlignController.setHeadingPID(headingKP.get(), headingKI.get(), headingKD.get());
+                    autoAlignControllerFast.setHeadingPID(headingKP.get(), headingKI.get(), headingKD.get());
                     headingController.setPID(headingKP.get(), headingKI.get(), headingKD.get());
                 },
                 headingKP,
@@ -304,6 +329,20 @@ public class Drivetrain extends SubsystemBase {
                 autoAlignLinearAccelFactor,
                 autoAlignRotationSpeedFactor,
                 autoAlignRotationAccelFactor);
+        LoggedTunableNumber.ifChanged(
+                hashCode(),
+                () -> {
+                    autoAlignControllerFast.setTranslationConstraints(
+                            autoAlignLinearSpeedFactorFast.get() * MAX_LINEAR_SPEED_MPS,
+                            autoAlignLinearAccelFactorFast.get() * MAX_LINEAR_ACCEL_MPS2);
+                    autoAlignControllerFast.setRotationConstraints(
+                            autoAlignRotationSpeedFactorFast.get() * MAX_ANGULAR_SPEED_RAD_PER_SEC,
+                            autoAlignRotationAccelFactorFast.get() * MAX_ANGULAR_ACCEL_RAD_PER_SEC2);
+                },
+                autoAlignLinearSpeedFactorFast,
+                autoAlignLinearAccelFactorFast,
+                autoAlignRotationSpeedFactorFast,
+                autoAlignRotationAccelFactorFast);
 
         LoggedTracer.record("Drivetrain");
     }
@@ -417,6 +456,11 @@ public class Drivetrain extends SubsystemBase {
     @AutoLogOutput(key = "AutoAlign/AtGoal")
     public boolean atAutoAlignGoal() {
         return atAutoAlignGoalDebounce.calculate(autoAlignController.atGoal(0.03, Rotation2d.fromDegrees(1.0)));
+    }
+
+    @AutoLogOutput(key = "AutoAlign/AtGoalFast")
+    public boolean atAutoAlignGoalFast() {
+        return atAutoAlignGoalDebounceFast.calculate(autoAlignControllerFast.atGoal(0.03, Rotation2d.fromDegrees(1.0)));
     }
 
     public Command percentDriveCommand(
@@ -550,25 +594,36 @@ public class Drivetrain extends SubsystemBase {
                 .until(() -> Math.abs(controller.getRightX()) >= 0.1);
     }
 
-    public Command driveToPoseCommand(Supplier<Pose2d> goalPose, Supplier<Pose2d> poseEstimateSource) {
+    public Command driveToPoseCommand(
+            Supplier<Pose2d> goalPose, Supplier<Pose2d> poseEstimateSource, BooleanSupplier fastAlign) {
         return Commands.startRun(
                         () -> {
-                            autoAlignController.setGoal(goalPose);
+                            (fastAlign.getAsBoolean() ? autoAlignControllerFast : autoAlignController)
+                                    .setGoal(goalPose);
                             isAutoAligning = true;
                         },
-                        () -> runVelocity(autoAlignController.calculate(
-                                poseEstimateSource.get(),
-                                RobotState.getInstance().getRobotVelocity())),
+                        () -> runVelocity((fastAlign.getAsBoolean() ? autoAlignControllerFast : autoAlignController)
+                                .calculate(
+                                        poseEstimateSource.get(),
+                                        RobotState.getInstance().getRobotVelocity())),
                         this)
-                .until(this::atAutoAlignGoal)
+                .until(() -> (fastAlign.getAsBoolean() ? atAutoAlignGoalFast() : atAutoAlignGoal()))
                 .finallyDo(() -> {
                     isAutoAligning = false;
                     stop();
                 });
     }
 
+    public Command driveToPoseCommand(Supplier<Pose2d> goalPose, Supplier<Pose2d> poseEstimateSource) {
+        return driveToPoseCommand(goalPose, poseEstimateSource, () -> false);
+    }
+
+    public Command driveToPoseCommand(Supplier<Pose2d> goalPose, BooleanSupplier fastAlign) {
+        return driveToPoseCommand(goalPose, RobotState.getInstance()::getEstimatedPose, fastAlign);
+    }
+
     public Command driveToPoseCommand(Supplier<Pose2d> goalPose) {
-        return driveToPoseCommand(goalPose, RobotState.getInstance()::getEstimatedPose);
+        return driveToPoseCommand(goalPose, RobotState.getInstance()::getEstimatedPose, () -> false);
     }
 
     public Command feedforwardCharacterization() {

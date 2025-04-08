@@ -50,7 +50,7 @@ public class AutoScoreCommands {
                                                             .getTranslation()
                                                             .getDistance(AllianceFlipUtil.maybeFlipTranslation(
                                                                     branch.scorePosition.getTranslation()))
-                                                    <= prepareDistanceMetersCoralLong.get()),
+                                                    <= prepareDistanceMetersCoralShort.get()),
                                             superstructure
                                                     .scoreCoral(height, () -> reverse)
                                                     .asProxy()))
@@ -58,7 +58,7 @@ public class AutoScoreCommands {
                                     superstructure
                                             .scoreCoral(height, () -> reverse)
                                             .asProxy(),
-                                    Commands.waitSeconds(0.2).onlyIf(() -> !reverse && height != ReefHeight.L4),
+                                    Commands.waitSeconds(0.2).onlyIf(() -> reverse && height != ReefHeight.L4),
                                     Commands.waitSeconds(0.25).onlyIf(DriverStation::isAutonomous),
                                     //                                    Commands.waitSeconds(0.2).onlyIf(() ->
                                     // !reverse && height == ReefHeight.L4),

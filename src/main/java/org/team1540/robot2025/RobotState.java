@@ -352,12 +352,12 @@ public class RobotState {
     public boolean shouldReverseAlgae(FieldConstants.ReefFace face) {
         return false;
 
-//                Math.abs(AllianceFlipUtil.maybeFlipPose(face.pose())
-//                                .getRotation()
-//                                .minus(RobotState.getInstance().getRobotRotation())
-//                                .getDegrees())
-//                        % 180
-//                > 90;
+        //                Math.abs(AllianceFlipUtil.maybeFlipPose(face.pose())
+        //                                .getRotation()
+        //                                .minus(RobotState.getInstance().getRobotRotation())
+        //                                .getDegrees())
+        //                        % 180
+        //                > 90;
     }
 
     public void periodicLog() {
