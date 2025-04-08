@@ -190,6 +190,15 @@ public class Superstructure {
                                                 || arm.timeToSetpoint()
                                                         <= intake.timeToSetpoint(goalState.intakeState.pivotPosition()))
                                         .andThen(intake.commandToSetpoint(goalState.intakeState))));
+                    } else if (armState.position().getDegrees() > 150) {
+                        command = command.andThen(Commands.parallel(
+                                elevator.commandToSetpoint(elevatorState),
+                                Commands.waitUntil(() ->
+                                                getEndEffectorPosition(elevator.getPosition(), armState.position())
+                                                                .getY()
+                                                        > 0.1)
+                                        .andThen(arm.commandToSetpoint(armState)),
+                                intake.commandToSetpoint(goalState.intakeState)));
                     } else if (goalState.intakeState.pivotPosition().getDegrees() < 80) {
                         command = command.andThen(Commands.parallel(
                                 intake.commandToSetpoint(goalState.intakeState),
