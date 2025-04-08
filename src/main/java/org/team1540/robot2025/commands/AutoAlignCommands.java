@@ -108,7 +108,8 @@ public class AutoAlignCommands {
         return robotPose.nearest(List.of(goalPose.nearest(List.of(tangentPoint1, tangentPoint2)), targetOffsetPoint));
     }
 
-    public static Command alignToReefPose(ReefFace face, Supplier<Pose2d> pose, Drivetrain drivetrain) {
+    public static Command alignToReefPose(
+            ReefFace face, Supplier<Pose2d> pose, Drivetrain drivetrain, BooleanSupplier fastAlign) {
         return drivetrain.driveToPoseCommand(
                 () -> {
                     Pose2d alignmentPoseEstimate = RobotState.getInstance().getReefAlignmentPose(face);
@@ -118,7 +119,12 @@ public class AutoAlignCommands {
                     Logger.recordOutput("AutoAlign/DriveTarget", target);
                     return target;
                 },
-                () -> RobotState.getInstance().getReefAlignmentPose(face));
+                () -> RobotState.getInstance().getReefAlignmentPose(face),
+                fastAlign);
+    }
+
+    public static Command alignToReefPose(ReefFace face, Supplier<Pose2d> pose, Drivetrain drivetrain) {
+        return alignToReefPose(face, pose, drivetrain, () -> false);
     }
 
     public static Command alignToReefPose(ReefFace face, Pose2d pose, Drivetrain drivetrain) {
@@ -144,7 +150,8 @@ public class AutoAlignCommands {
                                         new Transform2d(0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
                     }
                 },
-                drivetrain);
+                drivetrain,
+                () -> height != FieldConstants.ReefHeight.L4);
     }
 
     public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain) {
@@ -239,8 +246,9 @@ public class AutoAlignCommands {
                                         new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
                     }
                     Pose2d finalPose = pose;
-                    if (shouldAvoidReef.getAsBoolean()) return alignToReefPose(face, () -> finalPose, drivetrain);
-                    else return drivetrain.driveToPoseCommand(() -> finalPose);
+                    if (shouldAvoidReef.getAsBoolean())
+                        return alignToReefPose(face, () -> finalPose, drivetrain, () -> true);
+                    else return drivetrain.driveToPoseCommand(() -> finalPose, () -> true);
                 },
                 Set.of(drivetrain));
     }
