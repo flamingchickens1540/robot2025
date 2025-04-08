@@ -232,10 +232,11 @@ public class Superstructure {
     public Command preScoreCoral(FieldConstants.ReefHeight height, BooleanSupplier shouldReverse) {
         return switch (height) {
             case L1 -> Commands.none();
-            case L2, L3 -> Commands.either(
-                    commandToState(SuperstructureState.L2_L3_FRONT_STAGE),
-                    commandToState(SuperstructureState.L2_L3_BACK_STAGE),
-                    shouldReverse);
+                //            case L2, L3 -> Commands.either(
+                ////                    commandToState(SuperstructureState.L2_L3_FRONT_STAGE),
+                ////                    commandToState(SuperstructureState.L2_L3_BACK_STAGE),
+                ////                    shouldReverse);
+            case L2, L3 -> scoreCoral(height, shouldReverse);
             case L4 -> Commands.either(
                     commandToState(SuperstructureState.L4_FRONT_STAGE),
                     commandToState(SuperstructureState.L4_BACK_STAGE),
