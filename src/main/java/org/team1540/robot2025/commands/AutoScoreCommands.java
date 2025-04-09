@@ -33,8 +33,10 @@ public class AutoScoreCommands {
         return Commands.defer(
                 () -> {
                     boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height != ReefHeight.L4;
-                    return AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse, height)
-                            .asProxy()
+                    return (AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse, height)
+                                    .asProxy()
+                                    .andThen(Commands.runOnce(() -> drivetrain.stopWithX(), drivetrain))
+                                    .asProxy())
                             .deadlineFor(Commands.waitUntil(() -> RobotState.getInstance()
                                                     .getEstimatedPose()
                                                     .getTranslation()
