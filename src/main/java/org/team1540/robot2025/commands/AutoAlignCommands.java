@@ -137,11 +137,11 @@ public class AutoAlignCommands {
                 branch.face,
                 () -> {
                     Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
-                    if (!shouldReverse.getAsBoolean()) {
-                        pose = pose.transformBy(new Transform2d(Units.inchesToMeters(-3.5), 0, Rotation2d.kZero));
-                    }
+                    if (height == FieldConstants.ReefHeight.L1)
+                        pose = pose.transformBy(new Transform2d(0, Units.inchesToMeters(2.25), Rotation2d.kZero));
                     if (!shouldReverse.getAsBoolean())
-                        return pose.transformBy(new Transform2d(0, Units.inchesToMeters(0.25), Rotation2d.kZero));
+                        return pose.transformBy(new Transform2d(
+                                Units.inchesToMeters(-3.5), Units.inchesToMeters(0.25), Rotation2d.kZero));
                     else {
                         return new Pose2d(
                                         pose.getTranslation(),

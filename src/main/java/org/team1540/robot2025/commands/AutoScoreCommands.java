@@ -32,10 +32,8 @@ public class AutoScoreCommands {
             ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
         return Commands.defer(
                 () -> {
-                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height != ReefHeight.L4;
+                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height == ReefHeight.L1;
                     return (AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse, height)
-                                    .asProxy()
-                                    .andThen(Commands.runOnce(() -> drivetrain.stopWithX(), drivetrain))
                                     .asProxy())
                             .deadlineFor(Commands.waitUntil(() -> RobotState.getInstance()
                                                     .getEstimatedPose()
@@ -62,8 +60,6 @@ public class AutoScoreCommands {
                                             .asProxy(),
                                     Commands.waitSeconds(0.2).onlyIf(() -> reverse && height != ReefHeight.L4),
                                     Commands.waitSeconds(0.25).onlyIf(DriverStation::isAutonomous),
-                                    //                                    Commands.waitSeconds(0.2).onlyIf(() ->
-                                    // !reverse && height == ReefHeight.L4),
                                     superstructure.score(false).asProxy());
                 },
                 Set.of());
@@ -184,16 +180,13 @@ public class AutoScoreCommands {
 
     public static Command pointToBargeAndScore(
             Drivetrain drivetrain, Superstructure superstructure, XboxController controller) {
-        return drivetrain
-                .teleopDriveWithHeadingCommand(
-                        controller, () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg), () -> true)
-                .asProxy()
-                .alongWith(Commands.waitUntil(() -> Math.abs(RobotState.getInstance()
-                                        .getRobotRotation()
-                                        .minus(AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg))
-                                        .getDegrees())
-                                < 10)
-                        .andThen(superstructure.net()));
+        return Commands.sequence(
+                Commands.waitUntil(() -> Math.abs(RobotState.getInstance()
+                                .getRobotRotation()
+                                .minus(AllianceFlipUtil.maybeReverseRotation(Rotation2d.k180deg))
+                                .getDegrees())
+                        < 10),
+                superstructure.net());
     }
 
     public static Command warmup(Drivetrain drivetrain, Superstructure superstructure) {
