@@ -39,6 +39,13 @@
      "val":3.0
     }
    },
+   "Offset":{
+    "dimension":"Number",
+    "var":{
+     "exp":"0.3",
+     "val":0.3
+    }
+   },
    "SrcRAngle":{
     "dimension":"Angle",
     "var":{
