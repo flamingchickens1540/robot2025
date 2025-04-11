@@ -112,9 +112,10 @@ public class RobotContainer {
             driver.y()
                     .whileTrue(AutoScoreCommands.alignToBranchAndScore(
                             ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
-            driver.b()
-                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
-                            ReefBranch.E, ReefHeight.L3, drivetrain, superstructure));
+            //            driver.b()
+            //                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
+            //                            ReefBranch.E, ReefHeight.L3, drivetrain, superstructure));
+            driver.b().whileTrue(AutoScoreCommands.alignToProcessorAndScore(drivetrain, superstructure));
             //            driver.y().whileTrue(AutoScoreCommands.alignToFaceAndS(ReefBranch.E.face, drivetrain,
             // superstructure));
             //            driver.b().whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain,
@@ -287,9 +288,11 @@ public class RobotContainer {
 
         //        autoChooser.addRoutine("Left 4 Piece Sweep Reverse", autos::left4PieceSweepReverse);
         autoChooser.addRoutine("Left 4 Piece", autos::left4Piece);
+        autoChooser.addRoutine("Left 4 Piece Slow", autos::left4PieceSlow);
         autoChooser.addRoutine("Left 4 Piece Rizz", autos::left4PieceRizz);
         //        autoChooser.addRoutine("Left 4 Piece Eyes", autos::left4PieceEyes);
         autoChooser.addRoutine("Center 1 Piece", autos::center1Piece);
+        autoChooser.addRoutine("Center 1 Piece 2 Proc", autos::center1Piece2Processor);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);

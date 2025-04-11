@@ -4,6 +4,7 @@ import static org.team1540.robot2025.FieldConstants.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -111,8 +112,10 @@ public class AutoScoreCommands {
                                         () -> false,
                                         () -> Units.inchesToMeters(3.5))
                                 .asProxy(),
-                        Commands.waitUntil(superstructure.grabber::hasAlgae),
-                        Commands.waitSeconds(0.5),
+                        Commands.race(
+                                Commands.waitUntil(superstructure.grabber::hasAlgae)
+                                        .andThen(Commands.waitSeconds(0.5)),
+                                Commands.waitSeconds(2)),
                         AutoAlignCommands.alignToDealgifyPose(
                                         face,
                                         drivetrain,
@@ -176,6 +179,23 @@ public class AutoScoreCommands {
                         AllianceFlipUtil.maybeFlipRotation(Rotation2d.k180deg)))
                 .asProxy()
                 .andThen(superstructure.net().asProxy());
+    }
+
+    public static Command alignToProcessorAndScore(Drivetrain drivetrain, Superstructure superstructure) {
+        return drivetrain
+                .driveToPoseCommand(() -> AllianceFlipUtil.maybeFlipPose(
+                        (Processor.centerFace).plus(new Transform2d(new Translation2d(2, 0), Rotation2d.kZero))))
+                .asProxy()
+                .alongWith(superstructure.processor().asProxy())
+                .andThen(
+                        drivetrain
+                                .driveToPoseCommand(() -> AllianceFlipUtil.maybeFlipPose(Processor.centerFace))
+                                .asProxy(),
+                        superstructure.score(false),
+                        drivetrain
+                                .driveToPoseCommand(() -> AllianceFlipUtil.maybeFlipPose((Processor.centerFace)
+                                        .plus(new Transform2d(new Translation2d(2, 0), Rotation2d.kZero))))
+                                .asProxy());
     }
 
     public static Command pointToBargeAndScore(
