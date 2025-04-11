@@ -197,7 +197,7 @@ public class RobotContainer {
                 .button(1)
                 .or(copilot.b())
                 //                .or(driver.x())
-                .onTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure, driver.getHID()));
+                .onTrue(superstructure.net());
         buttonBoard.button(2).onTrue(superstructure.processor());
 
         buttonBoard
@@ -208,7 +208,9 @@ public class RobotContainer {
                                 driver.getHID(),
                                 () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
                                 () -> true))
-                        .alongWith(superstructure.processor()));
+                        .alongWith(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0.3)
+                                .alongWith(superstructure.commandToState(
+                                        Superstructure.SuperstructureState.PROCESSOR_BACK))));
         buttonBoard
                 .button(4)
                 .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.middleCage, drivetrain)
@@ -216,7 +218,9 @@ public class RobotContainer {
                                 driver.getHID(),
                                 () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
                                 () -> true))
-                        .alongWith(superstructure.processor()));
+                        .alongWith(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0.3)
+                                .alongWith(superstructure.commandToState(
+                                        Superstructure.SuperstructureState.PROCESSOR_BACK))));
         buttonBoard
                 .button(5)
                 .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.rightCage, drivetrain)
@@ -224,7 +228,9 @@ public class RobotContainer {
                                 driver.getHID(),
                                 () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
                                 () -> true))
-                        .alongWith(superstructure.processor()));
+                        .alongWith(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0.3)
+                                .alongWith(superstructure.commandToState(
+                                        Superstructure.SuperstructureState.PROCESSOR_BACK))));
 
         buttonBoard
                 .button(6)
