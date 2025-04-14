@@ -60,6 +60,7 @@ public class AutoScoreCommands {
                                             .scoreCoral(height, () -> reverse)
                                             .asProxy(),
                                     Commands.waitSeconds(0.2).onlyIf(() -> reverse && height != ReefHeight.L4),
+                                    //
                                     Commands.waitSeconds(0.25).onlyIf(DriverStation::isAutonomous),
                                     superstructure.score(false).asProxy());
                 },
