@@ -418,9 +418,10 @@ public class Superstructure {
     public Command coralGroundIntakeL1() {
         return Commands.sequence(
                 commandToState(SuperstructureState.INTAKE_GROUND_L1).withTimeout(1.0),
+                intake.commandSetSolenoid(true),
                 intake.commandRunRoller(0.7).until(intake::hasCoral),
                 intake.commandRunRoller(0.7).withTimeout(0.5),
-                stow());
+                stow()).finallyDo(()->intake.setSolenoid(false));
     }
 
     public Command coralIntakeEject() {

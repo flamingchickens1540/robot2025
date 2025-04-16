@@ -27,6 +27,10 @@ public interface IntakeIO {
 
         public boolean sensorConnected = true;
         public boolean sensorTripped = false;
+
+        public boolean solenoidTriggered = false;
+        public boolean solenoidConnected = true;
+        public double solenoidAppliedVolts = 0;
     }
 
     default void setRollerVoltage(double voltage) {}
@@ -42,6 +46,8 @@ public interface IntakeIO {
     default void setPivotPID(double kP, double kI, double kD) {}
 
     default void setPivotFF(double kS, double kV, double kG) {}
+
+    default void setSolenoid(boolean trigger){}
 
     default void updateInputs(IntakeInputs inputs) {}
 }
