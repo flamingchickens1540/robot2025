@@ -142,7 +142,7 @@ gversion {
     classPackage = ROBOT_MAIN_PACKAGE + ".generated"
     className = "BuildConstants"
     dateFormat = "yyyy-MM-dd HH:mm:ss z"
-    timeZone = "America/Los_Angeles"
+    timeZone = "America/Chicago"
     indent = "    "
 }
 
