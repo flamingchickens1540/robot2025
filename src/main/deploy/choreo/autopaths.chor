@@ -267,12 +267,12 @@
    },
    "SrcLOutApproach":{
     "x":{
-     "exp":"3.2663791179656982 m",
-     "val":3.2663791179656982
+     "exp":"3.030749797821045 m",
+     "val":3.030749797821045
     },
     "y":{
-     "exp":"6.637861728668213 m",
-     "val":6.637861728668213
+     "exp":"6.893649578094482 m",
+     "val":6.893649578094482
     },
     "heading":{
      "exp":"180 deg",
@@ -281,12 +281,12 @@
    },
    "SrcLOutIntake":{
     "x":{
-     "exp":"1.5690326690673828 m + IntakeEndDistance * SrcRAngleX",
-     "val":2.300590194070595
+     "exp":"2.013153553009033 m",
+     "val":2.013153553009033
     },
     "y":{
-     "exp":"7.35754919052124 m + IntakeEndDistance * -SrcRAngleY",
-     "val":6.35064663932218
+     "exp":"6.585287570953369 m",
+     "val":6.585287570953369
     },
     "heading":{
      "exp":"180 deg",
@@ -324,11 +324,11 @@
    "SrcROutApproach":{
     "x":{
      "exp":"SrcLOutApproach.x",
-     "val":3.2663791179656982
+     "val":3.030749797821045
     },
     "y":{
      "exp":"FieldWidth - SrcLOutApproach.y",
-     "val":1.4139382713317872
+     "val":1.1581504219055176
     },
     "heading":{
      "exp":"-SrcLOutApproach.heading",
@@ -338,11 +338,11 @@
    "SrcROutIntake":{
     "x":{
      "exp":"SrcLOutIntake.x",
-     "val":2.300590194070595
+     "val":2.013153553009033
     },
     "y":{
      "exp":"FieldWidth - SrcLOutIntake.y",
-     "val":1.7011533606778195
+     "val":1.466512429046631
     },
     "heading":{
      "exp":"-SrcLOutIntake.heading",

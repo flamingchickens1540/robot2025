@@ -71,7 +71,7 @@ public class ClimberIOReal implements ClimberIO {
         pivotConfig.CurrentLimits.SupplyCurrentLowerTime = 15;
 
         pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Units.degreesToRotations(65);
+        pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Units.degreesToRotations(60.5);
         pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0;
 

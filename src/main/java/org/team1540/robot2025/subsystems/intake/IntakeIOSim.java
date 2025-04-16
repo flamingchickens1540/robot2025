@@ -48,6 +48,7 @@ public class IntakeIOSim implements IntakeIO {
             new TrapezoidProfile.Constraints(PIVOT_CRUISE_VELOCITY_RPS, PIVOT_ACCELERATION_RPS2));
     private ArmFeedforward pivotFeedforward = new ArmFeedforward(SIM_KS, SIM_KG, SIM_KV);
     private boolean isPivotClosedLoop;
+    private boolean solenoid;
 
     public IntakeIOSim() {
         pivotController.reset(PIVOT_MAX_ANGLE.getRotations());
@@ -122,5 +123,10 @@ public class IntakeIOSim implements IntakeIO {
     @Override
     public void setPivotFF(double kS, double kV, double kG) {
         pivotFeedforward = new ArmFeedforward(kS, kG, kV);
+    }
+
+    @Override
+    public void setSolenoid(boolean solenoid) {
+        this.solenoid = solenoid;
     }
 }

@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -39,19 +40,19 @@ public class Superstructure {
         L1_BACK(ArmState.SCORE_L1_BACK, ElevatorState.L1_BACK, IntakeState.STOW),
 
         L2_FRONT(ArmState.SCORE_L2_L3_FRONT, ElevatorState.L2_FRONT, IntakeState.STOW),
-        L2_BACK(ArmState.SCORE_L2_L3_BACK, ElevatorState.L2_BACK, IntakeState.STOW),
+        L2_BACK(ArmState.SCORE_L2_L3_BACK, ElevatorState.L2_BACK, IntakeState.INTAKE),
 
         L2_L3_FRONT_STAGE(ArmState.SCORE_L2_L3_FRONT, ElevatorState.FRONT_STAGE, IntakeState.STOW),
-        L2_L3_BACK_STAGE(ArmState.SCORE_L2_L3_BACK, ElevatorState.BACK_STAGE, IntakeState.STOW),
+        L2_L3_BACK_STAGE(ArmState.SCORE_L2_L3_BACK, ElevatorState.BACK_STAGE, IntakeState.INTAKE),
 
         L3_FRONT(ArmState.SCORE_L2_L3_FRONT, ElevatorState.L3_FRONT, IntakeState.STOW),
-        L3_BACK(ArmState.SCORE_L2_L3_BACK, ElevatorState.L3_BACK, IntakeState.STOW),
+        L3_BACK(ArmState.SCORE_L2_L3_BACK, ElevatorState.L3_BACK, IntakeState.INTAKE),
 
         L4_FRONT(ArmState.SCORE_L4_FRONT, ElevatorState.L4_FRONT, IntakeState.STOW),
-        L4_BACK(ArmState.SCORE_L4_BACK, ElevatorState.L4_BACK, IntakeState.STOW),
+        L4_BACK(ArmState.SCORE_L4_BACK, ElevatorState.L4_BACK, IntakeState.INTAKE),
 
         L4_FRONT_STAGE(ArmState.SCORE_L4_FRONT, ElevatorState.FRONT_STAGE, IntakeState.STOW),
-        L4_BACK_STAGE(ArmState.SCORE_L4_BACK, ElevatorState.BACK_STAGE, IntakeState.STOW),
+        L4_BACK_STAGE(ArmState.SCORE_L4_BACK, ElevatorState.BACK_STAGE, IntakeState.INTAKE),
 
         DEALGIFY_LOW_FRONT(ArmState.REEF_ALGAE_FRONT, ElevatorState.REEF_ALGAE_LOW_FRONT, IntakeState.STOW),
         DEALGIFY_LOW_BACK(ArmState.REEF_ALGAE_BACK, ElevatorState.REEF_ALGAE_LOW_BACK, IntakeState.STOW),
@@ -318,7 +319,7 @@ public class Superstructure {
                             case SCORE_BARGE_BACK -> grabber.commandRun(-1.0)
                                     .withTimeout(0.5)
                                     .alongWith(Commands.runOnce(arm::holdPosition));
-                            case SCORE_BARGE_FRONT -> grabber.commandRun(-1.0)
+                            case SCORE_BARGE_FRONT -> grabber.commandRun(DriverStation.isAutonomous() ? -0.8: -1.0)
                                     .withTimeout(0.5)
                                     .alongWith(Commands.waitSeconds(0.4)
                                             .andThen(
@@ -391,6 +392,7 @@ public class Superstructure {
 
     public Command coralGroundIntake() {
         return Commands.sequence(
+                        intake.commandSetSolenoid(false),
                         commandToState(SuperstructureState.INTAKE_GROUND)
                                 .withTimeout(1.0)
                                 .deadlineFor(Commands.startEnd(
@@ -402,7 +404,11 @@ public class Superstructure {
                                 .andThen(grabber.commandRun(0.1).until(grabber::reverseSensorTripped))
                                 .deadlineFor(intake.commandRunRollerFunnel(0.75, 0.75)),
                         stow().alongWith(
-                                        grabber.commandRun(0.0),
+                                        grabber.commandRun(-0.05)
+                                                .until(() -> !grabber.reverseSensorTripped())
+                                                .andThen(grabber.commandRun(0.05)
+                                                        .withDeadline(Commands.waitUntil(grabber::reverseSensorTripped)
+                                                                .andThen(Commands.waitSeconds(0.2)))),
                                         Commands.startEnd(
                                                         () -> {
                                                             intake.setRollerVoltage(-0.75 * 12);
@@ -417,10 +423,12 @@ public class Superstructure {
 
     public Command coralGroundIntakeL1() {
         return Commands.sequence(
-                commandToState(SuperstructureState.INTAKE_GROUND_L1).withTimeout(1.0),
-                intake.commandRunRoller(0.7).until(intake::hasCoral),
-                intake.commandRunRoller(0.7).withTimeout(0.5),
-                stow());
+                        commandToState(SuperstructureState.INTAKE_GROUND_L1).withTimeout(1.0),
+                        intake.commandSetSolenoid(true),
+                        intake.commandRunRoller(0.7).until(intake::hasCoral),
+                        intake.commandRunRoller(0.7).withTimeout(0.5),
+                        stow())
+                .finallyDo(() -> intake.setSolenoid(false));
     }
 
     public Command coralIntakeEject() {

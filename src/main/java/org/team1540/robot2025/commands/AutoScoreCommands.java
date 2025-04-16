@@ -33,7 +33,7 @@ public class AutoScoreCommands {
             ReefBranch branch, ReefHeight height, Drivetrain drivetrain, Superstructure superstructure) {
         return Commands.defer(
                 () -> {
-                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height == ReefHeight.L1;
+                    boolean reverse = RobotState.getInstance().shouldReverseCoral(branch) || height != ReefHeight.L4;
                     return (AutoAlignCommands.alignToBranch(branch, drivetrain, () -> reverse, height)
                                     .asProxy())
                             .deadlineFor(Commands.waitUntil(() -> RobotState.getInstance()
@@ -54,7 +54,8 @@ public class AutoScoreCommands {
                                                     <= prepareDistanceMetersCoralShort.get()),
                                             superstructure
                                                     .scoreCoral(height, () -> reverse)
-                                                    .asProxy()))
+                                                    .asProxy()
+                                                    .unless(() -> !reverse && height == ReefHeight.L4)))
                             .andThen(
                                     superstructure
                                             .scoreCoral(height, () -> reverse)
@@ -179,7 +180,7 @@ public class AutoScoreCommands {
                                         .getY()),
                         AllianceFlipUtil.maybeFlipRotation(Rotation2d.k180deg)))
                 .asProxy()
-                .andThen(superstructure.net().asProxy());
+                .andThen(superstructure.net().asProxy(), superstructure.score().asProxy());
     }
 
     public static Command alignToProcessorAndScore(Drivetrain drivetrain, Superstructure superstructure) {

@@ -167,6 +167,14 @@ public class Intake extends SubsystemBase {
         return Commands.startEnd(() -> this.setFunnelVoltage(percent * 12), () -> this.setFunnelVoltage(0), this);
     }
 
+    public void setSolenoid(boolean trigger) {
+        io.setSolenoid(trigger);
+    }
+
+    public Command commandSetSolenoid(boolean trigger) {
+        return Commands.runOnce(() -> setSolenoid(trigger));
+    }
+
     public Command commandRunRollerFunnel(double rollerPercent, double funnelPercent) {
         return Commands.startEnd(
                 () -> {

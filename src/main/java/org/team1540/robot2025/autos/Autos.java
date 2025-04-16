@@ -18,7 +18,7 @@ import org.team1540.robot2025.util.AllianceFlipUtil;
 
 public class Autos {
     private static final double AUTO_ALIGN_SWITCH_TIME = 0.8;
-    private static final double ALIGN_TIMEOUT = 3;
+    private static final double ALIGN_TIMEOUT = 4;
     private static final double INTAKE_DEPLOY_TIME = 2.5;
     private static final double SCORE_WAIT_TIME = 0.5;
 
@@ -369,8 +369,7 @@ public class Autos {
         AutoTrajectory leftSrcToA = routine.trajectory(trajName, 6);
 
         resetPoseInSim(routine, startToJ);
-        routine.active().onTrue(startToJ.cmd());
-        //        routine.active().onTrue(superstructure.zeroCommand());
+        routine.active().onTrue(superstructure.zeroCommand().andThen(startToJ.cmd()));
 
         startToJ.atTimeBeforeEnd(0.5)
                 .onTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.J, ReefHeight.L4, drivetrain, superstructure)
@@ -660,7 +659,8 @@ public class Autos {
         AutoTrajectory rightSrcToB = routine.trajectory(trajName, 6);
 
         resetPoseInSim(routine, startToE);
-        routine.active().onTrue(startToE.cmd());
+        routine.active().onTrue(superstructure.zeroCommand().andThen(startToE.cmd()));
+//        routine.active().onTrue(startToE.cmd());
         //        routine.active().onTrue(superstructure.zeroCommand());
 
         startToE.atTimeBeforeEnd(0.5)
@@ -732,6 +732,82 @@ public class Autos {
                 .onTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain, superstructure)
                         .andThen(eToProc.spawnCmd()));
         eToProc.done().onTrue(AutoScoreCommands.alignToProcessorAndScore(drivetrain, superstructure));
+        return routine;
+    }
+
+    public AutoRoutine center1Piece2Barge() {
+
+        AutoRoutine routine = autoFactory.newRoutine("Center 1 Piece 2 Barge");
+        AutoTrajectory startToH = routine.trajectory("New Path", 0);
+        resetPoseInSim(routine, startToH);
+
+        routine.active()
+                .onTrue(Commands.sequence(
+                        superstructure.zeroCommand().asProxy(),
+                        AutoScoreCommands.alignToBranchAndScore(ReefBranch.H, ReefHeight.L4, drivetrain, superstructure)
+                                .asProxy(),
+                        Commands.print("PAST"),
+                        AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.H.face, drivetrain, superstructure)
+                                .asProxy(),
+                        AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure)
+                                .asProxy(),
+                        AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.J.face, drivetrain, superstructure)
+                                .asProxy(),
+                        AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure)
+                                .asProxy()));
+        return routine;
+    }
+
+    public AutoRoutine center1Piece2BargeChoreo() {
+        final String trajName = "Center1Piece2Barge";
+
+        AutoRoutine routine = autoFactory.newRoutine("Center 1 Piece 2 Barge");
+        AutoTrajectory hToH = routine.trajectory(trajName, 0);
+        AutoTrajectory hApproach = routine.trajectory(trajName, 1);
+        AutoTrajectory hToBarge = routine.trajectory(trajName, 2);
+        AutoTrajectory bargeApproach1 = routine.trajectory(trajName, 3);
+        AutoTrajectory bargeToJ = routine.trajectory(trajName, 4);
+        AutoTrajectory jApproach = routine.trajectory(trajName, 5);
+        AutoTrajectory jToBarge = routine.trajectory(trajName, 6);
+        AutoTrajectory bargeApproach2 = routine.trajectory(trajName, 7);
+        AutoTrajectory clear = routine.trajectory(trajName, 8);
+
+        resetPoseInSim(routine, hToH);
+        routine.active()
+                .onTrue(Commands.waitSeconds(0.1)
+                        //                        superstructure
+                        //                        .zeroCommand()
+                        //                        .asProxy()
+                        .andThen(
+                                AutoScoreCommands.alignToBranchAndScore(
+                                                ReefBranch.H, ReefHeight.L4, drivetrain, superstructure)
+                                        .asProxy(),
+                                hToH.spawnCmd()));
+
+        hToH.done().onTrue(superstructure.dealgify(ReefBranch.H.face).asProxy().andThen(hApproach.spawnCmd()));
+        //
+        // hApproach.done().onTrue(drivetrain.driveToPoseCommand(()->AllianceFlipUtil.maybeFlipPose(ReefBranch.H.face.pose().plus(new Transform2d(Units.inchesToMeters(-6), 0, Rotation2d.kZero)))));
+        hApproach.done().onTrue(Commands.waitSeconds(0.25).andThen(hToBarge.spawnCmd()));
+        hToBarge.active()
+                .onTrue(superstructure
+                        .commandToState(Superstructure.SuperstructureState.STOW_ALGAE)
+                        .asProxy()
+                        .andThen(superstructure.net().asProxy()));
+        hToBarge.done()
+                .onTrue(bargeApproach1.spawnCmd());
+        bargeApproach1.done().onTrue(superstructure.score(false).asProxy().andThen(bargeToJ.spawnCmd()));
+        bargeToJ.active().onTrue(superstructure.dealgify(ReefBranch.J.face).asProxy());
+        bargeToJ.done().onTrue(jApproach.spawnCmd());
+        jApproach.done().onTrue(Commands.waitSeconds(0.25).andThen(jToBarge.spawnCmd()));
+        jToBarge.active()
+                .onTrue(superstructure
+                        .commandToState(Superstructure.SuperstructureState.STOW_ALGAE)
+                        .asProxy()
+                        .andThen(superstructure.net().asProxy()));
+        jToBarge.done()
+                .onTrue(bargeApproach2.spawnCmd());
+        bargeApproach2.done().onTrue(superstructure.score(false).asProxy().andThen(clear.spawnCmd()));
+        clear.active().onTrue(superstructure.stow());
         return routine;
     }
 }
