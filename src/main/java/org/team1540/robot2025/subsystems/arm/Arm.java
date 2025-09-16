@@ -5,6 +5,7 @@ import static org.team1540.robot2025.subsystems.arm.ArmConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,23 +24,33 @@ public class Arm extends SubsystemBase {
 
     public enum ArmState {
         STOW(new LoggedTunableNumber("Arm/Setpoints/StowDegrees", 120)),
-        STOW_ALGAE(new LoggedTunableNumber("Arm/Setpoints/StowAlgaeDegrees", 136)),
+        STOW_ALGAE(new LoggedTunableNumber("Arm/Setpoints/StowAlgaeDegrees", 120)),
 
-        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 49.5)),
+        INTAKE(new LoggedTunableNumber("Arm/Setpoints/IntakeDegrees", 40.5)),
         FUNNEL(new LoggedTunableNumber("Arm/Setpoints/FunnelDegrees", 100)),
 
-        REEF_ALGAE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeFrontDegrees", 0)), // TODO: get value
-        REEF_ALGAE_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeBackDegrees", 180)),
+        REEF_ALGAE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighFrontDegrees", 0)),
+        REEF_ALGAE_BACK(new LoggedTunableNumber("Arm/Setpoints/ReefAlgaeHighBackDegrees", 180)),
+
+        CLEAN_ALGAE_FRONT(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighFrontDegrees", 90)),
+        CLEAN_ALGAE_BACK(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighBackDegrees", 90)),
+        CLEAN_ALGAE_FRONT_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighFrontStageDegrees", 0)),
+        CLEAN_ALGAE_BACK_STAGE(new LoggedTunableNumber("Arm/Setpoints/CleanAlgaeHighBackStageDegrees", 160)),
+
         GROUND_ALGAE(new LoggedTunableNumber("Arm/Setpoints/GroundAlgaeDegrees", 210)),
         PROCESSOR(new LoggedTunableNumber("Arm/Setpoints/Processor", 177)),
         SCORE_L1_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL1BackDegrees", 90)),
         SCORE_L1_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL1FrontDegrees", 88)),
         SCORE_L2_L3_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3FrontDegrees", 55)),
-        SCORE_L2_L3_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3BackDegrees", 115)),
+        BACKOFF_L2_L3_FRONT(new LoggedTunableNumber("Arm/Setpoints/BackoffL2L3FrontDegrees", 80)),
+        SCORE_L2_L3_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL2L3BackDegrees", 118)),
         SCORE_L4_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontDegrees", 60)),
-        SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 113)),
-        SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 90)),
-        SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 120));
+        BACKOFF_L4_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreL4FrontBackoffDegrees", 80)),
+        SCORE_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreL4BackDegrees", 115)),
+        BACKOFF_L4_BACK(new LoggedTunableNumber("Arm/Setpoints/BackoffL4BackDegrees", 108)),
+        SCORE_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeFrontDegrees", 105)),
+        SCORE_BARGE_BACK(new LoggedTunableNumber("Arm/Setpoints/ScoreBargeBackDegrees", 90)),
+        BACKOFF_BARGE_FRONT(new LoggedTunableNumber("Arm/Setpoints/BackoffBargeFrontDegrees", 80));
 
         private final DoubleSupplier positionDegrees;
 
@@ -55,6 +66,9 @@ public class Arm extends SubsystemBase {
     private final ArmIO io;
     private final ArmIOInputsAutoLogged inputs = new ArmIOInputsAutoLogged();
     private Rotation2d setpoint = new Rotation2d();
+
+    private final Alert motorDisconnectedAlert = new Alert("Arm motor disconnected.", Alert.AlertType.kError);
+    private final Alert encoderDisconnectedAlert = new Alert("Arm encoder disconnected.", Alert.AlertType.kError);
 
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Arm/kP", KP);
     private final LoggedTunableNumber kI = new LoggedTunableNumber("Arm/kI", KI);
@@ -87,6 +101,9 @@ public class Arm extends SubsystemBase {
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configPID(kP.get(), kI.get(), kD.get()), kP, kI, kD);
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configFF(kS.get(), kV.get(), kG.get()), kS, kV, kG);
 
+        motorDisconnectedAlert.set(!inputs.motorConnected);
+        encoderDisconnectedAlert.set(!inputs.encoderConnected);
+
         LoggedTracer.record("Arm");
     }
 
@@ -118,13 +135,17 @@ public class Arm extends SubsystemBase {
         return setpoint;
     }
 
+    public Command commandToSetpoint(Rotation2d position) {
+        return Commands.run(() -> setPosition(position), this).until(this::isAtSetpoint);
+    }
+
     public Command commandToSetpoint(ArmState state) {
-        return Commands.run(() -> setPosition(state.position()), this).until(this::isAtSetpoint);
+        return commandToSetpoint(state.position());
     }
 
     @AutoLogOutput(key = "Arm/TimeToSetpoint")
     public double timeToSetpoint() {
-        return timeToSetpoint(getSetpoint());
+        return isAtSetpoint() ? 0 : timeToSetpoint(getSetpoint());
     }
 
     public double timeToSetpoint(Rotation2d setpoint) {

@@ -20,7 +20,7 @@ public class Grabber extends SubsystemBase {
             new Alert("Before sensor is disconnected", Alert.AlertType.kWarning);
     private final Alert afterSensorDisconnectedAlert =
             new Alert("After sensor is disconnected", Alert.AlertType.kWarning);
-    private final Debouncer algaeDebounce = new Debouncer(0.3);
+    private final Debouncer algaeDebounce = new Debouncer(0.5);
     private boolean hasAlgae = false;
 
     private Grabber(GrabberIO grabberIO, SensorIO sensorIO) {
@@ -68,6 +68,11 @@ public class Grabber extends SubsystemBase {
     @AutoLogOutput
     public boolean hasAlgae() {
         return hasAlgae;
+    }
+
+    @AutoLogOutput
+    public boolean hasCoral() {
+        return forwardSensorTripped() || reverseSensorTripped();
     }
 
     public void stop() {

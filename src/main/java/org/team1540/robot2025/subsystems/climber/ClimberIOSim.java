@@ -23,7 +23,7 @@ public class ClimberIOSim implements ClimberIO {
     // fields
     private final SingleJointedArmSim armSim = new SingleJointedArmSim(
             DCMotor.getFalcon500(1),
-            GEAR_RATIO,
+            PIVOT_GEAR_RATIO,
             ARM_MOMENT_OF_INERTIA_KGM2,
             ARM_LENGTH_METERS,
             MIN_ANGLE.getRadians(),
@@ -49,14 +49,14 @@ public class ClimberIOSim implements ClimberIO {
         armSim.setInputVoltage(armAppliedVolts);
         armSim.update(LOOP_PERIOD_SECS);
 
-        inputs.position = Rotation2d.fromRadians(armSim.getAngleRads());
-        inputs.appliedVolts = armAppliedVolts;
-        inputs.supplyCurrentAmps = armSim.getCurrentDrawAmps();
-        inputs.velocityRPM = Units.radiansPerSecondToRotationsPerMinute(armSim.getVelocityRadPerSec());
+        inputs.pivotPosition = Rotation2d.fromRadians(armSim.getAngleRads());
+        inputs.pivotAppliedVolts = armAppliedVolts;
+        inputs.pivotSupplyCurrentAmps = armSim.getCurrentDrawAmps();
+        inputs.pivotVelocityRPM = Units.radiansPerSecondToRotationsPerMinute(armSim.getVelocityRadPerSec());
     }
 
     @Override
-    public void setSetpoint(Rotation2d setpoint) {
+    public void setPivotSetpoint(Rotation2d setpoint) {
         if (!isClosedLoop)
             controller.reset(
                     Units.radiansToRotations(armSim.getAngleRads()),
@@ -66,7 +66,7 @@ public class ClimberIOSim implements ClimberIO {
     }
 
     @Override
-    public void setVoltage(double volts) {
+    public void setPivotVoltage(double volts) {
         isClosedLoop = false;
         armAppliedVolts = volts;
     }

@@ -7,7 +7,6 @@ import static org.team1540.robot2025.subsystems.elevator.ElevatorConstants.*;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
@@ -28,24 +27,38 @@ public class Elevator extends SubsystemBase {
 
     public enum ElevatorState {
         STOW(new LoggedTunableNumber("Elevator/Setpoints/Base", MIN_HEIGHT_M)),
-        FUNNEL(new LoggedTunableNumber("Elevator/Setpoints/Funnel", 0.242)),
-        GROUND_CORAL(new LoggedTunableNumber("Elevator/Setpoints/GroundCoral", 0)),
+        GROUND_CORAL(new LoggedTunableNumber("Elevator/Setpoints/GroundCoral", 0.1)),
+        GROUND_CORAL_L1(new LoggedTunableNumber("Elevator/Setpoints/GroundCoralL1", 0.125)),
         L1_BACK(new LoggedTunableNumber("Elevator/Setpoints/L1Back", 0.2)),
         L1_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L1Front", 0.2)),
-        L2_BACK(new LoggedTunableNumber("Elevator/Setpoints/L2Back", 0.55)),
-        L2_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L2Front", 0.56)),
-        L3_BACK(new LoggedTunableNumber("Elevator/Setpoints/L3Back", 1.0)),
-        L3_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L3Front", 0.95)),
+        L2_BACK(new LoggedTunableNumber("Elevator/Setpoints/L2Back", 0.645)),
+        L2_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L2Front", 0.635)),
+        L3_BACK(new LoggedTunableNumber("Elevator/Setpoints/L3Back", 1.045)),
+        L3_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L3Front", 1.035)),
         L4_BACK(new LoggedTunableNumber("Elevator/Setpoints/L4Back", MAX_HEIGHT_M)),
-        L4_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L4Front", MAX_HEIGHT_M - Units.inchesToMeters(2.25))),
+        L4_FRONT(new LoggedTunableNumber("Elevator/Setpoints/L4Front", MAX_HEIGHT_M)),
+        FRONT_STAGE(new LoggedTunableNumber("Elevator/Setpoints/L2L3FrontStage", 0.635)),
+        BACK_STAGE(new LoggedTunableNumber("Elevator/Setpoints/L2L3BackStage", 0.55)),
         BARGE(new LoggedTunableNumber("Elevator/Setpoints/Barge", MAX_HEIGHT_M)),
+        BARGE_BACKOFF(new LoggedTunableNumber("Elevator/Setpoints/BargeBackoff", MAX_HEIGHT_M - 0.2)),
         GROUND_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/GroundAlgae", 0.42)),
+
         REEF_ALGAE_LOW_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowBack", 0.8)),
-        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowFront", 0.8)),
+        REEF_ALGAE_LOW_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowFront", 0.7)),
         REEF_ALGAE_HIGH_BACK(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighBack", 1.2)),
-        REEF_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighFront", 1.2)),
+        REEF_ALGAE_HIGH_FRONT(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighFront", 1.1)),
+
+        REEF_ALGAE_LOW_MANUAL(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeLowManual", 0.8)),
+        REEF_ALGAE_HIGH_MANUAL(new LoggedTunableNumber("Elevator/Setpoints/ReefAlgaeHighManual", 1.2)),
+
+        CLEAN_ALGAE_BACK(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeHighBack", 1.1)),
+        CLEAN_ALGAE_FRONT(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeHighFront", 1.1)),
+
+        CLEAN_ALGAE_BACK_STAGE(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeHighBackStage", 0.65)),
+        CLEAN_ALGAE_FRONT_STAGE(new LoggedTunableNumber("Elevator/Setpoints/CleanAlgaeHighFrontStage", 0.7)),
+
         PROCESSOR(new LoggedTunableNumber("Elevator/Setpoints/Processor", 0.254)), // TODO: get value
-        STOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/StowAlgae", 0.03));
+        STOW_ALGAE(new LoggedTunableNumber("Elevator/Setpoints/StowAlgae", 0.75));
 
         public final DoubleSupplier height;
 
@@ -138,7 +151,7 @@ public class Elevator extends SubsystemBase {
 
     @AutoLogOutput(key = "Elevator/TimeToSetpoint")
     public double timeToSetpoint() {
-        return timeToSetpoint(getSetpoint());
+        return isAtSetpoint() ? 0 : timeToSetpoint(getSetpoint());
     }
 
     public double getPosition() {

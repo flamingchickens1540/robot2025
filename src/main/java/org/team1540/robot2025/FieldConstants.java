@@ -55,6 +55,8 @@ public class FieldConstants {
                 new Translation2d(Units.inchesToMeters(176.746), Units.inchesToMeters(158.501));
         public static final double faceToZoneLine =
                 Units.inchesToMeters(12); // Side of the reef to the inside of the reef zone line
+        public static final double centerToZoneLine =
+                Units.inchesToMeters(46.75); // Center of the reef to the inside of the reef zone line
 
         private static final Pose2d[] centerFaces = new Pose2d[] {
             new Pose2d(Units.inchesToMeters(144.003), Units.inchesToMeters(158.500), Rotation2d.fromDegrees(180)),
@@ -119,11 +121,11 @@ public class FieldConstants {
                 branchPositions.add(fillRight);
 
                 scorePositions.add(centerFaces[face].transformBy(new Transform2d(
-                        Constants.BUMPER_LENGTH_X_METERS / 2,
+                        Units.inchesToMeters(4.5) + Constants.BUMPER_LENGTH_X_METERS / 2,
                         GrabberConstants.Y_OFFSET_METERS - Units.inchesToMeters(6.469),
                         Rotation2d.kZero)));
                 scorePositions.add(centerFaces[face].transformBy(new Transform2d(
-                        Constants.BUMPER_LENGTH_X_METERS / 2,
+                        Units.inchesToMeters(4.5) + Constants.BUMPER_LENGTH_X_METERS / 2,
                         GrabberConstants.Y_OFFSET_METERS + Units.inchesToMeters(6.469),
                         Rotation2d.kZero)));
 

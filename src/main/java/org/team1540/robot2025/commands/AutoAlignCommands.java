@@ -1,12 +1,17 @@
 package org.team1540.robot2025.commands;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
+import org.team1540.robot2025.Constants;
+import org.team1540.robot2025.FieldConstants;
 import org.team1540.robot2025.FieldConstants.Reef;
 import org.team1540.robot2025.FieldConstants.ReefBranch;
 import org.team1540.robot2025.FieldConstants.ReefFace;
@@ -22,8 +27,16 @@ public class AutoAlignCommands {
             "AutoAlign/ReefAvoidanceRadiusMeters", Reef.faceLength + DrivetrainConstants.DRIVEBASE_RADIUS + 0.5);
     private static final LoggedTunableNumber reefAvoidanceLookaheadDeg =
             new LoggedTunableNumber("AutoAlign/ReefAvoidanceLookaheadDeg", 20);
+    private static final LoggedTunableNumber finalReefAvoidanceLookaheadDeg =
+            new LoggedTunableNumber("AutoAlign/FinalReefAvoidanceLookaheadDeg", 8);
+    private static final LoggedTunableNumber finalReefAvoidanceSectorDeg =
+            new LoggedTunableNumber("AutoAlign/FinalReefAvoidanceSectorDeg", 15);
     private static final LoggedTunableNumber finalAlignLookaheadMeters =
-            new LoggedTunableNumber("AutoAlign/FinalAlignLookaheadMeters", 0.075);
+            new LoggedTunableNumber("AutoAlign/FinalAlignLookaheadMeters", 0.05);
+    private static final LoggedTunableNumber autoFinalAlignLookaheadMeters =
+            new LoggedTunableNumber("AutoAlign/AutoFinalAlignLookaheadMeters", 0.1);
+    private static final LoggedTunableNumber finalAlignToleranceDeg =
+            new LoggedTunableNumber("AutoAlign/FinalAlignToleranceDeg", 10);
     private static final LoggedTunableNumber finalAlignDistanceMeters =
             new LoggedTunableNumber("AutoAlign/FinalAlignDistanceMeters", 0.9);
 
@@ -35,8 +48,8 @@ public class AutoAlignCommands {
         Rotation2d angularError =
                 goalAngleFromReef.minus(robotFromReef.getTranslation().getAngle());
 
-        // If the robot is within a +/-10 deg angle sweep around the goal, go directly there
-        if (Math.abs(angularError.getDegrees()) <= 10) {
+        // If the robot is within the final align sector of the goal, go directly there
+        if (Math.abs(angularError.getDegrees()) <= finalAlignToleranceDeg.get()) {
             double distanceToGoal = robotFromReef.getTranslation().getDistance(goalFromReef.getTranslation());
             if (distanceToGoal <= finalAlignDistanceMeters.get()) {
                 Pose2d interpolatedPose =
@@ -48,10 +61,14 @@ public class AutoAlignCommands {
         // If the robot is within or near the reef avoidance radius, drive around the reef
         if (robotFromReef.getTranslation().getNorm() <= reefAvoidanceRadiusMeters.get() + 0.1) {
             Rotation2d angleFromReefCenter = robotFromReef.getTranslation().getAngle();
-            Rotation2d step =
-                    Rotation2d.fromDegrees(Math.copySign(reefAvoidanceLookaheadDeg.get(), angularError.getDegrees()));
-            Rotation2d nextAngle = Math.abs(angularError.getDegrees()) <= reefAvoidanceLookaheadDeg.get()
-                    ? goalAngleFromReef
+            Rotation2d lookahead = Rotation2d.fromDegrees(
+                    Math.abs(angularError.getDegrees()) >= finalReefAvoidanceSectorDeg.get()
+                            ? reefAvoidanceLookaheadDeg.get()
+                            : finalReefAvoidanceLookaheadDeg.get());
+            Rotation2d step = Rotation2d.fromDegrees(Math.copySign(lookahead.getDegrees(), angularError.getDegrees()));
+            Rotation2d nextAngle = Math.abs(angularError.getDegrees()) <= lookahead.getDegrees()
+                    ? goalAngleFromReef.minus(Rotation2d.fromDegrees(
+                            Math.copySign(finalAlignToleranceDeg.get(), angularError.getDegrees())))
                     : angleFromReefCenter.plus(step);
             return new Pose2d(
                     reefCenter
@@ -64,27 +81,35 @@ public class AutoAlignCommands {
         double distanceFromCenter = robotFromReef.getTranslation().getNorm();
         Rotation2d tangentOffsetAngle =
                 Rotation2d.fromRadians(Math.acos(reefAvoidanceRadiusMeters.get() / distanceFromCenter));
-        Translation2d tangentPoint1 = reefCenter
-                .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
-                .getTranslation()
-                .rotateAround(
-                        reefCenter.getTranslation(),
-                        robotFromReef.getTranslation().getAngle().plus(tangentOffsetAngle));
-        Translation2d tangentPoint2 = reefCenter
-                .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
-                .getTranslation()
-                .rotateAround(
-                        reefCenter.getTranslation(),
-                        robotFromReef.getTranslation().getAngle().minus(tangentOffsetAngle));
-        if (tangentPoint1.getDistance(goalPose.getTranslation())
-                < tangentPoint2.getDistance(goalPose.getTranslation())) {
-            return new Pose2d(tangentPoint1, goalPose.getRotation());
-        } else {
-            return new Pose2d(tangentPoint2, goalPose.getRotation());
-        }
+        Pose2d tangentPoint1 = new Pose2d(
+                reefCenter
+                        .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
+                        .getTranslation()
+                        .rotateAround(
+                                reefCenter.getTranslation(),
+                                robotFromReef.getTranslation().getAngle().plus(tangentOffsetAngle)),
+                goalPose.getRotation());
+        Pose2d tangentPoint2 = new Pose2d(
+                reefCenter
+                        .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
+                        .getTranslation()
+                        .rotateAround(
+                                reefCenter.getTranslation(),
+                                robotFromReef.getTranslation().getAngle().minus(tangentOffsetAngle)),
+                goalPose.getRotation());
+        Pose2d targetOffsetPoint = new Pose2d(
+                reefCenter
+                        .transformBy(new Transform2d(reefAvoidanceRadiusMeters.get(), 0.0, Rotation2d.kZero))
+                        .getTranslation()
+                        .rotateAround(
+                                reefCenter.getTranslation(),
+                                goalFromReef.getTranslation().getAngle()),
+                goalPose.getRotation());
+        return robotPose.nearest(List.of(goalPose.nearest(List.of(tangentPoint1, tangentPoint2)), targetOffsetPoint));
     }
 
-    public static Command alignToReefPose(ReefFace face, Supplier<Pose2d> pose, Drivetrain drivetrain) {
+    public static Command alignToReefPose(
+            ReefFace face, Supplier<Pose2d> pose, Drivetrain drivetrain, BooleanSupplier fastAlign) {
         return drivetrain.driveToPoseCommand(
                 () -> {
                     Pose2d alignmentPoseEstimate = RobotState.getInstance().getReefAlignmentPose(face);
@@ -94,32 +119,47 @@ public class AutoAlignCommands {
                     Logger.recordOutput("AutoAlign/DriveTarget", target);
                     return target;
                 },
-                () -> RobotState.getInstance().getReefAlignmentPose(face));
+                () -> RobotState.getInstance().getReefAlignmentPose(face),
+                fastAlign);
+    }
+
+    public static Command alignToReefPose(ReefFace face, Supplier<Pose2d> pose, Drivetrain drivetrain) {
+        return alignToReefPose(face, pose, drivetrain, () -> false);
     }
 
     public static Command alignToReefPose(ReefFace face, Pose2d pose, Drivetrain drivetrain) {
         return alignToReefPose(face, () -> pose, drivetrain);
     }
 
-    public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
+    public static Command alignToBranch(
+            ReefBranch branch, Drivetrain drivetrain, BooleanSupplier shouldReverse, FieldConstants.ReefHeight height) {
         return alignToReefPose(
                 branch.face,
                 () -> {
-                    if (!shouldReverse.getAsBoolean()) return AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
+                    Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
+                    if (height == FieldConstants.ReefHeight.L1)
+                        pose = pose.transformBy(new Transform2d(0, Units.inchesToMeters(2.25 * branch.ordinal() % 2 == 0 ? 1 : -1), Rotation2d.kZero));
+                    if (!shouldReverse.getAsBoolean())
+                        return pose.transformBy(new Transform2d(
+                                Units.inchesToMeters(-3), Units.inchesToMeters(0.25), Rotation2d.kZero));
                     else {
-                        Pose2d pose = AllianceFlipUtil.maybeFlipPose(branch.scorePosition);
                         return new Pose2d(
                                         pose.getTranslation(),
                                         pose.getRotation().rotateBy(Rotation2d.k180deg))
                                 .transformBy(
-                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                                        new Transform2d(0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
                     }
                 },
-                drivetrain);
+                drivetrain,
+                () -> height != FieldConstants.ReefHeight.L4);
     }
 
     public static Command alignToBranch(ReefBranch branch, Drivetrain drivetrain) {
-        return alignToBranch(branch, drivetrain, () -> RobotState.getInstance().shouldReverseCoral(branch));
+        return alignToBranch(
+                branch,
+                drivetrain,
+                () -> RobotState.getInstance().shouldReverseCoral(branch),
+                FieldConstants.ReefHeight.L2);
     }
 
     public static Command alignToBranchNearestSide(ReefBranch branch, Drivetrain drivetrain) {
@@ -131,7 +171,7 @@ public class AutoAlignCommands {
                                         pose.getTranslation(),
                                         pose.getRotation().rotateBy(Rotation2d.k180deg))
                                 .transformBy(
-                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                                        new Transform2d(0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
                     Pose2d finalPose = pose;
                     return alignToReefPose(branch.face, () -> finalPose, drivetrain);
                 },
@@ -188,9 +228,40 @@ public class AutoAlignCommands {
                 Set.of(drivetrain));
     }
 
-    public static Command alignToDealgifyPose(ReefFace face, Drivetrain drivetrain) {
+    public static Command alignToDealgifyPose(
+            ReefFace face,
+            Drivetrain drivetrain,
+            BooleanSupplier shouldReverse,
+            BooleanSupplier shouldAvoidReef,
+            DoubleSupplier backoffDistance) {
         return Commands.defer(
-                () -> alignToReefPose(face, AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition()), drivetrain),
+                () -> {
+                    Pose2d pose = AllianceFlipUtil.maybeFlipPose(face.dealgifyPosition());
+                    pose = pose.transformBy(new Transform2d(backoffDistance.getAsDouble(), 0, Rotation2d.kZero));
+                    if (shouldReverse.getAsBoolean()) {
+                        pose = new Pose2d(
+                                        pose.getTranslation(),
+                                        pose.getRotation().rotateBy(Rotation2d.k180deg))
+                                .transformBy(
+                                        new Transform2d(0.0, GrabberConstants.Y_OFFSET_METERS * 2, Rotation2d.kZero));
+                    }
+                    Pose2d finalPose = pose;
+                    if (shouldAvoidReef.getAsBoolean())
+                        return alignToReefPose(face, () -> finalPose, drivetrain, () -> true);
+                    else return drivetrain.driveToPoseCommand(() -> finalPose, () -> true);
+                },
                 Set.of(drivetrain));
+    }
+
+    public static Command alignToDealgifyPose(ReefFace face, Drivetrain drivetrain, BooleanSupplier shouldReverse) {
+        return AutoAlignCommands.alignToDealgifyPose(
+                face, drivetrain, shouldReverse, () -> true, () -> Units.inchesToMeters(4.5));
+    }
+
+    public static Command alignToCage(Translation2d cage, Drivetrain drivetrain) {
+        return drivetrain.driveToPoseCommand(() -> new Pose2d(
+                AllianceFlipUtil.maybeFlipTranslation(
+                        cage.plus(new Translation2d(-Constants.BUMPER_LENGTH_X_METERS, 0))),
+                AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg)));
     }
 }

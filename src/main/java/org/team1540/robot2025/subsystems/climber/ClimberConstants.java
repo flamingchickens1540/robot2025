@@ -4,9 +4,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public class ClimberConstants {
-    public static final double GEAR_RATIO = 125.0 * 54.0 / 12.0;
+    public static final double PIVOT_GEAR_RATIO = 360.0;
     public static final double ARM_MOMENT_OF_INERTIA_KGM2 = 0.02;
     public static final double ARM_LENGTH_METERS = 0.411; // TODO: check please
+
+    public static final double ROLLER_GEAR_RATIO = 20.0 / 1.0;
 
     public static final Translation3d ROTATIONAL_ORIGIN = new Translation3d(0.0, 0.173165, 0.179950);
 
@@ -23,7 +25,8 @@ public class ClimberConstants {
     public static final double KG = 0.41;
     public static final double KV = 0.55;
 
-    public static final int MOTOR_ID = 2;
+    public static final int PIVOT_MOTOR_ID = 2;
+    public static final int ROLLER_MOTOR_ID = 4;
 
     public static final double CRUISE_VELOCITY_RPS = 3;
     public static final double MAX_ACCEL_RPS2 = 10;

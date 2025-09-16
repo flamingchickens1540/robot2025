@@ -1,0 +1,86 @@
+package org.team1540.robot2025.util;
+
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
+public class Controllers {
+
+    private static Controllers instance = null;
+
+    public static Controllers getInstance() {
+        if (instance == null) instance = new Controllers();
+        return instance;
+    }
+
+    private final CommandXboxController driver = new CommandXboxController(0);
+    private final CommandXboxController copilot = new CommandXboxController(1);
+    private final ButtonBoard buttonBoard = new ButtonBoard(2);
+
+    public static Command startStopTimed(Runnable start, Runnable end, double duration, Subsystem... requirements) {
+        return Commands.race(Commands.waitSeconds(duration), Commands.startEnd(start, end, requirements));
+    }
+
+    public static Command rumbleCommandTimed(XboxController controller, double amount, double duration) {
+        return startStopTimed(
+                        () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, amount),
+                        () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, 0),
+                        duration)
+                .onlyIf(() -> !DriverStation.isAutonomous());
+    }
+
+    public static Command rumbleCommandTimed(CommandXboxController controller, double amount, double duration) {
+        return rumbleCommandTimed(controller.getHID(), amount, duration);
+    }
+
+    public static Command rumbleCommand(XboxController controller, double amount) {
+        return Commands.startEnd(
+                        () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, amount),
+                        () -> controller.setRumble(GenericHID.RumbleType.kBothRumble, 0))
+                .onlyIf(() -> !DriverStation.isAutonomous());
+    }
+
+    public static Command rumbleCommand(CommandXboxController controller, double amount) {
+        return rumbleCommand(controller.getHID(), amount);
+    }
+
+    public Command rumbleDriver() {
+        return rumbleCommand(driver, 1);
+    }
+
+    public Command rumbleDriverTimed(double duration) {
+        return rumbleCommandTimed(driver, 1, duration);
+    }
+
+    public Command setDriverRumble(GenericHID.RumbleType type, double value) {
+        return Commands.runOnce(() -> driver.setRumble(type, value)).onlyIf(() -> !DriverStation.isAutonomous());
+    }
+
+    public Command rumbleCopilot() {
+        return rumbleCommand(copilot, 1);
+    }
+
+    public Command rumbleCopilotTimed(double duration) {
+        return rumbleCommandTimed(copilot, 1, duration);
+    }
+
+    public Command setCopilotRumble(GenericHID.RumbleType type, double value) {
+        return Commands.runOnce(() -> copilot.setRumble(type, value)).onlyIf(() -> !DriverStation.isAutonomous());
+    }
+
+    public CommandXboxController getDriver() {
+        return driver;
+    }
+
+    public CommandXboxController getCopilot() {
+        return copilot;
+    }
+
+    public ButtonBoard getButtonBoard() {
+        return buttonBoard;
+    }
+}

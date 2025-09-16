@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,19 +31,18 @@ import org.team1540.robot2025.subsystems.intake.Intake;
 import org.team1540.robot2025.subsystems.leds.CustomLEDPatterns;
 import org.team1540.robot2025.subsystems.leds.Leds;
 import org.team1540.robot2025.subsystems.vision.apriltag.AprilTagVision;
-import org.team1540.robot2025.util.AllianceFlipUtil;
-import org.team1540.robot2025.util.ButtonBoard;
-import org.team1540.robot2025.util.JoystickUtil;
-import org.team1540.robot2025.util.MatchTriggers;
+import org.team1540.robot2025.subsystems.vision.coral.CoralVision;
+import org.team1540.robot2025.util.*;
 import org.team1540.robot2025.util.auto.LoggedAutoChooser;
 
 public class RobotContainer {
-    private final CommandXboxController driver = new CommandXboxController(0);
-    private final CommandXboxController copilot = new CommandXboxController(1);
-    private final ButtonBoard buttonBoard = new ButtonBoard(2);
+    private final CommandXboxController driver = Controllers.getInstance().getDriver();
+    private final CommandXboxController copilot = Controllers.getInstance().getCopilot();
+    private final ButtonBoard buttonBoard = Controllers.getInstance().getButtonBoard();
 
     private final Drivetrain drivetrain;
     private final AprilTagVision aprilTagVision;
+    private final CoralVision coralVision;
     private final Elevator elevator;
     private final Arm arm;
     private final Intake intake;
@@ -64,6 +64,7 @@ public class RobotContainer {
                 // Real robot, instantiate hardware IO implementations
                 drivetrain = Drivetrain.createReal();
                 aprilTagVision = AprilTagVision.createReal();
+                coralVision = CoralVision.createDummy();
                 elevator = Elevator.createReal();
                 arm = Arm.createReal();
                 intake = Intake.createReal();
@@ -74,6 +75,7 @@ public class RobotContainer {
                 // Simulation, instantiate physics sim IO implementations
                 drivetrain = Drivetrain.createSim();
                 aprilTagVision = AprilTagVision.createSim();
+                coralVision = CoralVision.createDummy();
                 elevator = Elevator.createSim();
                 arm = Arm.createSim();
                 intake = Intake.createSim();
@@ -86,14 +88,16 @@ public class RobotContainer {
                 // Replayed robot, disable IO implementations
                 drivetrain = Drivetrain.createDummy();
                 aprilTagVision = AprilTagVision.createDummy();
+                coralVision = CoralVision.createDummy();
                 elevator = Elevator.createDummy();
                 arm = Arm.createDummy();
                 intake = Intake.createDummy();
                 grabber = Grabber.createDummy();
                 climber = Climber.createDummy();
         }
-        superstructure = new Superstructure(elevator, arm, intake, grabber);
+        superstructure = new Superstructure(elevator, arm, intake, grabber, leds);
         autos = new Autos(drivetrain, superstructure);
+        AutoScoreCommands.warmup(drivetrain, superstructure).schedule();
 
         configureButtonBindings();
         configureAutoRoutines();
@@ -108,7 +112,31 @@ public class RobotContainer {
             driver.y()
                     .whileTrue(AutoScoreCommands.alignToBranchAndScore(
                             ReefBranch.E, ReefHeight.L4, drivetrain, superstructure));
+            //            driver.b()
+            //                    .whileTrue(AutoScoreCommands.alignToBranchAndScore(
+            //                            ReefBranch.E, ReefHeight.L3, drivetrain, superstructure));
+//            driver.b().whileTrue(AutoScoreCommands.alignToProcessorAndScore(drivetrain, superstructure));
+            driver.b().whileTrue(AutoScoreCommands.alignToBranchAndScore(ReefBranch.E, ReefHeight.L1, drivetrain, superstructure));
+            //            driver.y().whileTrue(AutoScoreCommands.alignToFaceAndS(ReefBranch.E.face, drivetrain,
+            // superstructure));
+            //            driver.b().whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain,
+            // superstructure));
+            //            driver.b().whileTrue(AutoScoreCommands.alignToFaceAndClean(ReefBranch.E.face, drivetrain,
+            // superstructure));
+            //            driver.a()
+            //                    .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(ReefBranch.E.face, drivetrain,
+            // superstructure));
+            //            driver.b().whileTrue(AutoScoreCommands.alignToBargeAndScore(drivetrain, superstructure));
+            //            driver.b().whileTrue(AutoScoreCommands.pointToBargeAndScore(drivetrain, superstructure,
+            // driver.getHID()));
+
+            //            RobotState.getInstance()
+            //                    .addCoralObservation(new CoralVisionIO.CoralObservation(0, Rotation2d.kZero,
+            // Rotation2d.kZero, 0));
+            //            driver.b().whileTrue(drivetrain.seekAndDestroy());
         }
+        //        driver.b().whileTrue(drivetrain.seekAndDestroy());
+        //        driver.b().onTrue(Commands.runOnce(() -> RobotState.getInstance().toggleIntakeAssist()));
 
         drivetrain.setDefaultCommand(drivetrain.teleopDriveCommand(driver.getHID(), () -> true));
         driver.x()
@@ -121,19 +149,25 @@ public class RobotContainer {
         driver.start().onTrue(Commands.runOnce(drivetrain::zeroFieldOrientationManual));
 
         driver.leftStick().onTrue(superstructure.stow());
-        driver.rightStick()
-                .and(buttonBoard.flexTrue())
-                .whileTrue(Commands.waitUntil(driver.leftBumper().or(driver.rightBumper()))
-                        .andThen(AutoAlignCommands.alignToNearestFace(drivetrain, driver.rightBumper())));
+
+        driver.leftTrigger()
+                .whileTrue(drivetrain
+                        .teleopDriveIntakeAssistCommand(driver.getHID(), () -> true)
+                        .onlyIf(RobotState.getInstance()::getIntakeAssist));
+
+        driver.leftTrigger().onTrue(Controllers.getInstance().rumbleDriver());
+        new Trigger(intake::hasCoral)
+                .onTrue(Controllers.getInstance().setDriverRumble(GenericHID.RumbleType.kBothRumble, 0));
 
         driver.leftTrigger()
                 .and(buttonBoard.branchHeightAt(ReefHeight.L1).negate())
-                .whileTrue(superstructure.coralGroundIntake())
-                .onFalse(superstructure.stow());
+                .and(() -> !grabber.hasAlgae())
+                .onTrue(superstructure.coralGroundIntake());
+
         driver.leftTrigger()
-                .and(buttonBoard.branchHeightAt(ReefHeight.L1))
-                .whileTrue(superstructure.coralGroundIntakeL1())
-                .onFalse(superstructure.stow());
+                .and(buttonBoard.branchHeightAt(ReefHeight.L1).or(grabber::hasAlgae))
+                .and(() -> !grabber.hasAlgae())
+                .onTrue(superstructure.coralGroundIntakeL1());
 
         driver.leftBumper()
                 .whileTrue(superstructure.algaeIntake())
@@ -141,7 +175,7 @@ public class RobotContainer {
 
         driver.rightTrigger().onTrue(superstructure.score());
 
-        climber.setDefaultCommand(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1)));
+        climber.setDefaultCommand(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0));
 
         copilot.start()
                 .whileTrue(superstructure
@@ -153,14 +187,56 @@ public class RobotContainer {
         copilot.leftTrigger().onTrue(superstructure.stow());
         copilot.leftBumper().onTrue(superstructure.dealgifyHigh());
         copilot.rightBumper().onTrue(superstructure.dealgifyLow());
+        copilot.povLeft().onTrue(Commands.runOnce(() -> climber.resetPosition(Rotation2d.fromDegrees(30))));
 
         copilot.y().onTrue(superstructure.L4(() -> true));
         copilot.x().onTrue(superstructure.L3(() -> true));
         copilot.a().onTrue(superstructure.L2(() -> true));
-        copilot.povRight().onTrue(superstructure.L1());
-        copilot.b().onTrue(superstructure.net());
 
-        copilot.povLeft().onTrue(superstructure.processor());
+        buttonBoard
+                .button(1)
+                .or(copilot.b())
+                //                .or(driver.x())
+                .onTrue(superstructure.net());
+        buttonBoard.button(2).onTrue(superstructure.processor());
+
+//        buttonBoard
+//                .button(3)
+//                //                .or(driver.x())v
+//                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.leftCage, drivetrain)
+//                        .andThen(drivetrain.teleopDriveWithHeadingCommand(
+//                                driver.getHID(),
+//                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
+//                                () -> true))
+//                        .alongWith(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0.3)
+//                                .alongWith(superstructure.commandToState(
+//                                        Superstructure.SuperstructureState.PROCESSOR_BACK))));
+//        buttonBoard
+//                .button(4)
+//                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.middleCage, drivetrain)
+//                        .andThen(drivetrain.teleopDriveWithHeadingCommand(
+//                                driver.getHID(),
+//                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
+//                                () -> true))
+//                        .alongWith(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0.3)
+//                                .alongWith(superstructure.commandToState(
+//                                        Superstructure.SuperstructureState.PROCESSOR_BACK))));
+//        buttonBoard
+//                .button(5)
+//                .onTrue(AutoAlignCommands.alignToCage(FieldConstants.Barge.rightCage, drivetrain)
+//                        .andThen(drivetrain.teleopDriveWithHeadingCommand(
+//                                driver.getHID(),
+//                                () -> AllianceFlipUtil.maybeReverseRotation(Rotation2d.kCCW_90deg),
+//                                () -> true))
+//                        .alongWith(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0.3)
+//                                .alongWith(superstructure.commandToState(
+//                                        Superstructure.SuperstructureState.PROCESSOR_BACK))));
+
+        buttonBoard
+                .button(6)
+                .or(copilot.povRight())
+                .toggleOnTrue(climber.climbCommand(() -> JoystickUtil.smartDeadzone(copilot.getRightY(), 0.1), 0.3)
+                        .alongWith(superstructure.commandToState(Superstructure.SuperstructureState.PROCESSOR_BACK)));
         copilot.povDown().whileTrue(superstructure.coralIntakeEject()).onFalse(superstructure.stow());
 
         for (ButtonBoard.ReefButton button : ButtonBoard.ReefButton.values()) {
@@ -168,28 +244,56 @@ public class RobotContainer {
                 buttonBoard
                         .branchFaceAt(button)
                         .and(buttonBoard.branchHeightAt(height))
-                        .and(buttonBoard.flexFalse())
                         .and(driver.rightStick())
                         .whileTrue(AutoScoreCommands.alignToBranchAndScore(
                                 buttonBoard.reefButtonToBranch(button), height, drivetrain, superstructure));
             }
             buttonBoard
                     .branchFaceAt(button)
-                    .and(buttonBoard.flexFalse())
                     .and(driver.rightBumper())
+                    .and(buttonBoard.quickDealgify().negate())
+                    .and(() -> !grabber.hasCoral())
                     .whileTrue(AutoScoreCommands.alignToFaceAndDealgify(
                             buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
+            buttonBoard
+                    .branchFaceAt(button)
+                    .and(driver.rightBumper())
+                    .and(buttonBoard.quickDealgify().or(grabber::hasCoral))
+                    .whileTrue(AutoScoreCommands.alignToFaceAndClean(
+                            buttonBoard.reefButtonToBranch(button).face, drivetrain, superstructure));
         }
+
+        //        new Trigger(() -> RobotState.getInstance()
+        //                                .getEstimatedPose()
+        //                                .getTranslation()
+        //
+        // .getDistance(AllianceFlipUtil.maybeFlipTranslation(FieldConstants.Reef.center))
+        //                        > FieldConstants.Reef.centerToZoneLine
+        //                                + Units.inchesToMeters(12)
+        //                                + Constants.BUMPER_LENGTH_X_METERS / 2)
+        //                .and(() -> !(grabber.reverseSensorTripped() || grabber.forwardSensorTripped()))
+        //                .and(() -> superstructure.getGoalState().elevatorState.height.getAsDouble() > 0.2)
+        //                .onTrue(superstructure.stow());
     }
 
     private void configureAutoRoutines() {
         autoChooser.addCmd("Zero mechanisms", superstructure::zeroCommand);
         //        autoChooser.addRoutine("Right 3 Piece Lollipop", autos::right3PieceLollipop);
         //        autoChooser.addRoutine("Left 3 Piece Lollipop", autos::left3PieceLollipop);
-        autoChooser.addRoutine("Right 3 Piece Sweep", autos::right3PieceSweep);
-        autoChooser.addRoutine("Left 3 Piece Sweep", autos::left3PieceSweep);
-        autoChooser.addRoutine("Center 1 Piece Barge", autos::center1PieceBarge);
-        autoChooser.addRoutine("Center 1 Piece Processor", autos::center1PieceProcessor);
+        //        autoChooser.addRoutine("Right 3 Piece Sweep", autos::right3PieceSweep);
+        //        autoChooser.addRoutine("Right 4 Piece Sweep Reverse", autos::right4PieceSweepReverse);
+        autoChooser.addRoutine("Right 4 Piece", autos::right4Piece);
+        //        autoChooser.addRoutine("Left 3 Piece Sweep", autos::left3PieceSweep);
+
+        //        autoChooser.addRoutine("Left 4 Piece Sweep Reverse", autos::left4PieceSweepReverse);
+        autoChooser.addRoutine("Left 4 Piece", autos::left4Piece);
+        autoChooser.addRoutine("Left 4 Piece Slow", autos::left4PieceSlow);
+        autoChooser.addRoutine("Left 4 Piece Rizz", autos::left4PieceRizz);
+        //        autoChooser.addRoutine("Left 4 Piece Eyes", autos::left4PieceEyes);
+        autoChooser.addRoutine("Center 1 Piece", autos::center1Piece);
+        autoChooser.addRoutine("Center 1 Piece 2 Barge", autos::center1Piece2Barge);
+        autoChooser.addRoutine("Center 1 Piece 2 Barge Choreo", autos::center1Piece2BargeChoreo);
+        //        autoChooser.addRoutine("Center 1 Piece 2 Proc", autos::center1Piece2Processor);
         if (Constants.isTuningMode()) {
             autoChooser.addCmd("Drive FF Characterization", drivetrain::feedforwardCharacterization);
             autoChooser.addCmd("Drive Wheel Radius Characterization", drivetrain::wheelRadiusCharacterization);
@@ -210,6 +314,7 @@ public class RobotContainer {
         addPeriodicCallback(AlertManager.getInstance()::update, "AlertManager update");
         addPeriodicCallback(MechanismVisualizer.getInstance()::update, "MechanismVisualizer update");
         addPeriodicCallback(RobotState.getInstance()::periodicLog, "RobotState periodic log");
+        addPeriodicCallback(autoChooser::update, "AutoChooser update");
         if (Constants.CURRENT_MODE == Constants.Mode.SIM) {
             addPeriodicCallback(SimState.getInstance()::update, "Simulation update");
         }
@@ -221,17 +326,13 @@ public class RobotContainer {
     }
 
     private void configureLEDBindings() {
-        // RobotModeTriggers.disabled().whileFalse(leds.viewFull.showRSLState());
         RobotModeTriggers.disabled()
-                .onTrue(Commands.runOnce(
-                        () -> leds.viewFull.setDefaultPattern(CustomLEDPatterns.movingRainbow(Hertz.of(0.2)))));
+                .onTrue(leds.viewFull.commandDefaultPattern(() -> CustomLEDPatterns.movingRainbow(Hertz.of(0.2))));
         RobotModeTriggers.autonomous()
-                .onTrue(Commands.runOnce(
-                        () -> leds.viewFull.setDefaultPattern(LEDPattern.solid(Leds.getAllianceColor()))));
+                .onTrue(leds.viewFull.commandDefaultPattern(() -> LEDPattern.solid(Leds.getAllianceColor())));
         RobotModeTriggers.teleop()
-                .onTrue(Commands.runOnce(() -> leds.viewFull.setDefaultCommand(leds.viewFull.commandShowPattern(
-                        () -> LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0))))))
-                .onFalse(Commands.runOnce(leds.viewFull::removeDefaultCommand));
+                .onTrue(leds.viewFull.commandDefaultPattern(
+                        () -> LEDPattern.solid(Leds.getAllianceColor()).blink(Seconds.of(1.0))));
 
         new Trigger(grabber::reverseSensorTripped)
                 .and(DriverStation::isEnabled)
@@ -242,6 +343,12 @@ public class RobotContainer {
         new Trigger(grabber::forwardSensorTripped)
                 .and(DriverStation::isEnabled)
                 .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kYellow)));
+        new Trigger(grabber::hasAlgae)
+                .and(DriverStation::isEnabled)
+                .whileTrue(leds.viewFull
+                        .commandShowPattern(CustomLEDPatterns.strobe(Color.kAquamarine))
+                        .withTimeout(0.5)
+                        .andThen(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kAquamarine))));
         new Trigger(intake::hasCoral)
                 .and(DriverStation::isEnabled)
                 .whileTrue(leds.viewFull.commandShowPattern(LEDPattern.solid(Color.kOrangeRed)));

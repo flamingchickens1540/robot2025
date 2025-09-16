@@ -4,6 +4,7 @@ import static org.team1540.robot2025.subsystems.climber.ClimberConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -38,6 +39,8 @@ public class Climber extends SubsystemBase {
     private final ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
     private Rotation2d setpoint = new Rotation2d();
 
+    private final Alert motorDisconnectedAlert = new Alert("Climb motor disconnected.", Alert.AlertType.kError);
+
     private final LoggedTunableNumber kP = new LoggedTunableNumber("Climber/kP", KP);
     private final LoggedTunableNumber kI = new LoggedTunableNumber("Climber/kI", KI);
     private final LoggedTunableNumber kD = new LoggedTunableNumber("Climber/kD", KD);
@@ -57,26 +60,28 @@ public class Climber extends SubsystemBase {
         // update + process inputs!
         io.updateInputs(inputs);
         Logger.processInputs("Climber", inputs);
-        MechanismVisualizer.getInstance().setClimberRotation(inputs.position);
+        MechanismVisualizer.getInstance().setClimberRotation(inputs.pivotPosition);
 
         if (RobotState.isDisabled()) {
-            io.setVoltage(0);
+            io.setPivotVoltage(0);
         }
 
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configPID(kP.get(), kI.get(), kD.get()), kP, kI, kD);
         LoggedTunableNumber.ifChanged(hashCode(), () -> io.configFF(kS.get(), kV.get(), kG.get()), kS, kV, kG);
 
+        motorDisconnectedAlert.set(!inputs.motorConnected);
+
         LoggedTracer.record("Climber");
     }
 
     public void holdPosition() {
-        setPosition(inputs.position);
+        setPosition(inputs.pivotPosition);
     }
 
     public void setPosition(Rotation2d position) {
         setpoint = Rotation2d.fromRotations(
                 MathUtil.clamp(position.getRotations(), MIN_ANGLE.getRotations(), MAX_ANGLE.getRotations()));
-        io.setSetpoint(setpoint);
+        io.setPivotSetpoint(setpoint);
     }
 
     public void resetPosition(Rotation2d position) {
@@ -84,7 +89,7 @@ public class Climber extends SubsystemBase {
     }
 
     public Rotation2d getPosition() {
-        return inputs.position;
+        return inputs.pivotPosition;
     }
 
     public void setBrakeMode(boolean isBrakeMode) {
@@ -93,7 +98,8 @@ public class Climber extends SubsystemBase {
 
     @AutoLogOutput(key = "Climber/AtSetpoint")
     public boolean isAtSetpoint() {
-        return MathUtil.isNear(setpoint.getRotations(), inputs.position.getRotations(), ERROR_TOLERANCE.getRotations());
+        return MathUtil.isNear(
+                setpoint.getRotations(), inputs.pivotPosition.getRotations(), ERROR_TOLERANCE.getRotations());
     }
 
     @AutoLogOutput(key = "Climber/Setpoint")
@@ -107,17 +113,23 @@ public class Climber extends SubsystemBase {
     }
 
     public Command manualCommand(DoubleSupplier input) {
-        return Commands.runEnd(() -> io.setVoltage(input.getAsDouble() * 12.0), () -> io.setVoltage(0), this);
+        return Commands.runEnd(() -> io.setPivotVoltage(input.getAsDouble() * 12.0), () -> io.setPivotVoltage(0), this);
     }
 
-    public Command climbCommand(DoubleSupplier input) {
+    public Command climbRollerPercent(double percent) {
+        return Commands.runOnce(() -> io.setPivotVoltage(percent * 12.0));
+    }
+
+    public Command climbCommand(DoubleSupplier input, double percent) {
         return Commands.runEnd(
-                () -> io.setVoltage(
-                        getPosition().getDegrees()
-                                        > ClimberState.CLIMB.position().getDegrees()
-                                ? Math.min(input.getAsDouble(), 0.0)
-                                : input.getAsDouble() * 12.0),
-                () -> io.setVoltage(0),
+                () -> {
+                    io.setPivotVoltage(input.getAsDouble() * 12.0);
+                    io.setRollerVoltage(percent * 12.0);
+                },
+                () -> {
+                    io.setPivotVoltage(0);
+                    io.setRollerVoltage(0);
+                },
                 this);
     }
 
@@ -125,7 +137,7 @@ public class Climber extends SubsystemBase {
         if (Constants.CURRENT_MODE != Constants.Mode.REAL) {
             DriverStation.reportWarning("Using real climber on simulated robot", false);
         }
-        return new Climber(new ClimberIOTalonFX());
+        return new Climber(new ClimberIOReal());
     }
 
     public static Climber createSim() {

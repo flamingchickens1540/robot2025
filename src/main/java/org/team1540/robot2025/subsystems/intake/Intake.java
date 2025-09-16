@@ -25,7 +25,7 @@ public class Intake extends SubsystemBase {
         STOW(new LoggedTunableNumber("Intake/Setpoints/Stow/AngleDegrees", PIVOT_MAX_ANGLE.getDegrees())),
         INTAKE(new LoggedTunableNumber("Intake/Setpoints/Intake/AngleDegrees", PIVOT_MIN_ANGLE.getDegrees())),
         EJECT(new LoggedTunableNumber("Intake/Setpoints/Eject/AngleDegrees", 60)),
-        L1(new LoggedTunableNumber("Intake/Setpoints/L1/AngleDegrees", 70));
+        L1(new LoggedTunableNumber("Intake/Setpoints/L1/AngleDegrees", 57));
 
         private final DoubleSupplier pivotPosition;
 
@@ -50,7 +50,6 @@ public class Intake extends SubsystemBase {
 
     private final Alert pivotDisconnectedAlert = new Alert("Intake pivot disconnected", Alert.AlertType.kError);
     private final Alert rollerDisconnectedAlert = new Alert("Intake roller disconnected", Alert.AlertType.kError);
-    private final Alert funnelDisconnectedAlert = new Alert("Intake funnel disconnected", Alert.AlertType.kError);
 
     private Rotation2d pivotSetpoint = PIVOT_MIN_ANGLE;
 
@@ -88,7 +87,6 @@ public class Intake extends SubsystemBase {
 
         pivotDisconnectedAlert.set(!inputs.pivotConnected);
         rollerDisconnectedAlert.set(!inputs.spinConnected);
-        funnelDisconnectedAlert.set(!inputs.funnelConnected);
 
         LoggedTracer.record("Intake");
     }
@@ -144,7 +142,7 @@ public class Intake extends SubsystemBase {
 
     @AutoLogOutput(key = "Intake/TimeToSetpoint")
     public double timeToSetpoint() {
-        return timeToSetpoint(pivotSetpoint);
+        return isPivotAtSetpoint() ? 0 : timeToSetpoint(pivotSetpoint);
     }
 
     public double timeToSetpoint(Rotation2d setpoint) {
@@ -167,6 +165,14 @@ public class Intake extends SubsystemBase {
 
     public Command commandRunFunnel(double percent) {
         return Commands.startEnd(() -> this.setFunnelVoltage(percent * 12), () -> this.setFunnelVoltage(0), this);
+    }
+
+    public void setSolenoid(boolean trigger) {
+        io.setSolenoid(trigger);
+    }
+
+    public Command commandSetSolenoid(boolean trigger) {
+        return Commands.runOnce(() -> setSolenoid(trigger));
     }
 
     public Command commandRunRollerFunnel(double rollerPercent, double funnelPercent) {
